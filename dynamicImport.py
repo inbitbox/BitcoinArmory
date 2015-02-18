@@ -137,8 +137,8 @@ def importModule(modulesDir, moduleName, injectLocals=None):
    sys.path = sys.path[:-1]
    currSysPath = '\x00'.join(sys.path)
    if not currSysPath==prevSysPath:
-      print '***ERROR: Dynamically imported module messed with sys.path!'
-      print '        : Make sure your module does not modify sys.path'
+      print('***ERROR: Dynamically imported module messed with sys.path!')
+      print('        : Make sure your module does not modify sys.path')
       exit(1)
    
    return modTemp
@@ -209,8 +209,8 @@ def dynamicImportNoZip(inDir, moduleName, injectLocals=None):
    sys.path = sys.path[:-1]
    currSysPath = '\x00'.join(sys.path)
    if not currSysPath==prevSysPath:
-      print '***ERROR: Dynamically imported module messed with sys.path!'
-      print '        : Make sure your module does not modify sys.path'
+      print('***ERROR: Dynamically imported module messed with sys.path!')
+      print('        : Make sure your module does not modify sys.path')
       exit(1)
    
    return modTemp

@@ -347,8 +347,8 @@ class SatoshiDaemonManager(object):
             LOGINFO('No home dir, makedir not requested')
             self.failedFindHome = True
 
-      if self.failedFindExe:  raise self.BitcoindError, 'bitcoind not found'
-      if self.failedFindHome: raise self.BitcoindError, 'homedir not found'
+      if self.failedFindExe:  raise self.BitcoindError('bitcoind not found')
+      if self.failedFindHome: raise self.BitcoindError('homedir not found')
 
       self.disabled = False
       self.proxy = None
@@ -449,7 +449,7 @@ class SatoshiDaemonManager(object):
          try:
             locs = subprocess_check_output(['whereis','bitcoind']).split()
             if len(locs)>1:
-               locs = filter(lambda x: os.path.basename(x)=='bitcoind', locs)
+               locs = [x for x in locs if os.path.basename(x)=='bitcoind']
                LOGINFO('"whereis" returned: %s', str(locs))
                self.foundExe.extend(locs)
          except:
@@ -497,7 +497,7 @@ class SatoshiDaemonManager(object):
       bitconf = os.path.join(self.satoshiRoot, 'bitcoin.conf')
       if not os.path.exists(bitconf):
          if not makeIfDNE:
-            raise self.BitcoinDotConfError, 'Could not find bitcoin.conf'
+            raise self.BitcoinDotConfError('Could not find bitcoin.conf')
          else:
             LOGINFO('No bitcoin.conf available.  Creating it...')
             touchFile(bitconf)
@@ -514,7 +514,7 @@ class SatoshiDaemonManager(object):
          else:
             LOGINFO('Setting permissions on bitcoin.conf')
             import ctypes
-            username_u16 = ctypes.create_unicode_buffer(u'\0', 512)
+            username_u16 = ctypes.create_unicode_buffer('\0', 512)
             str_length = ctypes.c_int(512)
             ctypes.windll.Advapi32.GetUserNameW(ctypes.byref(username_u16), 
                                                 ctypes.byref(str_length))
@@ -522,7 +522,7 @@ class SatoshiDaemonManager(object):
             if not CLI_OPTIONS.disableConfPermis:
                import win32process
                LOGINFO('Setting permissions on bitcoin.conf')
-               cmd_icacls = [u'icacls',bitconf,u'/inheritance:r',u'/grant:r', u'%s:F' % username_u16.value]
+               cmd_icacls = ['icacls',bitconf,'/inheritance:r','/grant:r', '%s:F' % username_u16.value]
                kargs = {}
                kargs['shell'] = True
                kargs['creationflags'] = win32process.CREATE_NO_WINDOW
@@ -557,14 +557,14 @@ class SatoshiDaemonManager(object):
       self.bitconf['rpcport'] = int(self.bitconf.get('rpcport', BITCOIN_RPC_PORT))
 
       # We must have a username and password.  If not, append to file
-      if not self.bitconf.has_key('rpcuser'):
+      if 'rpcuser' not in self.bitconf:
          LOGDEBUG('No rpcuser: creating one')
          with open(bitconf,'a') as f:
             f.write('\n')
             f.write('rpcuser=generated_by_armory\n')
             self.bitconf['rpcuser'] = 'generated_by_armory'
 
-      if not self.bitconf.has_key('rpcpassword'):
+      if 'rpcpassword' not in self.bitconf:
          LOGDEBUG('No rpcpassword: creating one')
          with open(bitconf,'a') as f:
             randBase58 = SecureBinaryData().GenerateRandom(32).toBinStr()
@@ -597,10 +597,10 @@ class SatoshiDaemonManager(object):
       LOGINFO('Called startBitcoind')
 
       if self.isRunningBitcoind() or TheTDM.getTDMState()=='Downloading':
-         raise self.BitcoindError, 'Looks like we have already started theSDM'
+         raise self.BitcoindError('Looks like we have already started theSDM')
 
       if not os.path.exists(self.executable):
-         raise self.BitcoindError, 'Could not find bitcoind'
+         raise self.BitcoindError('Could not find bitcoind')
 
       
       chk1 = os.path.exists(self.useTorrentFile)
@@ -638,11 +638,11 @@ class SatoshiDaemonManager(object):
       try:
          # Don't want some strange error in this size-check to abort loading
          blocksdir = os.path.join(self.satoshiHome, 'blocks')
-         sz = long(0)
+         sz = int(0)
          if os.path.exists(blocksdir):
             for fn in os.listdir(blocksdir):
                fnpath = os.path.join(blocksdir, fn)
-               sz += long(os.path.getsize(fnpath))
+               sz += int(os.path.getsize(fnpath))
 
          if sz < 5*GIGABYTE:
             if SystemSpecs.Memory>9.0:
@@ -925,7 +925,7 @@ class SatoshiDaemonManager(object):
       if not state in ('BitcoindReady', 'BitcoindSynchronizing'):
          LOGERROR('Called callJSON(%s, %s)', func, str(args))
          LOGERROR('Current SDM state: %s', state)
-         raise self.BitcoindError, 'callJSON while %s'%state
+         raise self.BitcoindError('callJSON while %s'%state)
 
       return self.proxy.__getattr__(func)(*args)
 
@@ -933,10 +933,10 @@ class SatoshiDaemonManager(object):
    #############################################################################
    def returnSDMInfo(self):
       sdminfo = {}
-      for key,val in self.bitconf.iteritems():
+      for key,val in list(self.bitconf.items()):
          sdminfo['bitconf_%s'%key] = val
 
-      for key,val in self.lastTopBlockInfo.iteritems():
+      for key,val in list(self.lastTopBlockInfo.items()):
          sdminfo['topblk_%s'%key] = val
 
       sdminfo['executable'] = self.executable
@@ -950,10 +950,10 @@ class SatoshiDaemonManager(object):
 
    #############################################################################
    def printSDMInfo(self):
-      print '\nCurrent SDM State:'
-      print '\t', 'SDM State Str'.ljust(20), ':', self.getSDMState()
-      for key,value in self.returnSDMInfo().iteritems():
-         print '\t', str(key).ljust(20), ':', str(value)
+      print('\nCurrent SDM State:')
+      print(('\t', 'SDM State Str'.ljust(20), ':', self.getSDMState()))
+      for key,value in list(self.returnSDMInfo().items()):
+         print(('\t', str(key).ljust(20), ':', str(value)))
 
    
 

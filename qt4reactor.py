@@ -206,11 +206,11 @@ class QtReactor(posixbase.PosixReactorBase):
 
 
     def getReaders(self):
-        return self._reads.keys()
+        return list(self._reads.keys())
 
 
     def getWriters(self):
-        return self._writes.keys()
+        return list(self._writes.keys())
 
 
     def callLater(self,howlong, *args, **kargs):
@@ -290,7 +290,7 @@ class QtEventReactor(QtReactor):
 
 
     def doEvents(self):
-        handles = self._events.keys()
+        handles = list(self._events.keys())
         if len(handles) > 0:
             val = None
             while val != WAIT_TIMEOUT:

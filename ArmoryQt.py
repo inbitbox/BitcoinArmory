@@ -80,7 +80,7 @@ if OS_MACOSX:
 # PyQt4 Imports
 # All the twisted/networking functionality
 if OS_WINDOWS:
-   from _winreg import *
+   from winreg import *
 
 
 MODULES_ZIP_DIR_NAME = 'modules'
@@ -968,7 +968,7 @@ class ArmoryMainWindow(QMainWindow):
       # loads the python files as raw chunks of text so we can
       # check hashes and signatures
       modMap = getModuleListNoZip(moduleDir)
-      for moduleName,infoMap in modMap.iteritems():
+      for moduleName,infoMap in list(modMap.items()):
          module = dynamicImportNoZip(moduleDir, moduleName, globals())
          plugObj = module.PluginObject(self)
 
@@ -1038,7 +1038,7 @@ class ArmoryMainWindow(QMainWindow):
          # loads the python files as raw chunks of text so we can
          # check hashes and signatures
          modMap = getModuleList(modulesZipDirPath)
-         for moduleName,infoMap in modMap.iteritems():
+         for moduleName,infoMap in list(modMap.items()):
             moduleZipPath = os.path.join(modulesZipDirPath, infoMap[MODULE_PATH_KEY])
             if  infoMap[MODULE_ZIP_STATUS_KEY] == MODULE_ZIP_STATUS.Invalid:
                reply = QMessageBox.warning(self, tr("Invalid Module"), tr("""
@@ -1569,7 +1569,7 @@ class ArmoryMainWindow(QMainWindow):
          rtlength = GetModuleFileNameW(None, ctypes.byref(app_path), 1024)
          passstr = str(app_path.raw)
 
-         modulepathname += unicode(passstr[0:(rtlength*2)], encoding='utf16') + u'" "%1"'
+         modulepathname += str(passstr[0:(rtlength*2)], encoding='utf16') + '" "%1"'
          modulepathname = modulepathname.encode('utf8')
 
          rootKey = 'bitcoin\\shell\\open\\command'
@@ -1633,7 +1633,7 @@ class ArmoryMainWindow(QMainWindow):
          if action=='DoIt':
 
             LOGINFO('Registering Armory  for current user')
-            baseDir = os.path.dirname(unicode(passstr[0:(rtlength*2)], encoding='utf16'))
+            baseDir = os.path.dirname(str(passstr[0:(rtlength*2)], encoding='utf16'))
             regKeys = []
             regKeys.append(['Software\\Classes\\bitcoin', '', 'URL:bitcoin Protocol'])
             regKeys.append(['Software\\Classes\\bitcoin', 'URL Protocol', ""])
@@ -1739,7 +1739,7 @@ class ArmoryMainWindow(QMainWindow):
 
       if wlt.watchingOnly and copyType.lower() != 'pkcc':
          fn = 'armory_%s_%s.watchonly.wallet' % (wlt.uniqueIDB58, suffix)
-      savePath = unicode(self.getFileSave(defaultFilename=fn))
+      savePath = str(self.getFileSave(defaultFilename=fn))
       if not len(savePath)>0:
          return False
 
@@ -1947,7 +1947,7 @@ class ArmoryMainWindow(QMainWindow):
       alerts = factory.proto.alerts
       peerInfo = self.NetworkingFactory.proto.peerInfo
 
-      for id, alert in alerts.items():
+      for id, alert in list(alerts.items()):
          if self.ignoreAlerts.get(id):
             continue
          if time.time() > alert.expiration:
@@ -1965,7 +1965,7 @@ class ArmoryMainWindow(QMainWindow):
          reply, self.ignoreAlerts[id] = MsgBoxWithDNAA(
             self, self, MSGBOX.Warning, title, msg,
             'Do not show me this notification again', yesStr='OK')
-         self.writeSetting('IgnoreAlerts', ",".join([str(i) for i in self.ignoreAlerts.keys()]))
+         self.writeSetting('IgnoreAlerts', ",".join([str(i) for i in list(self.ignoreAlerts.keys())]))
 
 
    #############################################################################
@@ -1996,7 +1996,7 @@ class ArmoryMainWindow(QMainWindow):
          else:
             maxVer = 0
             self.versionNotification = {}
-            for verStr,vermap in self.downloadLinks['Armory'].iteritems():
+            for verStr,vermap in list(self.downloadLinks['Armory'].items()):
                dlVer = getVersionInt(readVersionString(verStr))
                if dlVer > maxVer:
                   maxVer = dlVer
@@ -2009,7 +2009,7 @@ class ArmoryMainWindow(QMainWindow):
                   self.versionNotification['UNIQUEID'] = notifyID
                   self.versionNotification['VERSION'] = '0'
                   self.versionNotification['STARTTIME'] = '0'
-                  self.versionNotification['EXPIRES'] = '%d' % long(UINT64_MAX)
+                  self.versionNotification['EXPIRES'] = '%d' % int(UINT64_MAX)
                   self.versionNotification['CANCELID'] = '[]'
                   self.versionNotification['MINVERSION'] = '*'
                   self.versionNotification['MAXVERSION'] = '<%s' % verStr
@@ -2022,7 +2022,7 @@ class ArmoryMainWindow(QMainWindow):
                      self.getVersionNotifyLongDescr(verStr).replace('\n','<br>')
                      
             if 'ArmoryTesting' in self.downloadLinks:
-               for verStr,vermap in self.downloadLinks['ArmoryTesting'].iteritems():
+               for verStr,vermap in list(self.downloadLinks['ArmoryTesting'].items()):
                   dlVer = getVersionInt(readVersionString(verStr))
                   if dlVer > maxVer:
                      maxVer = dlVer
@@ -2035,7 +2035,7 @@ class ArmoryMainWindow(QMainWindow):
                      self.versionNotification['UNIQUEID'] = notifyID
                      self.versionNotification['VERSION'] = '0'
                      self.versionNotification['STARTTIME'] = '0'
-                     self.versionNotification['EXPIRES'] = '%d' % long(UINT64_MAX)
+                     self.versionNotification['EXPIRES'] = '%d' % int(UINT64_MAX)
                      self.versionNotification['CANCELID'] = '[]'
                      self.versionNotification['MINVERSION'] = '*'
                      self.versionNotification['MAXVERSION'] = '<%s' % verStr
@@ -2056,7 +2056,7 @@ class ArmoryMainWindow(QMainWindow):
          else:
             try:
                maxVer = 0
-               for verStr,vermap in self.downloadLinks['Satoshi'].iteritems():
+               for verStr,vermap in list(self.downloadLinks['Satoshi'].items()):
                   dlVer = getVersionInt(readVersionString(verStr))
                   if dlVer > maxVer:
                      maxVer = dlVer
@@ -2143,11 +2143,11 @@ class ArmoryMainWindow(QMainWindow):
          return False
 
       if notifyMap['STARTTIME'].isdigit():
-         if currTime < long(notifyMap['STARTTIME']):
+         if currTime < int(notifyMap['STARTTIME']):
             return False
 
       if notifyMap['EXPIRES'].isdigit():
-         if currTime > long(notifyMap['EXPIRES']):
+         if currTime > int(notifyMap['EXPIRES']):
             return False
 
 
@@ -2207,7 +2207,7 @@ class ArmoryMainWindow(QMainWindow):
       currMin = self.getSettingOrSetDefault('NotifyMinPriority', \
                                                      DEFAULT_MIN_PRIORITY)
       minmin = min(currMin, DEFAULT_MIN_PRIORITY)
-      for nid,valmap in currNotificationList.iteritems():
+      for nid,valmap in list(currNotificationList.items()):
          if int(valmap['PRIORITY']) >= minmin:
             self.almostFullNotificationList[nid] = deepcopy(valmap)
 
@@ -2218,7 +2218,7 @@ class ArmoryMainWindow(QMainWindow):
       # Check for new notifications
       addedNotifyIDs = set()
       irrelevantIDs = set()
-      for nid,valmap in currNotificationList.iteritems():
+      for nid,valmap in list(currNotificationList.items()):
          if not self.notificationIsRelevant(nid, valmap):
             # Can't remove while iterating over the map
             irrelevantIDs.add(nid)
@@ -2239,7 +2239,7 @@ class ArmoryMainWindow(QMainWindow):
 
       # Check for notifications we had before but no long have
       removedNotifyIDs = []
-      for nid,valmap in self.almostFullNotificationList.iteritems():
+      for nid,valmap in list(self.almostFullNotificationList.items()):
          if not nid in currNotificationList:
             removedNotifyIDs.append(nid)
 
@@ -2601,7 +2601,7 @@ class ArmoryMainWindow(QMainWindow):
       if TheBDM.getState() in (BDM_OFFLINE,BDM_UNINITIALIZED) or self.doShutdown:
          return
 
-      TheBDM.bdv().addNewZeroConfTx(pytxObj.serialize(), long(RightNow()), True)
+      TheBDM.bdv().addNewZeroConfTx(pytxObj.serialize(), int(RightNow()), True)
 
       # All extra tx functions take one arg:  the PyTx object of the new ZC tx
       for txFunc in self.extraNewTxFunctions:
@@ -2651,7 +2651,7 @@ class ArmoryMainWindow(QMainWindow):
          LOGERROR(warnMsg.replace('\n', ' '))
          return {}
 
-      if not uriDict.has_key('address'):
+      if 'address' not in uriDict:
          QMessageBox.warning(self, 'The "bitcoin:" link you just %sed '
             'does not even contain an address!  There is nothing that '
             'Armory can do with this link!' % clickOrEnter, QMessageBox.Ok)
@@ -2662,7 +2662,7 @@ class ArmoryMainWindow(QMainWindow):
       theAddrByte = checkAddrType(base58_to_binary(uriDict['address']))
       if theAddrByte!=-1 and not theAddrByte in [ADDRBYTE, P2SHBYTE]:
          net = 'Unknown Network'
-         if NETWORKS.has_key(theAddrByte):
+         if theAddrByte in NETWORKS:
             net = NETWORKS[theAddrByte]
          QMessageBox.warning(self, 'Wrong Network!', \
             'The address for the "bitcoin:" link you just %sed is '
@@ -2675,7 +2675,7 @@ class ArmoryMainWindow(QMainWindow):
 
       # If the URI contains "req-" strings we don't recognize, throw error
       recognized = ['address','version','amount','label','message']
-      for key,value in uriDict.iteritems():
+      for key,value in list(uriDict.items()):
          if key.startswith('req-') and not key[4:] in recognized:
             QMessageBox.warning(self,'Unsupported URI', 'The "bitcoin:" link '
                'you just %sed contains fields that are required but not '
@@ -2734,7 +2734,7 @@ class ArmoryMainWindow(QMainWindow):
       if self.getSettingOrSetDefault('First_Load', True):
          self.firstLoad = True
          self.writeSetting('First_Load', False)
-         self.writeSetting('First_Load_Date', long(RightNow()))
+         self.writeSetting('First_Load_Date', int(RightNow()))
          self.writeSetting('Load_Count', 1)
          self.writeSetting('AdvFeature_UseCt', 0)
       else:
@@ -2834,7 +2834,7 @@ class ArmoryMainWindow(QMainWindow):
 
 
       LOGINFO('Number of wallets read in: %d', len(self.walletMap))
-      for wltID, wlt in self.walletMap.iteritems():
+      for wltID, wlt in list(self.walletMap.items()):
          dispStr  = ('   Wallet (%s):' % wlt.uniqueIDB58).ljust(25)
          dispStr +=  '"'+wlt.labelName.ljust(32)+'"   '
          dispStr +=  '(Encrypted)' if wlt.useEncryption else '(No Encryption)'
@@ -2883,10 +2883,10 @@ class ArmoryMainWindow(QMainWindow):
       # calls a dialog produces better results but still freezes under some
       # circumstances.
       if not OS_MACOSX:
-         fullPath = unicode(QFileDialog.getSaveFileName(self, title, startPath,
+         fullPath = str(QFileDialog.getSaveFileName(self, title, startPath,
                                                         typesStr))
       else:
-         fullPath = unicode(QFileDialog.getSaveFileName(self, title, startPath,
+         fullPath = str(QFileDialog.getSaveFileName(self, title, startPath,
                                                         typesStr,
                                        options=QFileDialog.DontUseNativeDialog))
 
@@ -2919,10 +2919,10 @@ class ArmoryMainWindow(QMainWindow):
       # calls a dialog produces better results but still freezes under some
       # circumstances.
       if not OS_MACOSX:
-         fullPath = unicode(QFileDialog.getOpenFileName(self, title, defaultDir,
+         fullPath = str(QFileDialog.getOpenFileName(self, title, defaultDir,
                                                         typesStr))
       else:
-         fullPath = unicode(QFileDialog.getOpenFileName(self, title, defaultDir,
+         fullPath = str(QFileDialog.getOpenFileName(self, title, defaultDir,
                                                         typesStr,
                                        options=QFileDialog.DontUseNativeDialog))
 
@@ -3022,7 +3022,7 @@ class ArmoryMainWindow(QMainWindow):
    # Get  the lock box ID if the p2shAddrString is found in one of the lockboxes
    # otherwise it returns None
    def getLockboxByP2SHAddrStr(self, p2shAddrStr):
-      for lboxId in self.lockboxIDMap.keys():
+      for lboxId in list(self.lockboxIDMap.keys()):
          lbox = self.allLockboxes[self.lockboxIDMap[lboxId]]
          if p2shAddrStr == binScript_to_p2shAddrStr(lbox.binScript):
             return lbox
@@ -3095,14 +3095,14 @@ class ArmoryMainWindow(QMainWindow):
 
    #############################################################################
    def getWalletForAddr160(self, addr160):
-      for wltID, wlt in self.walletMap.iteritems():
+      for wltID, wlt in list(self.walletMap.items()):
          if wlt.hasAddr(addr160):
             return wltID
       return ''
 
    #############################################################################
    def getWalletForScrAddr(self, scrAddr):
-      for wltID, wlt in self.walletMap.iteritems():
+      for wltID, wlt in list(self.walletMap.items()):
          if wlt.hasScrAddr(scrAddr):
             return wltID
       return ''
@@ -3456,7 +3456,7 @@ class ArmoryMainWindow(QMainWindow):
       else:
 
          appendedComments = []
-         for wltID,wlt in self.walletMap.iteritems():
+         for wltID,wlt in list(self.walletMap.items()):
             cmt = wlt.getAddrCommentIfAvail(txHash)
             if len(cmt)>0:
                appendedComments.append(cmt)
@@ -3483,7 +3483,7 @@ class ArmoryMainWindow(QMainWindow):
       # Update the maps/dictionaries
       newWltID = newWallet.uniqueIDB58
 
-      if self.walletMap.has_key(newWltID):
+      if newWltID in self.walletMap:
          return
 
       self.walletMap[newWltID] = newWallet
@@ -3833,7 +3833,7 @@ class ArmoryMainWindow(QMainWindow):
       wltID = wlt.uniqueIDB58
       wlt = None
 
-      if self.walletMap.has_key(wltID):
+      if wltID in self.walletMap:
          QMessageBox.warning(self, 'Duplicate Wallet!', \
             'You selected a wallet that has the same ID as one already '
             'in your wallet (%s)!  If you would like to import it anyway, '
@@ -3918,7 +3918,7 @@ class ArmoryMainWindow(QMainWindow):
       row = self.ledgerView.selectedIndexes()[0].row()
       txHash = str(self.ledgerView.model().index(row, LEDGERCOLS.TxHash).data().toString())
       wltID  = str(self.ledgerView.model().index(row, LEDGERCOLS.WltID).data().toString())
-      txtime = unicode(self.ledgerView.model().index(row, LEDGERCOLS.DateStr).data().toString())
+      txtime = str(self.ledgerView.model().index(row, LEDGERCOLS.DateStr).data().toString())
 
       pytx = None
       txHashBin = hex_to_binary(txHash)
@@ -3982,7 +3982,7 @@ class ArmoryMainWindow(QMainWindow):
    def getSelectedWallet(self):
       wltID = None
       if len(self.walletMap) > 0:
-         wltID = self.walletMap.keys()[0]
+         wltID = list(self.walletMap.keys())[0]
       wltSelect = self.walletsView.selectedIndexes()
       if len(wltSelect) > 0:
          row = wltSelect[0].row()
@@ -4027,7 +4027,7 @@ class ArmoryMainWindow(QMainWindow):
       # Because Bitcoin-Qt doesn't store the message= field we have to assume
       # that the label field holds the Tx-info.  So we concatenate them for
       # the display message
-      uri_has = lambda s: uriDict.has_key(s)
+      uri_has = lambda s: s in uriDict
 
       haveLbl = uri_has('label')
       haveMsg = uri_has('message')
@@ -4107,7 +4107,7 @@ class ArmoryMainWindow(QMainWindow):
       elif len(self.walletMap)==1:
          loading = LoadingDisp(self, self)
          loading.show()
-         wltID = self.walletMap.keys()[0]
+         wltID = list(self.walletMap.keys())[0]
       else:
          wltSelect = self.walletsView.selectedIndexes()
          if len(wltSelect)>0:
@@ -4271,7 +4271,7 @@ class ArmoryMainWindow(QMainWindow):
                                   ffilter=['Text Files (*.txt)'], \
                                   defaultFilename=defaultFN)
 
-      if len(unicode(saveFile)) > 0:
+      if len(str(saveFile)) > 0:
          fout = open(saveFile, 'wb')
          fout.write(getLastBytesOfFile(ARMORY_LOG_FILE, 256*1024))
          fout.write(getLastBytesOfFile(ARMCPP_LOG_FILE, 256*1024))
@@ -4448,7 +4448,7 @@ class ArmoryMainWindow(QMainWindow):
       # to help the user install bitcoind.
       self.lblDashBtnDescr = QRichLabel('')
       self.lblDashBtnDescr.setOpenExternalLinks(True)
-      BTN,LBL,TTIP = range(3)
+      BTN,LBL,TTIP = list(range(3))
       self.dashBtns = [[None]*3 for i in range(5)]
       self.dashBtns[DASHBTNS.Close   ][BTN] = QPushButton('Close Bitcoin Process')
       self.dashBtns[DASHBTNS.Install ][BTN] = QPushButton('Download Bitcoin')
@@ -4915,7 +4915,7 @@ class ArmoryMainWindow(QMainWindow):
 
 
       alertsForSorting = []
-      for nid,nmap in self.almostFullNotificationList.iteritems():
+      for nid,nmap in list(self.almostFullNotificationList.items()):
          alertsForSorting.append([nid, int(nmap['PRIORITY'])])
 
       sortedAlerts = sorted(alertsForSorting, key=lambda a: -a[1])[:10]
@@ -6226,7 +6226,7 @@ class ArmoryMainWindow(QMainWindow):
 
          newBlocks = args[0]
          if newBlocks>0:       
-            print 'New Block: ', TheBDM.getTopBlockHeight()
+            print(('New Block: ', TheBDM.getTopBlockHeight()))
 
             self.ledgerModel.reset()
 
@@ -6276,7 +6276,7 @@ class ArmoryMainWindow(QMainWindow):
                elif wltID == "wallet_filter_changed":
                   reset = True
                         
-               if self.walletSideScanProgress.has_key(wltID):
+               if wltID in self.walletSideScanProgress:
                   del self.walletSideScanProgress[wltID]
                
          self.createCombinedLedger(reset)
@@ -6501,6 +6501,7 @@ class ArmoryMainWindow(QMainWindow):
          errStr = 'Error Type: %s\nError Value: %s' % (errType, errVal)
          LOGERROR(errStr)
       finally:
+         from twisted.internet import reactor
          reactor.callLater(nextBeatSec, self.Heartbeat)
 
 
@@ -7080,7 +7081,7 @@ def checkForAlreadyOpenError():
       elif hasattr(proc, 'name'):
          pname = str(proc.name)
       else:
-         raise 'psutil.process has no known name field!'
+         raise RuntimeError('psutil.process has no known name field!')
          
       if aexe in pname:
          LOGINFO('Found armory PID: %d', proc.pid)

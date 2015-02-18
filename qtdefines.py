@@ -10,7 +10,8 @@ from tempfile import mkstemp
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-import urllib
+from six.moves import urllib
+#import urllib.request, urllib.parse, urllib.error
 
 from armorycolors import Colors, htmlColor
 from armoryengine.ArmoryUtils import *
@@ -306,7 +307,7 @@ class QRichLabel(QLabel):
       #self.setMinimumHeight(int(relaxedSizeStr(self, 'QWERTYqypgj')[1]))
 
    def setText(self, text, color=None, size=None, bold=None, italic=None):
-      text = unicode(text)
+      text = str(text)
       if color:
          text = '<font color="%s">%s</font>' % (htmlColor(color), text)
       if size:
@@ -424,11 +425,11 @@ class QLabelButton(QLabel):
 
    def mousePressEvent(self, ev):  
       # Prevent click-bleed-through to dialogs being opened
-      txt = toBytes(unicode(self.text()))
+      txt = toBytes(str(self.text()))
       self.mousePressOn.add(txt)
 
    def mouseReleaseEvent(self, ev):  
-      txt = toBytes(unicode(self.text()))
+      txt = toBytes(str(self.text()))
       if txt in self.mousePressOn:
          self.mousePressOn.remove(txt)
          self.emit(SIGNAL('clicked()'))  
@@ -694,8 +695,8 @@ def restoreTableView(qtbl, hexBytes):
          
       for i,c in toRestore[:-1]:
          qtbl.setColumnWidth(i, c)
-   except Exception, e:
-      print 'ERROR!'
+   except Exception as e:
+      print('ERROR!')
       pass
       # Don't want to crash the program just because couldn't load tbl data
 
@@ -1000,10 +1001,10 @@ def selectFileForQLineEdit(parent, qObj, title="Select File", existing=False, \
    types.append('All files (*)')
    typesStr = ';; '.join(types)
    if not OS_MACOSX:
-      fullPath = unicode(QFileDialog.getOpenFileName(parent, \
+      fullPath = str(QFileDialog.getOpenFileName(parent, \
          title, ARMORY_HOME_DIR, typesStr))
    else:
-      fullPath = unicode(QFileDialog.getOpenFileName(parent, \
+      fullPath = str(QFileDialog.getOpenFileName(parent, \
          title, ARMORY_HOME_DIR, typesStr, options=QFileDialog.DontUseNativeDialog))
 
    if fullPath:
@@ -1012,15 +1013,15 @@ def selectFileForQLineEdit(parent, qObj, title="Select File", existing=False, \
 
 def selectDirectoryForQLineEdit(par, qObj, title="Select Directory"):
    initPath = ARMORY_HOME_DIR
-   currText = unicode(qObj.text()).strip()
+   currText = str(qObj.text()).strip()
    if len(currText)>0:
       if os.path.exists(currText):
          initPath = currText
     
    if not OS_MACOSX:
-      fullPath = unicode(QFileDialog.getExistingDirectory(par, title, initPath))
+      fullPath = str(QFileDialog.getExistingDirectory(par, title, initPath))
    else:
-      fullPath = unicode(QFileDialog.getExistingDirectory(par, title, initPath, \
+      fullPath = str(QFileDialog.getExistingDirectory(par, title, initPath, \
                                        options=QFileDialog.DontUseNativeDialog))
    if fullPath:
       qObj.setText( fullPath)

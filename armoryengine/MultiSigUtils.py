@@ -142,10 +142,10 @@ def getWltFromB58ID(inB58ID, inWltMap, inLBMap, inLBWltMap):
    retWlt = None
    retWltIsCPP = True
 
-   if inB58ID in inWltMap.keys():
+   if inB58ID in list(inWltMap.keys()):
       retWlt = inWltMap[inB58ID]
       retWltIsCPP = False
-   elif inB58ID in inLBMap.keys():
+   elif inB58ID in list(inLBMap.keys()):
       retWlt = inLBWltMap[inB58ID]
    else:
       LOGERROR('Base58 ID %s does not represent a valid wallet or lockbox.' % \
@@ -200,7 +200,7 @@ def readLockboxesFile(lbFilePath):
             pos = allData.find(startMark, pos+1)
       except:
          LOGEXCEPT('Error reading lockboxes file')
-         shutil.copy(lbFilePath, lbFilePath+'.%d.bak'% long(RightNow()))
+         shutil.copy(lbFilePath, lbFilePath+'.%d.bak'% int(RightNow()))
 
    return retLBList
 
@@ -258,7 +258,7 @@ class MultiSigLockbox(AsciiSerializable):
       self.version     = MULTISIG_VERSION
       self.shortName   = toUnicode(name)
       self.longDescr   = toUnicode(descr)
-      self.createDate  = long(RightNow()) if createDate is None else createDate
+      self.createDate  = int(RightNow()) if createDate is None else createDate
       self.magicBytes  = MAGIC_BYTES
       self.uniqueIDB58 = None
       self.asciiID     = None
@@ -489,29 +489,29 @@ class MultiSigLockbox(AsciiSerializable):
 
    #############################################################################
    def pprint(self):
-      print 'Multi-signature %d-of-%d lockbox:' % (self.M, self.N)
-      print '   Unique ID:  ', self.uniqueIDB58
-      print '   Created:    ', unixTimeToFormatStr(self.createDate)
-      print '   LBox Name:  ', self.shortName
-      print '   P2SHAddr:   ', scrAddr_to_addrStr(self.p2shScrAddr)
-      print '   Box Desc:   '
-      print '     ', self.longDescr[:70]
-      print '   Key List:   '
-      print '   Script Ops: '
+      print(('Multi-signature %d-of-%d lockbox:' % (self.M, self.N)))
+      print(('   Unique ID:  ', self.uniqueIDB58))
+      print(('   Created:    ', unixTimeToFormatStr(self.createDate)))
+      print(('   LBox Name:  ', self.shortName))
+      print(('   P2SHAddr:   ', scrAddr_to_addrStr(self.p2shScrAddr)))
+      print('   Box Desc:   ')
+      print(('     ', self.longDescr[:70]))
+      print('   Key List:   ')
+      print('   Script Ops: ')
       for opStr in self.opStrList:
-         print '       ', opStr
-      print''
-      print '   Key Info:   '
+         print(('       ', opStr))
+      print('')
+      print('   Key Info:   ')
       for i in range(len(self.dPubKeys)):
-         print '            Key %d' % i
-         print '           ', binary_to_hex(self.dPubKeys[i].binPubKey)[:40] + '...'
-         print '           ', hash160_to_addrStr(self.a160List[i])
-         print ''
+         print(('            Key %d' % i))
+         print(('           ', binary_to_hex(self.dPubKeys[i].binPubKey)[:40] + '...'))
+         print(('           ', hash160_to_addrStr(self.a160List[i])))
+         print('')
 
    #############################################################################
    def pprintOneLine(self):
-      print 'LockBox %s:  %s-of-%s, created: %s;  "%s"' % (self.uniqueIDB58, 
-         self.M, self.N, unixTimeToFormatStr(self.createDate), self.shortName)
+      print(('LockBox %s:  %s-of-%s, created: %s;  "%s"' % (self.uniqueIDB58, 
+         self.M, self.N, unixTimeToFormatStr(self.createDate), self.shortName)))
 
 
    ################################################################################
@@ -781,7 +781,7 @@ class DecoratedPublicKey(AsciiSerializable):
 
    #############################################################################
    def pprint(self):
-      print 'pprint of DecoratedPublicKey is not implemented'
+      print('pprint of DecoratedPublicKey is not implemented')
       
 
 
@@ -1080,17 +1080,17 @@ class MultiSigPromissoryNote(AsciiSerializable):
    #############################################################################
    def pprint(self):
 
-      print 'Promissory Note:'
-      print '   Version     :', self.version
-      print '   Unique ID   :', self.promID
-      print '   Num Inputs  :', len(self.ustxInputs)
-      print '   Target Addr :', self.dtxoTarget.getRecipStr()
-      print '   Pay Amount  :', self.dtxoTarget.value
-      print '   Fee Amount  :', self.feeAmt
+      print('Promissory Note:')
+      print(('   Version     :', self.version))
+      print(('   Unique ID   :', self.promID))
+      print(('   Num Inputs  :', len(self.ustxInputs)))
+      print(('   Target Addr :', self.dtxoTarget.getRecipStr()))
+      print(('   Pay Amount  :', self.dtxoTarget.value))
+      print(('   Fee Amount  :', self.feeAmt))
       if self.dtxoChange is not None:
-         print '   ChangeAddr  :', self.dtxoChange.getRecipStr()
-      print '   LB Key      :', self.lockboxKey
-      print '   LB Key Info :', self.promLabel
+         print(('   ChangeAddr  :', self.dtxoChange.getRecipStr()))
+      print(('   LB Key      :', self.lockboxKey))
+      print(('   LB Key Info :', self.promLabel))
 
 
 # Resolve circular dependencies here.

@@ -11,7 +11,8 @@ from jasvet import verifySignature, readSigBlock
 import os
 import sys
 import time
-import urllib
+from six.moves import urllib
+#import urllib.request, urllib.parse, urllib.error
 
 
 DEFAULT_FETCH_INTERVAL = 30*MINUTE
@@ -251,7 +252,7 @@ class AnnounceDataFetcher(object):
    
          argsMap['id'] = self.uniqueID
 
-      return url + '?' + urllib.urlencode(argsMap)
+      return url + '?' + urllib.parse.urlencode(argsMap)
 
 
 
@@ -270,16 +271,15 @@ class AnnounceDataFetcher(object):
    def __fetchFile(self, url, backupURL=None):
       LOGINFO('Fetching: %s', url)
       try:
-         import urllib2
          import socket
          LOGDEBUG('Downloading URL: %s' % url)
          socket.setdefaulttimeout(CLI_OPTIONS.nettimeout)
-         urlobj = urllib2.urlopen(url, timeout=CLI_OPTIONS.nettimeout)
+         urlobj = urllib.request.urlopen(url, timeout=CLI_OPTIONS.nettimeout)
          return urlobj.read()
       except ImportError:
          LOGERROR('No module urllib2 -- cannot download anything')
          return ''
-      except (urllib2.URLError, urllib2.HTTPError):
+      except (urllib.error.URLError, urllib.error.HTTPError):
          LOGERROR('Specified URL was inaccessible')
          LOGERROR('Tried: %s', url)
          return self.__fetchFile(backupURL) if backupURL else ''
@@ -327,7 +327,7 @@ class AnnounceDataFetcher(object):
             return
       
       ##### Check whether any of the hashes have changed
-      for key,val in justDownloadedMap.iteritems():
+      for key,val in list(justDownloadedMap.items()):
          jdURL,jdHash = val[0],val[1]
          
          if not (key in self.fileHashMap and self.fileHashMap[key]==jdHash):

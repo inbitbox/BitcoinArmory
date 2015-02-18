@@ -198,7 +198,7 @@ class DlgUnlockWallet(ArmoryDialog):
       self.letLower = r"`1234567890-=qwertyuiop[]\asdfghjkl;'zxcvbnm,./"
       self.letUpper = r'~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:"ZXCVBNM<>?'
       self.letRows = r'11111111111112222222222222333333333334444444444'
-      self.letPairs = zip(self.letLower, self.letUpper, self.letRows)
+      self.letPairs = list(zip(self.letLower, self.letUpper, self.letRows))
 
       self.btnList = []
       for l, u, r in zip(self.letLower, self.letUpper, self.letRows):
@@ -534,13 +534,13 @@ class DlgBugReport(ArmoryDialog):
       else:
          return
 
-      emailAddr = unicode(self.edtEmail.text()).strip()
+      emailAddr = str(self.edtEmail.text()).strip()
       emailLen = lenBytes(emailAddr)
 
-      subjectText = unicode(self.edtSubject.text()).strip()
+      subjectText = str(self.edtSubject.text()).strip()
       subjectLen = lenBytes(subjectText)
 
-      description = unicode(self.txtDescr.toPlainText()).strip()
+      description = str(self.txtDescr.toPlainText()).strip()
       descrLen = lenBytes(description)
 
 
@@ -608,7 +608,7 @@ class DlgBugReport(ArmoryDialog):
             reportMap['fileLog'] = f.read()
 
       LOGDEBUG('Sending the following dictionary of values to server')
-      for key,val in reportMap.iteritems():
+      for key,val in list(reportMap.items()):
          if key=='fileLog':
             LOGDEBUG(key.ljust(12) + ': ' + binary_to_hex(sha256(val)))
          else:
@@ -627,12 +627,12 @@ class DlgBugReport(ArmoryDialog):
 
          LOGINFO('-'*50)
          LOGINFO('Response JSON:')
-         for key,val in responseMap.iteritems():
+         for key,val in list(responseMap.items()):
             LOGINFO(key.ljust(12) + ': ' + str(val))
 
          LOGINFO('-'*50)
          LOGINFO('Expected JSON:')
-         for key,val in expectedResponseMap.iteritems():
+         for key,val in list(expectedResponseMap.items()):
             LOGINFO(key.ljust(12) + ': ' + str(val))
 
 
@@ -834,13 +834,13 @@ class DlgInconsistentWltReport(ArmoryDialog):
       else:
          return
 
-      emailAddr = unicode(self.edtEmail.text()).strip()
+      emailAddr = str(self.edtEmail.text()).strip()
       emailLen = lenBytes(emailAddr)
 
-      subjectText = unicode(self.edtSubject.text()).strip()
+      subjectText = str(self.edtSubject.text()).strip()
       subjectLen = lenBytes(subjectText)
 
-      description = unicode(self.txtDescr.toPlainText()).strip()
+      description = str(self.txtDescr.toPlainText()).strip()
       descrLen = lenBytes(description)
 
 
@@ -894,7 +894,7 @@ class DlgInconsistentWltReport(ArmoryDialog):
          reportMap[fileUploadKey] = f.read()
 
       LOGDEBUG('Sending the following dictionary of values to server')
-      for key,val in reportMap.iteritems():
+      for key,val in list(reportMap.items()):
          if key==fileUploadKey:
             LOGDEBUG(key.ljust(12) + ': ' + binary_to_hex(sha256(val)))
          else:
@@ -917,12 +917,12 @@ class DlgInconsistentWltReport(ArmoryDialog):
 
          LOGINFO('-'*50)
          LOGINFO('Response JSON:')
-         for key,val in responseMap.iteritems():
+         for key,val in list(responseMap.items()):
             LOGINFO(key.ljust(12) + ': ' + str(val))
 
          LOGINFO('-'*50)
          LOGINFO('Expected JSON:')
-         for key,val in expectedResponseMap.iteritems():
+         for key,val in list(expectedResponseMap.items()):
             LOGINFO(key.ljust(12) + ': ' + str(val))
 
 
@@ -1391,8 +1391,8 @@ class DlgChangePassphrase(ArmoryDialog):
       p2 = self.edtPasswd2.text()
       goodColor = htmlColor('TextGreen')
       badColor = htmlColor('TextRed')
-      if not isASCII(unicode(p1)) or \
-         not isASCII(unicode(p2)):
+      if not isASCII(str(p1)) or \
+         not isASCII(str(p2)):
          self.lblMatches.setText('<font color=%s><b>Passphrase is non-ASCII!</b></font>' % badColor)
          return False
       if not p1 == p2:
@@ -1508,8 +1508,8 @@ class DlgChangeLabels(ArmoryDialog):
 
 
    def accept(self, *args):
-      if not isASCII(unicode(self.edtName.text())) or \
-         not isASCII(unicode(self.edtDescr.toPlainText())):
+      if not isASCII(str(self.edtName.text())) or \
+         not isASCII(str(self.edtDescr.toPlainText())):
          UnicodeErrorBox(self)
          return
 
@@ -2466,7 +2466,7 @@ class DlgWalletDetails(ArmoryDialog):
             self.labelValues[WLTFIELDS.BelongsTo].setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
             self.labelValues[WLTFIELDS.Secure].setText('<i>Offline</i>')
          else:
-            owner = unicode(dlg.edtOwnerString.text())
+            owner = str(dlg.edtOwnerString.text())
             self.main.setWltSetting(self.wltID, 'IsMine', False)
             self.main.setWltSetting(self.wltID, 'BelongsTo', owner)
 
@@ -3144,7 +3144,7 @@ class DlgImportAddress(ArmoryDialog):
          addr160 = convertKeyDataToAddress(privKey=binKeyData)
          addrStr = hash160_to_addrStr(addr160)
 
-      except InvalidHashError, e:
+      except InvalidHashError as e:
          QMessageBox.warning(self, 'Entry Error',
             'The private key data you supplied appears to '
             'contain a consistency check.  This consistency '
@@ -3152,12 +3152,12 @@ class DlgImportAddress(ArmoryDialog):
             'key data correctly.', QMessageBox.Ok)
          LOGERROR('Private key consistency check failed.')
          return
-      except BadInputError, e:
+      except BadInputError as e:
          QMessageBox.critical(self, 'Invalid Data', 'Something went terribly '
             'wrong!  (key data unrecognized)', QMessageBox.Ok)
          LOGERROR('Unrecognized key data!')
          return
-      except CompressedKeyError, e:
+      except CompressedKeyError as e:
          QMessageBox.critical(self, 'Unsupported key type', 'You entered a key '
             'for an address that uses a compressed public key, usually produced '
             'in Bitcoin-Qt/bitcoind wallets created after version 0.6.0.  Armory '
@@ -3343,7 +3343,7 @@ class DlgImportAddress(ArmoryDialog):
 
       if self.radioSweep.isChecked():
          ##### SWEEPING #####
-         dupeWltList = filter(lambda a: len(a[0]) > 0, allWltList)
+         dupeWltList = [a for a in allWltList if len(a[0]) > 0]
          if len(dupeWltList) > 0:
             reply = QMessageBox.critical(self, 'Duplicate Addresses!', \
                'You are attempting to sweep %d addresses, but %d of them '
@@ -3375,7 +3375,7 @@ class DlgImportAddress(ArmoryDialog):
          # Addresses already in the selected wallet will simply be skipped, no
          # need to do anything about that -- only addresses that would appear in
          # two wlts if we were to continue.
-         dupeWltList = filter(lambda a: (len(a[0]) > 0 and a[0] != thisWltID), allWltList)
+         dupeWltList = [a for a in allWltList if (len(a[0]) > 0 and a[0] != thisWltID)]
          if len(dupeWltList) > 0:
             dupeAddrStrList = [d[1] for d in dupeWltList]
             dlg = DlgDuplicateAddr(dupeAddrStrList, self, self.main)
@@ -3383,7 +3383,7 @@ class DlgImportAddress(ArmoryDialog):
             if not dlg.exec_():
                return
 
-            privKeyList = filter(lambda x: (x[1] not in dupeAddrStrList), privKeyList)
+            privKeyList = [x for x in privKeyList if (x[1] not in dupeAddrStrList)]
 
 
          # Confirm import
@@ -3415,7 +3415,7 @@ class DlgImportAddress(ArmoryDialog):
                   nImport += 1
                else:
                   nAlready += 1
-            except Exception, msg:
+            except Exception as msg:
                # print '***ERROR importing:', addrStr
                # print '         Error Msg:', msg
                # nError += 1
@@ -4256,7 +4256,7 @@ class DlgImportPaperWallet(ArmoryDialog):
 
    def verifyUserInput(self):
       def englishNumberList(nums):
-         nums = map(str, nums)
+         nums = list(map(str, nums))
          if len(nums) == 1:
             return nums[0]
          return ', '.join(nums[:-1]) + ' and ' + nums[-1]
@@ -4304,7 +4304,7 @@ class DlgImportPaperWallet(ArmoryDialog):
       first = root.extendAddressChain()
       newWltID = binary_to_base58((ADDRBYTE + first.getAddr160()[:5])[::-1])
 
-      if self.main.walletMap.has_key(newWltID):
+      if newWltID in self.main.walletMap:
          QMessageBox.question(self, 'Duplicate Wallet!', \
                'The data you entered is for a wallet with a ID: \n\n \t' +
                newWltID + '\n\nYou already own this wallet! \n  '
@@ -4403,7 +4403,7 @@ class DlgSetComment(ArmoryDialog):
 
    #############################################################################
    def accept(self):
-      if not isASCII(unicode(self.edtComment.text())):
+      if not isASCII(str(self.edtComment.text())):
          UnicodeErrorBox(self)
          return
       else:
@@ -5379,7 +5379,7 @@ class DlgShowKeyList(ArmoryDialog):
       namelist = ['AddrStr', 'PubKeyHash', 'PrivB58', 'PrivCrypt', \
                   'PrivHexBE', 'PubKey', 'ChainIndex']
 
-      for name in self.chkList.keys():
+      for name in list(self.chkList.keys()):
          self.connect(self.chkList[name], SIGNAL('toggled(bool)'), \
                       self.rewriteList)
 
@@ -5657,7 +5657,7 @@ def extractTxInfo(pytx, rcvTime=None):
                txTime = 'Unknown'
             elif rcvTime == -1:
                txTime = '[[Not broadcast yet]]'
-            elif isinstance(rcvTime, basestring):
+            elif isinstance(rcvTime, str):
                txTime = rcvTime
             else:
                txTime = unixTimeToFormatStr(rcvTime)
@@ -6909,7 +6909,7 @@ class DlgPrintBackup(ArmoryDialog):
       self.noNeedChaincode = (testChain == self.binChain)
 
       # Save off imported addresses in case they need to be printed, too
-      for a160, addr in self.wlt.addrMap.iteritems():
+      for a160, addr in list(self.wlt.addrMap.items()):
          if addr.chainIndex == -2:
             if addr.binPrivKey32_Plain.getSize() == 33 or addr.isCompressed():
                prv = addr.binPrivKey32_Plain.toBinStr()[:32]
@@ -8284,7 +8284,7 @@ class DlgAddressBook(ArmoryDialog):
 
       # Auto-select the default wallet, if there is one
       rowNum = 0
-      if defaultWltID and self.main.walletMap.has_key(defaultWltID):
+      if defaultWltID and defaultWltID in self.main.walletMap:
          rowNum = self.main.walletIndices[defaultWltID]
       rowIndex = self.wltDispModel.index(rowNum, 0)
       self.wltDispView.setCurrentIndex(rowIndex)
@@ -8710,8 +8710,8 @@ class DlgHelpAbout(ArmoryDialog):
                                     (getVersionString(BTCARMORY_VERSION), BTCARMORY_BUILD), doWrap=False)
       lblWebpage = QRichLabel('<a href="https://www.bitcoinarmory.com">https://www.bitcoinarmory.com</a>')
       lblWebpage.setOpenExternalLinks(True)
-      lblCopyright = QRichLabel(tr(u'Copyright &copy; 2011-2015 Armory Technologies, Inc.'))
-      lblLicense = QRichLabel(tr(u'Licensed under the '
+      lblCopyright = QRichLabel(tr('Copyright &copy; 2011-2015 Armory Technologies, Inc.'))
+      lblLicense = QRichLabel(tr('Licensed under the '
                               '<a href="http://www.gnu.org/licenses/agpl-3.0.html">'
                               'Affero General Public License, Version 3</a> (AGPLv3)'))
       lblLicense.setOpenExternalLinks(True)
@@ -9306,7 +9306,7 @@ class DlgSettings(ArmoryDialog):
 
       if self.chkManageSatoshi.isChecked():
          # Check valid path is supplied for bitcoin installation
-         pathExe = unicode(self.edtSatoshiExePath.text()).strip()
+         pathExe = str(self.edtSatoshiExePath.text()).strip()
          if len(pathExe) > 0:
             if not os.path.exists(pathExe):
                exeName = 'bitcoin-qt.exe' if OS_WINDOWS else 'bitcoin-qt'
@@ -9323,7 +9323,7 @@ class DlgSettings(ArmoryDialog):
             self.main.settings.delete('SatoshiExe')
 
          # Check valid path is supplied for bitcoind home directory
-         pathHome = unicode(self.edtSatoshiHomePath.text()).strip()
+         pathHome = str(self.edtSatoshiHomePath.text()).strip()
          if len(pathHome) > 0:
             if not os.path.exists(pathHome):
                exeName = 'bitcoin-qt.exe' if OS_WINDOWS else 'bitcoin-qt'
@@ -9470,7 +9470,7 @@ class DlgExportTxHistory(ArmoryDialog):
    def __init__(self, parent=None, main=None):
       super(DlgExportTxHistory, self).__init__(parent, main)
 
-      self.reversedLBdict = {v:k for k,v in self.main.lockboxIDMap.items()}
+      self.reversedLBdict = {v:k for k,v in list(self.main.lockboxIDMap.items())}
 
       self.cmbWltSelect = QComboBox()
       self.cmbWltSelect.clear()
@@ -9618,10 +9618,10 @@ class DlgExportTxHistory(ArmoryDialog):
             idx -= len(self.main.walletIDList) +1
             wltIDList = [self.reversedLBdict[idx]]
       else:
-         listOffline = [t[0] for t in filter(lambda x: x[1] == WLTTYPES.Offline, typelist)]
-         listWatching = [t[0] for t in filter(lambda x: x[1] == WLTTYPES.WatchOnly, typelist)]
-         listCrypt = [t[0] for t in filter(lambda x: x[1] == WLTTYPES.Crypt, typelist)]
-         listPlain = [t[0] for t in filter(lambda x: x[1] == WLTTYPES.Plain, typelist)]
+         listOffline = [t[0] for t in [x for x in typelist if x[1] == WLTTYPES.Offline]]
+         listWatching = [t[0] for t in [x for x in typelist if x[1] == WLTTYPES.WatchOnly]]
+         listCrypt = [t[0] for t in [x for x in typelist if x[1] == WLTTYPES.Crypt]]
+         listPlain = [t[0] for t in [x for x in typelist if x[1] == WLTTYPES.Plain]]
          lockboxIDList = [t for t in self.main.lockboxIDMap]
 
          if currIdx == 0:
@@ -10233,7 +10233,7 @@ class DlgNotificationWithDNAA(ArmoryDialog):
       priority   = int(notifyMap['PRIORITY'])
       shortDescr = notifyMap['SHORTDESCR']
       longDescr  = notifyMap['LONGDESCR']
-      startTime  = long(notifyMap['STARTTIME'])
+      startTime  = int(notifyMap['STARTTIME'])
 
       minver  = notifyMap['MINVERSION']
       maxver  = notifyMap['MAXVERSION']
@@ -10492,7 +10492,7 @@ class DlgUriCopyAndPaste(ArmoryDialog):
    def clickedOkay(self):
       uriStr = str(self.txtUriString.text())
       self.uriDict = self.main.parseUriLink(uriStr, 'enter')
-      if len(self.uriDict.keys()) > 0:
+      if len(list(self.uriDict.keys())) > 0:
          self.accept()
 
 
@@ -10517,7 +10517,7 @@ class DlgCoinControl(ArmoryDialog):
 
       addrToInclude = []
       totalBal = 0
-      for addr160 in wlt.addrMap.iterkeys():
+      for addr160 in list(wlt.addrMap.keys()):
          bal = wlt.getAddrBalance(addr160)
          if bal > 0:
             addrToInclude.append([addr160, bal])
@@ -10898,9 +10898,9 @@ class DlgInstallLinux(ArmoryDialog):
          title = 'Download Bitcoin software to...'
          initPath = self.main.settings.get('LastDirectory')
          if not OS_MACOSX:
-            installPath = unicode(QFileDialog.getExistingDirectory(self, title, initPath))
+            installPath = str(QFileDialog.getExistingDirectory(self, title, initPath))
          else:
-            installPath = unicode(QFileDialog.getExistingDirectory(self, title, initPath, \
+            installPath = str(QFileDialog.getExistingDirectory(self, title, initPath, \
                                              options=QFileDialog.DontUseNativeDialog))
 
       if not os.path.exists(installPath):
@@ -11133,10 +11133,10 @@ class DlgDownloadFile(ArmoryDialog):
       while keepTrying:
          nTries += 1
          try:
-            import urllib2
-            self.httpObj = urllib2.urlopen(self.dlFullPath, timeout=10)
+            import urllib.request, urllib.error, urllib.parse
+            self.httpObj = urllib.request.urlopen(self.dlFullPath, timeout=10)
             break
-         except urllib2.HTTPError:
+         except urllib.error.HTTPError:
             LOGERROR('urllib2 failed to urlopen the download link')
             LOGERROR('Link:  %s', self.dlFullPath)
             break
@@ -11986,7 +11986,7 @@ class DlgFragBackup(ArmoryDialog):
 
    #############################################################################
    def clickPrintAll(self):
-      self.clickPrintFrag(range(int(str(self.comboN.currentText()))))
+      self.clickPrintFrag(list(range(int(str(self.comboN.currentText())))))
 
    #############################################################################
    def clickPrintFrag(self, zindex):
@@ -12537,7 +12537,7 @@ class DlgRestoreSingle(ArmoryDialog):
          return
 
       dlgOwnWlt = None
-      if self.main.walletMap.has_key(newWltID):
+      if newWltID in self.main.walletMap:
          dlgOwnWlt = DlgReplaceWallet(newWltID, self.parent, self.main)
 
          if (dlgOwnWlt.exec_()):
@@ -12837,7 +12837,7 @@ class DlgRestoreWOData(ArmoryDialog):
 
       # If we already have the wallet, don't replace it, otherwise proceed.
       dlgOwnWlt = None
-      if self.main.walletMap.has_key(newWltID):
+      if newWltID in self.main.walletMap:
          QMessageBox.warning(self, tr('Wallet Already Exists'), tr("""The
                              wallet already exists and will not be
                              replaced."""), QMessageBox.Ok)
@@ -13051,7 +13051,7 @@ class DlgRestoreFragged(ArmoryDialog):
    def removeFragment(self):
       self.makeFragInputTable(-1)
       toRemove = []
-      for key, val in self.fragDataMap.iteritems():
+      for key, val in list(self.fragDataMap.items()):
          if key >= self.tableSize:
             toRemove.append(key)
 
@@ -13074,7 +13074,7 @@ class DlgRestoreFragged(ArmoryDialog):
    #############################################################################
    def dataLoad(self, fnum):
       LOGINFO('Loading data for entry, %d', fnum)
-      toLoad = unicode(self.main.getFileLoad(tr('Load Fragment File'), \
+      toLoad = str(self.main.getFileLoad(tr('Load Fragment File'), \
                                     [tr('Wallet Fragments (*.frag)')]))
 
       if len(toLoad) == 0:
@@ -13146,7 +13146,7 @@ class DlgRestoreFragged(ArmoryDialog):
       self.btnRestore.setEnabled(False)
       self.lblRightFrm.setText(tr("""
          <b>Start entering fragments into the table to left...</b>"""))
-      for row, data in self.fragDataMap.iteritems():
+      for row, data in list(self.fragDataMap.items()):
          showRightFrm = True
          M, fnum, wltIDBin, doMask, idBase58 = ReadFragIDLineBin(data[0])
          self.lblRightFrm.setText(tr('<b><u>Wallet Being Restored:</u></b>'))
@@ -13158,7 +13158,7 @@ class DlgRestoreFragged(ArmoryDialog):
          break
 
       anyMask = False
-      for row, data in self.fragDataMap.iteritems():
+      for row, data in list(self.fragDataMap.items()):
          M, fnum, wltIDBin, doMask, idBase58 = ReadFragIDLineBin(data[0])
          if doMask:
             anyMask = True
@@ -13251,7 +13251,7 @@ class DlgRestoreFragged(ArmoryDialog):
 
    #############################################################################
    def verifyNonDuplicateFrag(self, fnum):
-      for row, data in self.fragDataMap.iteritems():
+      for row, data in list(self.fragDataMap.items()):
          rowFrag = ReadFragIDLineBin(data[0])[1]
          if fnum == rowFrag:
             return False
@@ -13277,7 +13277,7 @@ class DlgRestoreFragged(ArmoryDialog):
          maskKey = SECPRINT['FUNC_KDF'](pwd)
 
       fragMtrx, M = [], -1
-      for row, trip in self.fragDataMap.iteritems():
+      for row, trip in list(self.fragDataMap.items()):
          M, fnum, wltID, doMask, fid = ReadFragIDLineBin(trip[0])
          X, Y = trip[1], trip[2]
          if doMask:
@@ -13326,7 +13326,7 @@ class DlgRestoreFragged(ArmoryDialog):
          return
 
       dlgOwnWlt = None
-      if self.main.walletMap.has_key(newWltID):
+      if newWltID in self.main.walletMap:
          dlgOwnWlt = DlgReplaceWallet(newWltID, self.parent, self.main)
 
          if (dlgOwnWlt.exec_()):
@@ -13721,7 +13721,7 @@ class DlgEnterOneFrag(ArmoryDialog):
    #############################################################################
    def destroyFragData(self):
       for line in self.fragData:
-         if not isinstance(line, basestring):
+         if not isinstance(line, str):
             # It's an SBD Object.  Destroy it.
             line.destroy()
 
@@ -13738,13 +13738,13 @@ class DlgEnterOneFrag(ArmoryDialog):
       sel = self.backupTypeButtonGroup.checkedId()
       rng = [-1]
       if   sel == self.backupTypeButtonGroup.id(self.version0Button):
-         rng = range(8)
+         rng = list(range(8))
       elif sel == self.backupTypeButtonGroup.id(self.version135aButton) or \
            sel == self.backupTypeButtonGroup.id(self.version135aSPButton):
-         rng = range(8, 12)
+         rng = list(range(8, 12))
       elif sel == self.backupTypeButtonGroup.id(self.version135cButton) or \
            sel == self.backupTypeButtonGroup.id(self.version135cSPButton):
-         rng = range(8, 10)
+         rng = list(range(8, 10))
 
 
       if sel == self.backupTypeButtonGroup.id(self.version135aSPButton) or \
@@ -14092,7 +14092,7 @@ class DlgWltRecoverWallet(ArmoryDialog):
       layout_btnH.addWidget(self.btnCancel, 1)
 
       def updateBtn(qstr):
-         if os.path.exists(unicode(qstr).strip()):
+         if os.path.exists(str(qstr).strip()):
             self.btnRecover.setEnabled(True)
             self.btnRecover.setToolTip('')
          else:
@@ -14156,12 +14156,12 @@ class DlgWltRecoverWallet(ArmoryDialog):
       # implemented doesn't let me access self.main.getFileLoad
       ftypes = tr('Wallet files (*.wallet);; All files (*)')
       if not OS_MACOSX:
-         pathSelect = unicode(QFileDialog.getOpenFileName(self, \
+         pathSelect = str(QFileDialog.getOpenFileName(self, \
                                  tr('Recover Wallet'), \
                                  ARMORY_HOME_DIR, \
                                  ftypes))
       else:
-         pathSelect = unicode(QFileDialog.getOpenFileName(self, \
+         pathSelect = str(QFileDialog.getOpenFileName(self, \
                                  tr('Recover Wallet'), \
                                  ARMORY_HOME_DIR, \
                                  ftypes, \

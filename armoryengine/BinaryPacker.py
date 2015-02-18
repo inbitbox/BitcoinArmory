@@ -13,7 +13,7 @@
 #
 ################################################################################
 from armoryengine.ArmoryUtils import LITTLEENDIAN, int_to_binary, packVarInt
-UINT8, UINT16, UINT32, UINT64, INT8, INT16, INT32, INT64, VAR_INT, VAR_STR, FLOAT, BINARY_CHUNK = range(12)
+UINT8, UINT16, UINT32, UINT64, INT8, INT16, INT32, INT64, VAR_INT, VAR_STR, FLOAT, BINARY_CHUNK = list(range(12))
 from struct import pack, unpack
 
 class PackerError(Exception): pass
@@ -78,9 +78,9 @@ class BinaryPacker(object):
             self.binaryConcat += theData
          else:
             if len(theData)>width:
-               raise PackerError, 'Too much data to fit into fixed width field'
+               raise PackerError('Too much data to fit into fixed width field')
             self.binaryConcat += theData.ljust(width, '\x00')
       else:
-         raise PackerError, "Var type not recognized!  VarType="+str(varType)
+         raise PackerError("Var type not recognized!  VarType="+str(varType))
 
 

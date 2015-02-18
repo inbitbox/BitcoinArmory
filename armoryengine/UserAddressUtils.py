@@ -44,7 +44,7 @@ def getScriptForUserString(userStr, wltMap, lboxList):
    """
 
    def getWltIDForScrAddr(scrAddr, walletMap):
-      for iterID,iterWlt in walletMap.iteritems():
+      for iterID,iterWlt in list(walletMap.items()):
          if iterWlt.hasScrAddr(scrAddr):
             return iterID
       return None
@@ -168,7 +168,7 @@ def getDisplayStringForScript(binScript, wltMap, lboxList, maxChars=256,
    scrAddr = script_to_scrAddr(binScript)
 
    wlt = None
-   for iterID,iterWlt in wltMap.iteritems():
+   for iterID,iterWlt in list(wltMap.items()):
       if iterWlt.hasScrAddr(scrAddr):
          wlt = iterWlt
          break

@@ -6,7 +6,7 @@
 #                                                                              #
 ################################################################################
 
-from ArmoryUtils import makeAsciiBlock, readAsciiBlock
+from .ArmoryUtils import makeAsciiBlock, readAsciiBlock
 from armoryengine.ArmoryUtils import LOGERROR, UnserializeError
 
 class AsciiSerializable(object):
@@ -126,7 +126,7 @@ class AsciiSerializable(object):
                LOGERROR('Map size compare failed for %s' % attr)
                return False
    
-            for key,val in selfMap.iteritems():
+            for key,val in list(selfMap.items()):
                if not key in otherMap:
                   LOGERROR('First map has key not in second map: "%s"' % key)
                   return False

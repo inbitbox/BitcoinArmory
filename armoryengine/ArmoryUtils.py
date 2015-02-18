@@ -32,7 +32,7 @@ import random
 import signal
 import smtplib
 from struct import pack, unpack
-from itertools import izip
+
 #from subprocess import PIPE
 import sys
 import threading
@@ -42,6 +42,7 @@ import shutil
 import base64
 import socket
 import subprocess
+import six
 
 #from psutil import Popen
 import psutil
@@ -57,7 +58,7 @@ except:
    pass
 
 try:
-   from ArmoryBuild import BTCARMORY_BUILD
+   from .ArmoryBuild import BTCARMORY_BUILD
 except:
    BTCARMORY_BUILD = None
 
@@ -137,9 +138,15 @@ BASE16CHARS  = '0123456789abcdefABCDEF'
 LITTLEENDIAN  = '<'
 BIGENDIAN     = '>'
 NETWORKENDIAN = '!'
-ONE_BTC       = long(100000000)
-DONATION       = long(5000000)
-CENT          = long(1000000)
+if six.PY2:
+   ONE_BTC       = long(100000000)
+   DONATION       = long(5000000)
+   CENT          = long(1000000)
+else:
+   ONE_BTC       = int(100000000)
+   DONATION       = int(5000000)
+   CENT          = int(1000000)
+
 UNINITIALIZED = None
 UNKNOWN       = -2
 MIN_TX_FEE    = 10000
@@ -245,7 +252,7 @@ CLI_ARGS = None
 
 # This is probably an abuse of the CLI_OPTIONS structure, but not
 # automatically expanding "~" symbols is killing me
-for opt,val in CLI_OPTIONS.__dict__.iteritems():
+for opt,val in list(CLI_OPTIONS.__dict__.items()):
    if not isinstance(val, basestring) or not val.startswith('~'):
       continue
 
@@ -289,7 +296,7 @@ if OS_WINDOWS:
    OS_VARIANT      = platform.win32_ver()
    
    import ctypes
-   buffer = ctypes.create_unicode_buffer(u'\0' * 260)
+   buffer = ctypes.create_unicode_buffer('\0' * 260)
    rt = ctypes.windll.shell32.SHGetFolderPathW(0, 26, 0, 0, ctypes.byref(buffer))
    USER_HOME_DIR = unicode(buffer.value)
                
@@ -315,8 +322,8 @@ elif OS_MACOSX:
    BLKFILE_DIR     = os.path.join(BTC_HOME_DIR, 'blocks')
    BLKFILE_1stFILE = os.path.join(BLKFILE_DIR, 'blk00000.dat')
 else:
-   print '***Unknown operating system!'
-   print '***Cannot determine default directory locations'
+   print('***Unknown operating system!')
+   print('***Cannot determine default directory locations')
 
 # Get the host operating system
 opsys = platform.system()
@@ -382,8 +389,8 @@ if not CLI_OPTIONS.satoshiHome==DEFAULT:
          CLI_OPTIONS.satoshiHome = testnetTry
 
    if not os.path.exists(CLI_OPTIONS.satoshiHome):
-      print 'Directory "%s" does not exist!  Using default!' % \
-                                                CLI_OPTIONS.satoshiHome
+      print('Directory "%s" does not exist!  Using default!' % \
+                                                CLI_OPTIONS.satoshiHome)
    else:
       BTC_HOME_DIR = CLI_OPTIONS.satoshiHome
 
@@ -446,7 +453,7 @@ MULTISIG_FILE   = os.path.join(ARMORY_HOME_DIR, MULTISIG_FILE_NAME)
 
 if not CLI_OPTIONS.multisigFile==DEFAULT:
    if not os.path.exists(CLI_OPTIONS.multisigFile):
-      print 'Multisig file "%s" does not exist!' % CLI_OPTIONS.multisigFile
+      print('Multisig file "%s" does not exist!' % CLI_OPTIONS.multisigFile)
    else:
       MULTISIG_FILE  = CLI_OPTIONS.multisigFile
 
@@ -576,20 +583,20 @@ if not CLI_OPTIONS.rpcport == DEFAULT:
 
 
 if sys.argv[0]=='ArmoryQt.py':
-   print '********************************************************************************'
-   print 'Loading Armory Engine:'
-   print '   Armory Version:      ', getVersionString(BTCARMORY_VERSION)
-   print '   Armory Build:        ', BTCARMORY_BUILD
-   print '   PyBtcWallet  Version:', getVersionString(PYBTCWALLET_VERSION)
-   print 'Detected Operating system:', OS_NAME
-   print '   OS Variant            :', OS_VARIANT
-   print '   User home-directory   :', USER_HOME_DIR
-   print '   Satoshi BTC directory :', BTC_HOME_DIR
-   print '   Armory home dir       :', ARMORY_HOME_DIR
-   print '   ArmoryDB directory     :', ARMORY_DB_DIR
-   print '   Armory settings file  :', SETTINGS_PATH
-   print '   Armory log file       :', ARMORY_LOG_FILE
-   print '   Do wallet checking    :', DO_WALLET_CHECK
+   print('********************************************************************************')
+   print('Loading Armory Engine:')
+   print('   Armory Version:      ', getVersionString(BTCARMORY_VERSION))
+   print('   Armory Build:        ', BTCARMORY_BUILD)
+   print('   PyBtcWallet  Version:', getVersionString(PYBTCWALLET_VERSION))
+   print('Detected Operating system:', OS_NAME)
+   print('   OS Variant            :', OS_VARIANT)
+   print('   User home-directory   :', USER_HOME_DIR)
+   print('   Satoshi BTC directory :', BTC_HOME_DIR)
+   print('   Armory home dir       :', ARMORY_HOME_DIR)
+   print('   ArmoryDB directory     :', ARMORY_DB_DIR)
+   print('   Armory settings file  :', SETTINGS_PATH)
+   print('   Armory log file       :', ARMORY_LOG_FILE)
+   print('   Do wallet checking    :', DO_WALLET_CHECK)
 
 
 
@@ -702,7 +709,7 @@ def execAndWait(cli_str, timeout=0, useStartInfo=True):
    while process.poll() == None:
       time.sleep(0.1)
       if timeout>0 and (RightNow() - start)>timeout:
-         print 'Process exceeded timeout, killing it'
+         print('Process exceeded timeout, killing it')
          killProcess(pid)
    out,err = process.communicate()
    return [out,err]
@@ -782,7 +789,7 @@ def LOGEXCEPT(msg, *a):
 
 def chopLogFile(filename, size):
    if not os.path.exists(filename):
-      print 'Log file doesn\'t exist [yet]'
+      print('Log file doesn\'t exist [yet]')
       return
 
    logFile = open(filename, 'r')
@@ -893,7 +900,7 @@ def LOGRAWDATA(rawStr, loglevel=DEFAULT_RAWDATA_LOGLEVEL):
 
 cpplogfile = None
 if CLI_OPTIONS.logDisable:
-   print 'Logging is disabled'
+   print('Logging is disabled')
    rootLogger.disabled = True
 
 
@@ -1094,7 +1101,7 @@ def GetSystemDetails():
 
    out = DumbStruct()
 
-   CPU,COR,X64,MEM = range(4)
+   CPU,COR,X64,MEM = list(range(4))
    sysParam = [None,None,None,None]
    out.CpuStr = 'UNKNOWN'
    out.Machine  = platform.machine().lower()
@@ -1210,7 +1217,7 @@ LOGINFO('Network Name: ' + NETWORKS[ADDRBYTE])
 LOGINFO('Satoshi Port: %d', BITCOIN_PORT)
 LOGINFO('Do wlt check: %s', str(DO_WALLET_CHECK))
 LOGINFO('Named options/arguments to armoryengine.py:')
-for key,val in ast.literal_eval(str(CLI_OPTIONS)).iteritems():
+for key,val in list(ast.literal_eval(str(CLI_OPTIONS)).items()):
    LOGINFO('    %-16s: %s', key,val)
 LOGINFO('Other arguments:')
 for val in CLI_ARGS:
@@ -1440,8 +1447,8 @@ def hash160_to_p2pkhash_script(binStr20):
    if not len(binStr20)==20:
       raise InvalidHashError('Tried to convert non-20-byte str to p2pkh script')
 
-   from Transaction import getOpCode
-   from Script import scriptPushData
+   from .Transaction import getOpCode
+   from .Script import scriptPushData
    outScript = ''.join([  getOpCode('OP_DUP'        ), \
                           getOpCode('OP_HASH160'    ), \
                           scriptPushData(binStr20),
@@ -1457,8 +1464,8 @@ def hash160_to_p2sh_script(binStr20):
    if not len(binStr20)==20:
       raise InvalidHashError('Tried to convert non-20-byte str to p2sh script')
 
-   from Transaction import getOpCode
-   from Script import scriptPushData
+   from .Transaction import getOpCode
+   from .Script import scriptPushData
    outScript = ''.join([  getOpCode('OP_HASH160'), 
                           scriptPushData(binStr20),
                           getOpCode('OP_EQUAL')])
@@ -1479,8 +1486,8 @@ def pubkey_to_p2pk_script(binStr33or65):
    if not len(binStr33or65) in [33, 65]:
       raise KeyDataError('Invalid public key supplied to p2pk script')
 
-   from Transaction import getOpCode
-   from Script import scriptPushData
+   from .Transaction import getOpCode
+   from .Script import scriptPushData
    serPubKey = scriptPushData(binStr33or65)
    outScript = serPubKey + getOpCode('OP_CHECKSIG')
    return outScript
@@ -1501,7 +1508,7 @@ def pubkeylist_to_multisig_script(pkList, M, withSort=True):
    if sum([  (0 if len(pk) in [33,65] else 1)   for pk in pkList]) > 0:
       raise KeyDataError('Not all strings in pkList are 33 or 65 bytes!')
 
-   from Transaction import getOpCode
+   from .Transaction import getOpCode
    opM = getOpCode('OP_%d' % M)
    opN = getOpCode('OP_%d' % len(pkList))
 
@@ -1703,7 +1710,7 @@ def satoshiIsAvailable(host='127.0.0.1', port=BITCOIN_PORT, timeout=0.01):
 # Either automatically numbers (*args), or name-val pairs (**kwargs)
 #http://stackoverflow.com/questions/36932/whats-the-best-way-to-implement-an-enum-in-python
 def enum(*sequential, **named):
-   enums = dict(zip(sequential, range(len(sequential))), **named)
+   enums = dict(list(zip(sequential, range(len(sequential)))), **named)
    return type('Enum', (), enums)
 
 DATATYPE = enum("Binary", 'Base58', 'Hex')
@@ -1734,7 +1741,7 @@ def isLikelyDataType(theStr, dtype=None):
 
 cpplogfile = None
 if CLI_OPTIONS.logDisable:
-   print 'Logging is disabled'
+   print('Logging is disabled')
    rootLogger.disabled = True
 
 
@@ -1858,12 +1865,12 @@ def pprintHex(theStr, indent='', withAddr=True, major=8, minor=8):
    entire block, remove address markings, or change the major/minor
    grouping size (major * minor = hexCharsPerRow)
    """
-   print prettyHex(theStr, indent, withAddr, major, minor)
+   print(prettyHex(theStr, indent, withAddr, major, minor))
 
 
 def pprintDiff(str1, str2, indent=''):
    if not len(str1)==len(str2):
-      print 'pprintDiff: Strings are different length!'
+      print('pprintDiff: Strings are different length!')
       return
 
    byteDiff = []
@@ -1879,7 +1886,7 @@ def pprintDiff(str1, str2, indent=''):
 ##### Switch endian-ness #####
 def hex_switchEndian(s):
    """ Switches the endianness of a hex string (in pairs of hex chars) """
-   pairList = [s[i]+s[i+1] for i in xrange(0,len(s),2)]
+   pairList = [s[i]+s[i+1] for i in range(0,len(s),2)]
    return ''.join(pairList[::-1])
 def binary_switchEndian(s):
    """ Switches the endianness of a binary string """
@@ -1895,7 +1902,7 @@ def int_to_hex(i, widthBytes=0, endOut=LITTLEENDIAN):
    if you are expecting constant-length output.
    """
    h = hex(i)[2:]
-   if isinstance(i,long):
+   if six.PY2 and isinstance(i,long):
       h = h[:-1]
    if len(h)%2 == 1:
       h = '0'+h
@@ -2201,14 +2208,22 @@ def readSixteenEasyBytes(et18):
 def ubtc_to_floatStr(n):
    return '%d.%08d' % divmod (n, ONE_BTC)
 def floatStr_to_ubtc(s):
-   return long(round(float(s) * ONE_BTC))
+   if six.PY2:
+      return long(round(float(s) * ONE_BTC))
+   else:
+      return int(round(float(s) * ONE_BTC))
 def float_to_btc (f):
-   return long (round(f * ONE_BTC))
-
+   if six.PY2:
+      return long(round(f * ONE_BTC))
+   else:
+      return int(round(f * ONE_BTC))
 
 # From https://en.bitcoin.it/wiki/Proper_Money_Handling_(JSON-RPC)
 def JSONtoAmount(value):
-   return long(round(float(value) * 1e8))
+   if six.PY2:
+      return long(round(float(value) * 1e8))
+   else:
+      return int(round(float(value) * 1e8))
 def AmountToJSON(amount):
    return float(amount / 1e8)
 
@@ -2219,7 +2234,7 @@ def AmountToJSON(amount):
 # http://stackoverflow.com/questions/5389507/iterating-over-every-two-elements-in-a-list
 def getDualIterable(inList):
    a = iter(inList)
-   return izip(a, a)
+   return list(zip(a, a))
 
 
 def unixTimeToFormatStr(unixTime, formatStr=DEFAULT_DATE_FORMAT):
@@ -2228,7 +2243,7 @@ def unixTimeToFormatStr(unixTime, formatStr=DEFAULT_DATE_FORMAT):
    pleasant, human-readable format
    """
    dtobj = datetime.fromtimestamp(unixTime)
-   dtstr = u'' + dtobj.strftime(formatStr).decode('utf-8')
+   dtstr = '' + dtobj.strftime(formatStr).decode('utf-8')
    dtstr = dtstr.encode('ascii', errors='replace')
    return dtstr[:-2] + dtstr[-2:].lower()
 
@@ -2428,12 +2443,20 @@ def CreateQRMatrix(dataToEncode, errLevel=QRErrorCorrectLevel.L):
 
 
 # The following params are for the Bitcoin elliptic curves (secp256k1)
-SECP256K1_MOD   = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2FL
-SECP256K1_ORDER = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141L
-SECP256K1_B     = 0x0000000000000000000000000000000000000000000000000000000000000007L
-SECP256K1_A     = 0x0000000000000000000000000000000000000000000000000000000000000000L
-SECP256K1_GX    = 0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798L
-SECP256K1_GY    = 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8L
+if six.PY2:
+   SECP256K1_MOD   = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2FL
+   SECP256K1_ORDER = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141L
+   SECP256K1_B     = 0x0000000000000000000000000000000000000000000000000000000000000007L
+   SECP256K1_A     = 0x0000000000000000000000000000000000000000000000000000000000000000L
+   SECP256K1_GX    = 0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798L
+   SECP256K1_GY    = 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8L
+else:
+   SECP256K1_MOD   = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F
+   SECP256K1_ORDER = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141
+   SECP256K1_B     = 0x0000000000000000000000000000000000000000000000000000000000000007
+   SECP256K1_A     = 0x0000000000000000000000000000000000000000000000000000000000000000
+   SECP256K1_GX    = 0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798
+   SECP256K1_GY    = 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8
 
 ################################################################################
 ################################################################################
@@ -2470,7 +2493,7 @@ class FiniteField(object):
               256:  2**2048-1157  }
 
    def __init__(self, nbytes):
-      if not self.PRIMES.has_key(nbytes):
+      if nbytes not in self.PRIMES:
          LOGERROR('No primes available for size=%d bytes', nbytes)
          self.prime = None
          raise FiniteFieldError
@@ -2559,7 +2582,7 @@ class FiniteField(object):
 
 ################################################################################
 def SplitSecret(secret, needed, pieces, nbytes=None, use_random_x=False):
-   if not isinstance(secret, basestring):
+   if not isinstance(secret, six.string_types):
       secret = secret.toBinStr()
 
    if nbytes==None:
@@ -2653,7 +2676,7 @@ def createTestingSubsets( fragIndices, M, maxTestCount=20):
 
       if numCombo <= maxTestCount:
          LOGINFO('Testing all %s combinations...' % numCombo)
-         for x in xrange(2**numIdx):
+         for x in range(2**numIdx):
             bits = int_to_bitset(x)
             if not bits.count('1') == M:
                continue
@@ -2680,7 +2703,7 @@ def testReconstructSecrets(fragMap, M, maxTestCount=20):
    # the fragMap and return the restored secret for each one.  If there's more
    # subsets than maxTestCount, then just do a random sampling of the possible
    # subsets
-   fragKeys = [k for k in fragMap.iterkeys()]
+   fragKeys = [k for k in list(fragMap.keys())]
    isRandom, subs = createTestingSubsets(fragKeys, M, maxTestCount)
    nBytes = len(fragMap[fragKeys[0]][1])
    LOGINFO('Testing %d-byte fragments' % nBytes)
@@ -2888,7 +2911,7 @@ def parseBitcoinURI(uriStr):
    data = {}
 
    # Split URI into parts. Let Python do the heavy lifting.
-   from urlparse import urlparse, parse_qs
+   from six.moves.urllib.urlparse import urlparse, parse_qs
    uri = urlparse(uriStr)
    query = parse_qs(uri.query)
 
@@ -3022,7 +3045,7 @@ def notifyOnSurpriseTx(blk0, blk1, wltMap, lboxWltMap, isGui, bdm, notifyQueue, 
          # Iterate through the Python wallets and create a ledger entry for
          # the transaction. If we haven't already been notified of the
          # transaction, put it on the notification queue.
-         for wltID,wlt in wltMap.iteritems():
+         for wltID,wlt in list(wltMap.items()):
             le = wlt.cppWallet.calcLedgerEntryForTx(cppTx)
             if isGui and (notifyQueue != None):
                if not le.getTxHash() in notifiedAlready:
@@ -3036,7 +3059,7 @@ def notifyOnSurpriseTx(blk0, blk1, wltMap, lboxWltMap, isGui, bdm, notifyQueue, 
          # Iterate through the C++ lockbox wallets and create a ledger entry
          # for the transaction.If we haven't already been notified of the
          # transaction, put it on the notification queue.
-         for lbID,cppWlt in lboxWltMap.iteritems():
+         for lbID,cppWlt in list(lboxWltMap.items()):
             le = cppWlt.calcLedgerEntryForTx(cppTx)
             if isGui and (notifyQueue != None):
                if not le.getTxHash() in notifiedAlready:
@@ -3446,17 +3469,20 @@ def HardcodedKeyMaskParams():
 
    paramMap['IV']    = SecureBinaryData( hash256(digits_pi)[:16] )
    paramMap['SALT']  = SecureBinaryData( hash256(digits_e) )
-   paramMap['KDFBYTES'] = long(16*MEGABYTE)
+   if six.PY2:
+      paramMap['KDFBYTES'] = long(16*MEGABYTE)
+   else:
+      paramMap['KDFBYTES'] = int(16*MEGABYTE)
 
    def hardcodeCreateSecurePrintPassphrase(secret):
-      if isinstance(secret, basestring):
+      if isinstance(secret, six.string_types):
          secret = SecureBinaryData(secret)
       bin7 = HMAC512(secret.getHash256(), paramMap['SALT'].toBinStr())[:7]
       out,bin7 = SecureBinaryData(binary_to_base58(bin7 + hash256(bin7)[0])), None
       return out
 
    def hardcodeCheckSecurePrintCode(securePrintCode):
-      if isinstance(securePrintCode, basestring):
+      if isinstance(securePrintCode, six.string_types):
          pwd = base58_to_binary(securePrintCode)
       else:
          pwd = base58_to_binary(securePrintCode.toBinStr())
@@ -3465,7 +3491,7 @@ def HardcodedKeyMaskParams():
       return isgood
 
    def hardcodeApplyKdf(secret):
-      if isinstance(secret, basestring):
+      if isinstance(secret, six.string_types):
          secret = SecureBinaryData(secret)
       kdf = KdfRomix()
       kdf.usePrecomputedKdfParams(paramMap['KDFBYTES'], 1, paramMap['SALT'])
@@ -3523,14 +3549,14 @@ class SettingsFile(object):
    #############################################################################
    def pprint(self, nIndent=0):
       indstr = indent*nIndent
-      print indstr + 'Settings:'
-      for k,v in self.settingsMap.iteritems():
-         print indstr + indent + k.ljust(15), v
+      print(indstr + 'Settings:')
+      for k,v in list(self.settingsMap.items()):
+         print(indstr + indent + k.ljust(15), v)
 
 
    #############################################################################
    def hasSetting(self, name):
-      return self.settingsMap.has_key(name)
+      return name in self.settingsMap
 
    #############################################################################
    def set(self, name, value):
@@ -3543,7 +3569,7 @@ class SettingsFile(object):
    #############################################################################
    def extend(self, name, value):
       """ Adds/converts setting to list, appends value to the end of it """
-      if not self.settingsMap.has_key(name):
+      if name not in self.settingsMap:
          if isinstance(value, list):
             self.set(name, value)
          else:
@@ -3598,15 +3624,14 @@ class SettingsFile(object):
       if not path:
          path = self.settingsPath
       f = open(path, 'w')
-      for key,val in self.settingsMap.iteritems():
+      for key,val in list(self.settingsMap.items()):
          try:
             # Skip anything that throws an exception
             valStr = ''
-            if   isinstance(val, basestring):
+            if   isinstance(val, six.string_types):
                valStr = val
-            elif isinstance(val, int) or \
-                 isinstance(val, float) or \
-                 isinstance(val, long):
+            elif isinstance(val, six.integer_types) or \
+                 isinstance(val, float):
                valStr = str(val)
             elif isinstance(val, list) or \
                  isinstance(val, tuple):
@@ -3694,7 +3719,7 @@ class FakeTDM(object):
 DISABLE_TORRENTDL = CLI_OPTIONS.disableTorrent
 TheTDM = FakeTDM()
 try:
-   import torrentDL
+   from . import torrentDL
    TheTDM = torrentDL.TorrentDownloadManager()
 except:
    LOGEXCEPT('Failed to import torrent downloader')
@@ -3732,17 +3757,17 @@ def isInternetAvailable(forceOnline = False):
       internetStatus = INTERNET_STATUS.DidNotCheck
    else:
       try:
-         import urllib2
-         urllib2.urlopen('http://google.com', timeout=CLI_OPTIONS.nettimeout)
+         from six.moves import urllib
+         urllib.request.urlopen('http://google.com', timeout=CLI_OPTIONS.nettimeout)
          internetStatus = INTERNET_STATUS.Available
       except ImportError:
          LOGERROR('No module urllib2 -- cannot determine if internet is '
             'available')
-      except urllib2.URLError:
+      except urllib.URLError:
          # In the extremely rare case that google might be down (or just to try
          # again...)
          try:
-            urllib2.urlopen('http://microsoft.com', timeout=CLI_OPTIONS.nettimeout)
+            urllib.request.urlopen('http://microsoft.com', timeout=CLI_OPTIONS.nettimeout)
             internetStatus = INTERNET_STATUS.Available
          except:
             LOGEXCEPT('Error checking for internet connection')

@@ -93,6 +93,9 @@ class ArmoryMainWindow(QMainWindow):
    negImportSignal = pyqtSignal(name='checkForNegImports')
    methodSignal = pyqtSignal(name='method_signal')
    cppSignal = pyqtSignal(name='cppNotify')
+   uwcsSignal = pyqtSignal(name='UWCS')
+   pwceSignal = pyqtSignal(name='PWCE')
+   checkForkedSignal = pyqtSignal(name='checkForkedImport')
 
    #############################################################################
 
@@ -2465,7 +2468,7 @@ class ArmoryMainWindow(QMainWindow):
    
    ############################################################################
    def notifyBitcoindIsReady(self):
-      self.emit(SIGNAL('method_signal'), self.proceedOnceBitcoindIsReady)    
+      self.method_signal.emit(self.proceedOnceBitcoindIsReady)    
 
    ############################################################################
    def proceedOnceBitcoindIsReady(self):
@@ -4494,8 +4497,7 @@ class ArmoryMainWindow(QMainWindow):
       self.dashBtns[DASHBTNS.Install][BTN].clicked.connect(self.openDLSatoshi)
       self.dashBtns[DASHBTNS.Browse][BTN].clicked.connect(openBitcoinOrg)
       self.dashBtns[DASHBTNS.Settings][BTN].clicked.connect(self.openSettings)
-      #self.connect(self.dashBtns[DASHBTNS.Instruct][BTN], SIGNAL('"clicked()"'), \
-                                                     #self.openInstructWindow)
+      #self.dashBtns[DASHBTNS.Instruct][BTN].clicked.connect(self.openInstructWindow)
 
       self.dashBtns[DASHBTNS.Close][LBL] = QRichLabel( \
            'Stop existing Bitcoin processes so that Armory can open its own')
@@ -6139,8 +6141,7 @@ class ArmoryMainWindow(QMainWindow):
       ##########################################################################
             
       # Now actually connect the entry widgets
-      parent.connect(addrEntryObjs['QLE_ADDR'], SIGNAL('textChanged(QString)'), 
-                                                         updateAddrDetectLabels)
+      addrEntryObjs['QLE_ADDR'].textChanged.connect(updateAddrDetectLabels)
 
       updateAddrDetectLabels()
 
@@ -6876,11 +6877,11 @@ class ArmoryMainWindow(QMainWindow):
       while prgAt[2] != 2:
          time.sleep(0.1)
       if nerrors == 0:
-         self.emit(SIGNAL('UWCS'), [1, tr('All wallets are consistent'), 10000, dlgrdy])
-         self.emit(SIGNAL('checkForNegImports'))
+         self.uwcsSignal.emit(1, [tr('All wallets are consistent'), 10000, dlgrdy])
+         self.negImportSignal.emit()
       else:
          while not dlgrdy:
-            self.emit(SIGNAL('UWCS'), [1, tr('Consistency Check Failed!'), 0, dlgrdy])
+            self.uwcsSignal.emit(1, [tr('Consistency Check Failed!'), 0, dlgrdy])
             time.sleep(1)
 
          self.checkRdyForFix()
@@ -6889,7 +6890,7 @@ class ArmoryMainWindow(QMainWindow):
    def checkRdyForFix(self):
       #check BDM first
       time.sleep(1)
-      self.dlgCptWlt.emit(SIGNAL('Show'))
+      self.dlgCptWlt.showSignal.emit()
       while 1:
          if TheBDM.getState() == BDM_SCANNING:
             canFix = tr("""
@@ -6907,7 +6908,7 @@ class ArmoryMainWindow(QMainWindow):
             break
 
       #check running dialogs
-      self.dlgCptWlt.emit(SIGNAL('Show'))
+      self.dlgCptWlt.showSignal.emit()
       runningList = []
       while 1:
          listchanged = 0
@@ -6953,17 +6954,17 @@ class ArmoryMainWindow(QMainWindow):
          self.pbarWalletProgress.setValue(0)
          self.statusBar().addWidget(self.pbarWalletProgress)
 
-         self.connect(self, SIGNAL('UWCS'), self.UpdateWalletConsistencyStatus)
-         self.connect(self, SIGNAL('PWCE'), self.PromptWltCstError)
+         self.uwcsSignal.connect(self.UpdateWalletConsistencyStatus)
+         self.pwceSignal.connect(self.PromptWltCstError)
          self.CheckWalletConsistency(self.walletMap, self.prgAt, async=True)
          self.UpdateConsistencyCheckMessage(async = True)
    @AllowAsync
    def UpdateConsistencyCheckMessage(self):
       while self.prgAt[2] == 0:
-         self.emit(SIGNAL('UWCS'), [0, self.prgAt[0]])
+         self.uwcsSignal.emit([0, self.prgAt[0]])
          time.sleep(0.5)
 
-      self.emit(SIGNAL('UWCS'), [2])
+      self.uwcsSignal.emit([2])
       self.prgAt[2] = 2
 
    def UpdateWalletConsistencyStatus(self, msg):
@@ -6976,7 +6977,7 @@ class ArmoryMainWindow(QMainWindow):
          self.pbarWalletProgress.hide()
 
    def WltCstError(self, wlt, status, dlgrdy):
-      self.emit(SIGNAL('PWCE'), dlgrdy, wlt, status)
+      self.pwceSignal.emit(dlgrdy, wlt, status)
       LOGERROR('Wallet consistency check failed! (%s)', wlt.uniqueIDB58)
 
    def PromptWltCstError(self, dlgrdy, wallet=None, status='', mode=None):
@@ -6993,7 +6994,7 @@ class ArmoryMainWindow(QMainWindow):
       
    #############################################################################
    def cppNotifySignal(self, action, arg):
-      self.emit(SIGNAL('cppNotify'), action, arg)
+      self.cppSignal.emit(action, arg)
       
    #############################################################################
    def loadNewPage(self):

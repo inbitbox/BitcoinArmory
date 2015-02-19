@@ -48,7 +48,7 @@ try:
     from PyQt5.QtCore import QSocketNotifier, QObject, pyqtSignal, QTimer, QCoreApplication
     from PyQt5.QtCore import QEventLoop
 except ImportError:
-    from PySide.QtCore import QSocketNotifier, QObject, SIGNAL, QTimer, QCoreApplication
+    from PySide.QtCore import QSocketNotifier, QObject, pyqtSignal, QTimer, QCoreApplication
     from PySide.QtCore import QEventLoop
 
 

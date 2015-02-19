@@ -785,7 +785,7 @@ class ArmoryBlockAndDateSelector():
       self.editBlockHeight()
       self.updateLabel(self.Block)
       
-      self.parent.emit(SIGNAL('centerView'), self.Block)
+      self.parent.centerViewSignal.emit(self.Block)
       
    def dateChanged(self):
       try:
@@ -797,12 +797,12 @@ class ArmoryBlockAndDateSelector():
          pass
       
       self.updateLabel(self.Block)       
-      self.parent.emit(SIGNAL('centerView'), self.Block)
+      self.parent.centerViewSignal.emit(self.Block)
       
    def goToTop(self):
       if self.isEditingBlockHeight == True:
          self.editBlockHeight()
-      self.parent.emit(SIGNAL('goToTop'))
+      self.parent.goToTopSignal.emit()
       
    def hide(self):
       self.dateBlockSelectButton.setVisible(False)
@@ -832,7 +832,7 @@ class ArmoryTableView(QTableView):
       
       self.prevIndex = -1
       
-      self.centerViewSignal.connect( self.centerViewAtBlock)
+      self.centerViewSignal.connect(self.centerViewAtBlock)
       self.goToTopSignal.connect(self.goToTop)
    
    def verticalScrollbarValueChanged(self, dx):

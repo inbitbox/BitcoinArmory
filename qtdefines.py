@@ -492,8 +492,8 @@ def MsgBoxCustom(wtype, title, msg, wCancel=False, yesStr=None, noStr=None,
             if not noStr:  noStr = tr('&No')
             btnYes = QPushButton(yesStr)
             btnNo  = QPushButton(noStr)
-            self.connect(btnYes, SIGNAL('clicked()'), self.accept)
-            self.connect(btnNo,  SIGNAL('clicked()'), self.reject)
+            btnYes.clicked.connect(self.accept)
+            btnNo.clicked.connect(self.reject)
             buttonbox.addButton(btnYes,QDialogButtonBox.AcceptRole)
             buttonbox.addButton(btnNo, QDialogButtonBox.RejectRole)
          else:
@@ -501,8 +501,8 @@ def MsgBoxCustom(wtype, title, msg, wCancel=False, yesStr=None, noStr=None,
             yesStr    = tr('&OK') if (yesStr is None) else yesStr
             btnOk     = QPushButton(yesStr)
             btnCancel = QPushButton(cancelStr)
-            self.connect(btnOk,     SIGNAL('clicked()'), self.accept)
-            self.connect(btnCancel, SIGNAL('clicked()'), self.reject)
+            btnOk.clicked.connect(self.accept)
+            btnCancel.clicked.connect(self.reject)
             buttonbox.addButton(btnOk, QDialogButtonBox.AcceptRole)
             if cancelStr:
                buttonbox.addButton(btnCancel, QDialogButtonBox.RejectRole)
@@ -587,11 +587,11 @@ def MsgBoxWithDNAA(parent, main, wtype, title, msg, dnaaMsg, wCancel=False, \
             buttonbox.addButton(btnNo, QDialogButtonBox.RejectRole)
          else:
             btnOk = QPushButton('Ok')
-            self.connect(btnOk, SIGNAL('clicked()'), self.accept)
+            btnOk.clicked.connect(self.accept)
             buttonbox.addButton(btnOk, QDialogButtonBox.AcceptRole)
             if withCancel:
                btnOk = QPushButton('Cancel')
-               self.connect(btnOk, SIGNAL('clicked()'), self.reject)
+               btnOk.clicked.connect(self.reject)
                buttonbox.addButton(btnOk, QDialogButtonBox.RejectRole)
             
 
@@ -755,7 +755,7 @@ class ArmoryDialog(QDialog):
       
       #connect this dialog to the parent's close signal
       if self.parent is not None and hasattr(self.parent, 'closeSignal'):
-         self.connect(self.parent, SIGNAL(self.parent.closeSignal), self.reject)
+         self.parent.closeSignal.connect(self.reject)
          
       self.setFont(GETFONT('var'))
       self.setWindowFlags(Qt.Window)
@@ -1038,7 +1038,7 @@ def createDirectorySelectButton(parent, targetWidget, title="Select Directory"):
 
 
    fn = lambda: selectDirectoryForQLineEdit(parent, targetWidget, title)
-   parent.connect(btn, SIGNAL('clicked()'), fn)
+   btn.clicked.connect(fn)
    return btn
 
 

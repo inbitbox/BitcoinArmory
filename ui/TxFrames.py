@@ -112,7 +112,7 @@ class SendBitcoinsFrame(ArmoryFrame):
       self.unsignedCheckbox = QCheckBox('Create Unsigned')
       self.btnSend = QPushButton('Send!')
       self.btnCancel = QPushButton('Cancel')
-      self.connect(self.btnCancel, SIGNAL(clicked()), parent.reject)
+      self.btnCancel.clicked.connect(parent.reject)
 
       # Created a standard wallet chooser frame. Pass the call back method
       # for when the user selects a wallet.
@@ -135,7 +135,7 @@ class SendBitcoinsFrame(ArmoryFrame):
       # Otherwise the containing dialog or wizard will provide the offlien tx button
       componentList = [ QLabel('Fee:'), self.edtFeeAmt, feetip, STRETCH]
       if self.createUnsignedTxCallback:
-         self.connect(self.unsignedCheckbox, SIGNAL(clicked()), self.unsignedCheckBoxUpdate)
+         self.unsignedCheckbox.clicked.connect(self.unsignedCheckBoxUpdate)
          componentList.append(self.unsignedCheckbox)
          componentList.append(self.ttipUnsigned)
       buttonList = [STRETCH]
@@ -143,7 +143,7 @@ class SendBitcoinsFrame(ArmoryFrame):
       # Only add the Send Button if there's a callback for it
       # Otherwise the containing dialog or wizard will provide the send button
       if self.sendCallback:
-         self.connect(self.btnSend, SIGNAL(clicked()), self.createTxAndBroadcast)
+         self.btnSend.clicked.connect(self.createTxAndBroadcast)
          buttonList.append(self.btnSend)
          
       txFrm = makeHorizFrame(componentList, condenseMargins=True)
@@ -153,7 +153,7 @@ class SendBitcoinsFrame(ArmoryFrame):
          Armory does not always succeed at registering itself to handle 
          URL links from webpages and email.  
          Click this button to copy a "bitcoin:" link directly into Armory."""))
-      self.connect(btnEnterURI, SIGNAL("clicked()"), self.clickEnterURI)
+      btnEnterURI.clicked.connect(self.clickEnterURI)
       fromFrameList = [self.frmSelectedWlt]
       if not USE_TESTNET:
          btnDonate = QPushButton("Donate to Armory Developers!")
@@ -162,7 +162,7 @@ class SendBitcoinsFrame(ArmoryFrame):
             'by adding a small donation to go to the Armory developers.  '
             'You will have the ability to change the donation amount '
             'before finalizing the transaction.')
-         self.connect(btnDonate, SIGNAL("clicked()"), self.addDonation)
+         btnDonate.clicked.connect(self.addDonation)
          frmDonate = makeHorizFrame([btnDonate, ttipDonate], condenseMargins=True)
          fromFrameList.append(frmDonate)
 
@@ -190,8 +190,8 @@ class SendBitcoinsFrame(ArmoryFrame):
          btngrp.addButton(self.radioFeedback)
          btngrp.addButton(self.radioSpecify)
          btngrp.setExclusive(True)
-         self.connect(self.chkDefaultChangeAddr, SIGNAL('toggled(bool)'), self.toggleChngAddr)
-         self.connect(self.radioSpecify, SIGNAL('toggled(bool)'), self.toggleSpecify)
+         self.chkDefaultChangeAddr.toggled.connect(self.toggleChngAddr)
+         self.radioSpecify.toggled.connect(self.toggleSpecify)
          frmChngLayout = QGridLayout()
          i = 0;
          frmChngLayout.addWidget(self.chkDefaultChangeAddr, i, 0, 1, 6)
@@ -948,7 +948,7 @@ class SendBitcoinsFrame(ArmoryFrame):
                          'the amounts specified for other recipients '
                          'and the transaction fee ')
       funcSetMax = lambda:  self.setMaximum(targWidget)
-      self.connect(newBtn, SIGNAL(clicked()), funcSetMax)
+      newBtn.clicked.connect(funcSetMax)
       return newBtn
 
 
@@ -988,8 +988,7 @@ class SendBitcoinsFrame(ArmoryFrame):
          self.widgetTable[r]['QLE_ADDR'].setMaximumHeight(self.maxHeight)
          self.widgetTable[r]['QLE_ADDR'].setFont(GETFONT('var', 9))
 
-         self.connect(self.widgetTable[r]['QLE_ADDR'], SIGNAL('textChanged(QString)'), 
-                                                        revertColorCallback(r))
+         self.widgetTable[r]['QLE_ADDR'].textChanged.connect(revertColorCallback(r))
 
          self.widgetTable[r]['BTN_BOOK'] = addrEntryWidgets['BTN_BOOK']
          self.widgetTable[r]['LBL_DETECT'] = addrEntryWidgets['LBL_DETECT']
@@ -1049,8 +1048,8 @@ class SendBitcoinsFrame(ArmoryFrame):
       lbtnAddRecip.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
       lbtnRmRecip = QLabelButton('- Recipient')
       lbtnRmRecip.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-      self.connect(lbtnAddRecip, SIGNAL(clicked()), lambda: self.makeRecipFrame(nRecip + 1))
-      self.connect(lbtnRmRecip, SIGNAL(clicked()), lambda: self.makeRecipFrame(nRecip - 1))
+      lbtnAddRecip.clicked.connect(lambda: self.makeRecipFrame(nRecip + 1))
+      lbtnRmRecip.clicked.connect(lambda: self.makeRecipFrame(nRecip - 1))
       btnLayout.addStretch()
       btnLayout.addWidget(lbtnAddRecip)
       btnLayout.addWidget(lbtnRmRecip)
@@ -1157,13 +1156,13 @@ class ReviewOfflineTxFrame(ArmoryDialog):
          'email message, or save it to a borrowed USB key.')
 
       btnSave = QPushButton('Save as file...')
-      self.connect(btnSave, SIGNAL(clicked()), self.doSaveFile)
+      btnSave.clicked.connect(self.doSaveFile)
       ttipSave = self.main.createToolTipWidget(\
          'Save this data to a USB key or other device, to be transferred to '
          'a computer that contains the private keys for this wallet.')
 
       btnCopy = QPushButton('Copy to clipboard')
-      self.connect(btnCopy, SIGNAL(clicked()), self.copyAsciiUSTX)
+      btnCopy.clicked.connect(self.copyAsciiUSTX)
       self.lblCopied = QRichLabel('  ')
       self.lblCopied.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
 
@@ -1328,15 +1327,15 @@ class SignBroadcastOfflineTxFrame(ArmoryFrame):
       self.btnSign.setEnabled(False)
       self.btnBroadcast.setEnabled(False)
 
-      self.connect(self.txtUSTX, SIGNAL('textChanged()'), self.processUSTX)
+      self.txtUSTX.textChanged.connect(self.processUSTX)
 
 
-      self.connect(self.btnSign, SIGNAL(clicked()), self.signTx)
-      self.connect(self.btnBroadcast, SIGNAL(clicked()), self.broadTx)
-      self.connect(self.btnSave, SIGNAL(clicked()), self.saveTx)
-      self.connect(self.btnLoad, SIGNAL(clicked()), self.loadTx)
-      self.connect(self.btnCopy, SIGNAL(clicked()), self.copyTx)
-      self.connect(self.btnCopyHex, SIGNAL(clicked()), self.copyTxHex)
+      self.btnSign.clicked.connect(self.signTx)
+      self.btnBroadcast.clicked.connect(self.broadTx)
+      self.btnSave.clicked.connect(self.saveTx)
+      self.btnLoad.clicked.connect(self.loadTx)
+      self.btnCopy.clicked.connect(self.copyTx)
+      self.btnCopyHex.clicked.connect(self.copyTxHex)
 
       self.lblStatus = QRichLabel('')
       self.lblStatus.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
@@ -1380,7 +1379,7 @@ class SignBroadcastOfflineTxFrame(ArmoryFrame):
       self.infoLbls[-1].append(QRichLabel(''))
 
       self.moreInfo = QLabelButton('Click here for more<br> information about <br>this transaction')
-      self.connect(self.moreInfo, SIGNAL(clicked()), self.execMoreTxInfo)
+      self.moreInfo.clicked.connect(self.execMoreTxInfo)
       frmMoreInfo = makeLayoutFrame(HORIZONTAL, [self.moreInfo], STYLE_SUNKEN)
       frmMoreInfo.setMinimumHeight(tightSizeStr(self.moreInfo, 'Any String')[1] * 5)
 

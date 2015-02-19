@@ -146,8 +146,8 @@ class SelectWalletFrame(ArmoryFrame):
             self.walletListBox.setCurrentRow(selectedWltIndex)
 
 
-      self.connect(self.walletComboBox, SIGNAL('currentIndexChanged(int)'), self.updateOnWalletChange)
-      self.connect(self.walletListBox,  SIGNAL('currentRowChanged(int)'),   self.updateOnWalletChange)
+      self.walletComboBox.currentIndexChanged.connect(self.updateOnWalletChange)
+      self.walletListBox.currentRowChanged.connect(self.updateOnWalletChange)
 
       # Start the layout
       layout =  QVBoxLayout() 
@@ -194,7 +194,7 @@ class SelectWalletFrame(ArmoryFrame):
          self.lblCoinCtrl = QRichLabel('Source: All addresses', doWrap=False)
          frmLayout.addWidget(self.lblCoinCtrl, 4, 2, 1, 1)
          self.btnCoinCtrl = QPushButton('Coin Control')
-         self.connect(self.btnCoinCtrl, SIGNAL(clicked()), self.doCoinCtrl)
+         self.btnCoinCtrl.clicked.connect(self.doCoinCtrl)
          frmLayout.addWidget(self.btnCoinCtrl, 4, 0, 1, 2)
       frmLayout.setColumnStretch(0, 1)
       frmLayout.setColumnStretch(1, 1)
@@ -494,10 +494,8 @@ class SetPassphraseFrame(ArmoryFrame):
       self.lblMatches.setTextFormat(Qt.RichText)
       layout.addWidget(self.lblMatches, 3, 1)
       self.setLayout(layout)
-      self.connect(self.editPasswd1, SIGNAL('textChanged(QString)'), \
-                   self.checkPassphrase)
-      self.connect(self.editPasswd2, SIGNAL('textChanged(QString)'), \
-                   self.checkPassphrase)
+      self.editPasswd1.textChanged.connect(self.checkPassphrase)
+      self.editPasswd2.textChanged.connect(self.checkPassphrase)
 
 
       # These help us collect entropy as the user goes through the wizard
@@ -638,13 +636,13 @@ class WalletBackupFrame(ArmoryFrame):
       btngrpDig.addButton(self.optDigitalBackupCrypt)
       btngrpDig.setExclusive(True)
 
-      self.connect(self.optPaperBackupTop, SIGNAL(clicked()), self.optionClicked)
-      self.connect(self.optPaperBackupOne, SIGNAL(clicked()), self.optionClicked)
-      self.connect(self.optPaperBackupFrag, SIGNAL(clicked()), self.optionClicked)
-      self.connect(self.optDigitalBackupTop, SIGNAL(clicked()), self.optionClicked)
-      self.connect(self.optDigitalBackupPlain, SIGNAL(clicked()), self.optionClicked)
-      self.connect(self.optDigitalBackupCrypt, SIGNAL(clicked()), self.optionClicked)
-      self.connect(self.optIndivKeyListTop, SIGNAL(clicked()), self.optionClicked)
+      self.optPaperBackupTop.clicked.connect(self.optionClicked)
+      self.optPaperBackupOne.clicked.connect(self.optionClicked)
+      self.optPaperBackupFrag.clicked.connect(self.optionClicked)
+      self.optDigitalBackupTop.clicked.connect(self.optionClicked)
+      self.optDigitalBackupPlain.clicked.connect(self.optionClicked)
+      self.optDigitalBackupCrypt.clicked.connect(self.optionClicked)
+      self.optIndivKeyListTop.clicked.connect(self.optionClicked)
 
 
       spacer = lambda: QSpacerItem(20, 1, QSizePolicy.Fixed, QSizePolicy.Expanding)
@@ -750,7 +748,7 @@ class WalletBackupFrame(ArmoryFrame):
       self.lblDescrSelected.setMinimumHeight(tightSizeNChar(self, 10)[1] * 8)
 
       self.btnDoIt = QPushButton('Create Backup')
-      self.connect(self.btnDoIt, SIGNAL(clicked()), self.clickedDoIt)
+      self.btnDoIt.clicked.connect(self.clickedDoIt)
 
       layout = QGridLayout()
       layout.addWidget(self.lblTitle, 0, 0, 1, 2)
@@ -1019,7 +1017,7 @@ class WizardCreateWatchingOnlyWalletFrame(ArmoryFrame):
                Use the "<i>Import or Restore Wallet</i>" button in the
                upper-right corner"""))
       lbtnForkWlt = QPushButton('Create Watching-Only Copy')
-      self.connect(lbtnForkWlt, SIGNAL(clicked()), self.forkOnlineWallet)
+      lbtnForkWlt.clicked.connect(self.forkOnlineWallet)
       layout = QVBoxLayout()
       layout.addWidget(summaryText)
       layout.addWidget(lbtnForkWlt)

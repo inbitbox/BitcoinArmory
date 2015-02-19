@@ -41,8 +41,7 @@ class MessageSigningVerificationDialog(ArmoryDialog):
       layout.addWidget(actionButtonBox)
 
       self.setLayout(layout)
-      self.connect(self.goBackButton, SIGNAL('clicked()'), \
-                   self,           SLOT('reject()'))
+      self.goBackButton.clicked.connect(self.reject)
       
    def clearFields(self):
       self.addressLineEdit.setText('')
@@ -104,16 +103,11 @@ class MessageSigningWidget(QWidget):
       signMessageLayout.addWidget(buttonFrame, 4, 1, 1, 3)
 
       self.setLayout(signMessageLayout)
-      self.connect(self.bareSigButton, SIGNAL('clicked()'), \
-                   self.bareSignMessage)
-      self.connect(self.base64SigButton, SIGNAL('clicked()'), \
-                    self.base64SignMessage)
-      self.connect(self.clearSigButton, SIGNAL('clicked()'), \
-                    self.clearSignMessage)
-      self.connect(self.copySignatureButton, SIGNAL('clicked()'), \
-                   self.copySignature)
-      self.connect(self.clearFieldsButton, SIGNAL('clicked()'), \
-                   self.clearFields)
+      self.bareSigButton.clicked.connect(self.bareSignMessage)
+      self.base64SigButton.clicked.connect(self.base64SignMessage)
+      self.clearSigButton.clicked.connect(self.clearSignMessage)
+      self.copySignatureButton.clicked.connect(self.copySignature)
+      self.clearFieldsButton.clicked.connect(self.clearFields)
       
    def getPrivateKeyFromAddrInput(self):
       atype, addr160 = addrStr_to_hash160(str(self.addressLineEdit.text()))
@@ -207,10 +201,8 @@ class SignatureVerificationWidget(QWidget):
       self.signMessageLayout.addWidget(buttonFrame, 3, 1, 1, 2)
 
       self.setLayout(self.signMessageLayout)
-      self.connect(self.verifySignatureButton, SIGNAL('clicked()'), \
-                   self.verifySignature)
-      self.connect(self.clearFieldsButton, SIGNAL('clicked()'), \
-                   self.clearFields)
+      self.verifySignatureButton.clicked.connect(self.verifySignature)
+      self.clearFieldsButton.clicked.connect(self.clearFields)
 
    # To be implemented by child classes
    def verifySignature(self):

@@ -26,7 +26,7 @@ class VerifyOfflinePackageDialog(ArmoryDialog):
       load.setLayout(layoutload)
       self.loadFileButton = QPushButton(tr("Select file to verify..."), load);
       layoutload.addWidget(self.loadFileButton)
-      self.connect(self.loadFileButton, SIGNAL('clicked()'), self.load)
+      self.loadFileButton.clicked.connect(self.load)
 
       self.lblVerified = QRichLabel('', hAlign=Qt.AlignHCenter, doWrap=False)
       layout.addWidget(self.lblVerified)
@@ -40,7 +40,7 @@ class VerifyOfflinePackageDialog(ArmoryDialog):
       self.saveFileButton = QPushButton(tr("Select file to save to..."), load);
       self.saveFileButton.setEnabled(False)
       layoutsave.addWidget(self.saveFileButton)
-      self.connect(self.saveFileButton, SIGNAL('clicked()'), self.save)
+      self.saveFileButton.clicked.connect(self.save)
       self.setWindowTitle('Verify Signed Package')
 
       

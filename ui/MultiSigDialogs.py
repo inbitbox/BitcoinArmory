@@ -68,8 +68,7 @@ class DlgLockboxEditor(ArmoryDialog):
             
 
       lblDescr3.setOpenExternalLinks(False)
-      self.connect(lblDescr3, SIGNAL('linkActivated(const QString &)'), \
-                                                               openMoreInfo)
+      lblDescr3.linkActivated.connect(openMoreInfo)
 
 
       self.createDate = int(RightNow())
@@ -80,10 +79,8 @@ class DlgLockboxEditor(ArmoryDialog):
       self.maxN = maxN
       self.minM = 1
       self.minN = 2
-      self.connect(self.comboM, SIGNAL('activated(int)'), \
-                                             self.updateWidgetTable_M)
-      self.connect(self.comboN, SIGNAL('activated(int)'), \
-                                             self.updateWidgetTable_N)
+      self.comboM.activated.connect(self.updateWidgetTable_M)
+      self.comboN.activated.connect(self.updateWidgetTable_N)
       self.comboM.setFont(GETFONT('Var', 14, bold=True))
       self.comboN.setFont(GETFONT('Var', 14, bold=True))
       self.lblMasterIcon = QLabel()
@@ -149,10 +146,8 @@ class DlgLockboxEditor(ArmoryDialog):
                self.clickImportButton(i)
             return importClick
 
-         self.connect(self.widgetMap[i]['BTN_NAME'], SIGNAL('clicked()'), \
-                                                            createCallback(i))
-         self.connect(self.widgetMap[i]['BTN_IMPORT'], SIGNAL('clicked()'), \
-                                                       createImportCallback(i))
+         self.widgetMap[i]['BTN_NAME'].clicked.connect(createCallback(i))
+         self.widgetMap[i]['BTN_IMPORT'].clicked.connect(createImportCallback(i))
          
          self.prevPubKeyStr[i] = ''
          
@@ -164,8 +159,8 @@ class DlgLockboxEditor(ArmoryDialog):
       self.btnCancel   = QPushButton(tr('Exit'))
       self.btnContinue = QPushButton(tr('Save Lockbox'))
       #self.btnContinue.setEnabled(False)
-      self.connect(self.btnContinue, SIGNAL('clicked()'), self.doContinue)
-      self.connect(self.btnCancel, SIGNAL('clicked()'), self.reject)
+      self.btnContinue.clicked.connect(self.doContinue)
+      self.btnCancel.clicked.connect(self.reject)
       self.lblFinal = QRichLabel('')
 
 
@@ -176,7 +171,7 @@ class DlgLockboxEditor(ArmoryDialog):
 
       self.btnLongDescr = QLabelButton(tr("Set extended info"))
       self.longDescr = ''
-      self.connect(self.btnLongDescr, SIGNAL('clicked()'), self.setLongDescr)
+      self.btnLongDescr.clicked.connect(self.setLongDescr)
 
       frmName = makeHorizFrame(['Stretch', 
                                 QLabel('Lockbox Name:'),
@@ -246,7 +241,7 @@ class DlgLockboxEditor(ArmoryDialog):
 
       btnClear  = QPushButton(tr('Clear All'))
 
-      self.connect(btnClear,  SIGNAL('clicked()'), self.clearAll)
+      btnClear.clicked.connect(self.clearAll)
 
 
       layoutMNSelect = QGridLayout()
@@ -345,7 +340,7 @@ class DlgLockboxEditor(ArmoryDialog):
             self.descr = QPlainTextEdit()
             self.descr.setPlainText(currDescr)
             btn = QPushButton(tr("Done"))
-            self.connect(btn, SIGNAL('clicked()'), self.accept)
+            btn.clicked.connect(self.accept)
 
             layout = QVBoxLayout()
             layout.addWidget(lbl)
@@ -677,15 +672,8 @@ class DlgLockboxManager(ArmoryDialog):
       self.lboxView.horizontalHeader().setStretchLastSection(True)
       self.lboxView.setContextMenuPolicy(Qt.CustomContextMenu)
       self.lboxView.customContextMenuRequested.connect(self.showLboxContextMenu)
-
-      self.connect( \
-            self.lboxView, 
-            SIGNAL('clicked(QModelIndex)'), 
-            self.singleClickLockbox)
-      self.connect( \
-            self.lboxView, 
-            SIGNAL('doubleClicked(QModelIndex)'), 
-            self.dblClickLockbox)
+      self.lboxView.clicked.connect(self.singleClickLockbox)
+      self.lboxView.doubleClicked.connect(self.dblClickLockbox)
 
       self.txtLockboxInfo = QTextEdit()
       self.txtLockboxInfo.acceptRichText()
@@ -703,7 +691,7 @@ class DlgLockboxManager(ArmoryDialog):
 
       btnDone = QPushButton(tr('Done'))
       frmDone = makeHorizFrame([lblLinkToMSWebpage, 'Stretch', btnDone])
-      self.connect(btnDone, SIGNAL('clicked()'), self.accept)
+      btnDone.clicked.connect(self.accept)
 
 
       #maxKeys = max([lb.N for lb in self.main.allLockboxes])
@@ -741,8 +729,7 @@ class DlgLockboxManager(ArmoryDialog):
       initialColResize(self.ledgerView, [cWidth, 0, dateWidth, tWidth, \
                                                             0.30, 0.40, 0.3])
       
-      self.connect(self.ledgerView, SIGNAL('doubleClicked(QModelIndex)'), \
-                   self.dblClickLedger)
+      self.ledgerView.doubleClicked.connect(self.dblClickLedger)
 
       self.ledgerView.setContextMenuPolicy(Qt.CustomContextMenu)
       self.ledgerView.customContextMenuRequested.connect(self.showContextMenuLedger)
@@ -1009,8 +996,8 @@ class DlgLockboxManager(ArmoryDialog):
       
          self.chkSimulfundB.setChecked(self.chkSimulfundA.isChecked())
 
-      self.connect(self.chkSimulfundA, SIGNAL('clicked()'), clickSimulA)
-      self.connect(self.chkSimulfundB, SIGNAL('clicked()'), clickSimulB)
+      self.chkSimulfundA.clicked.connect(clickSimulA)
+      self.chkSimulfundB.clicked.connect(clickSimulB)
 
 
       cellWidth = 150
@@ -1059,7 +1046,7 @@ class DlgLockboxManager(ArmoryDialog):
             layout.addWidget(btnMap['LBL'],   1,0)
             layout.setColumnStretch(0,1)
             layout.setColumnStretch(1,0)
-            self.connect(btnMap['BTN'], SIGNAL('clicked()'), btnMap['callbk'])
+            btnMap['BTN'].clicked.connect(btnMap['callbk'])
 
             slayout = QHBoxLayout()
             slayout.addStretch()
@@ -1167,10 +1154,10 @@ class DlgLockboxManager(ArmoryDialog):
                            lbox.shortName, lbox.uniqueIDB58)
          DlgQRCodeDisplay(self, self.main, p2shAddr, p2shAddr, lboxDisp).exec_()
 
-      self.connect(self.btnCopyClip,    SIGNAL('clicked()'), funcCopyClip)
-      self.connect(self.btnQRCodeDisp,  SIGNAL('clicked()'), funcQRCode)
-      self.connect(self.btnFundRequest, SIGNAL('clicked()'), funcReqPayment)
-      self.connect(self.btnFundRegular, SIGNAL('clicked()'), self.doFundIt)
+      self.btnCopyClip.clicked.connect(funcCopyClip)
+      self.btnQRCodeDisp.clicked.connect(funcQRCode)
+      self.btnFundRequest.clicked.connect(funcReqPayment)
+      self.btnFundRegular.clicked.connect(self.doFundIt)
 
       def updateRegFundCell(hasSelect, isOnline):
          lbox = self.getSelectedLockbox()
@@ -1869,9 +1856,9 @@ class DlgFundLockbox(ArmoryDialog):
       btnReview = QPushButton(tr("Review and Sign"))
       btnCancel = QPushButton(tr("Cancel"))
 
-      self.connect(btnCreate, SIGNAL('clicked()'), self.doCreate)
-      self.connect(btnReview, SIGNAL('clicked()'), self.doReview)
-      self.connect(btnCancel, SIGNAL('clicked()'), self.reject)
+      btnCreate.clicked.connect(self.doCreate)
+      btnReview.clicked.connect(self.doReview)
+      btnCancel.clicked.connect(self.reject)
 
       frmTop = makeHorizFrame([lblDescr], STYLE_STYLED)
 
@@ -1939,9 +1926,9 @@ class DlgSpendFromLockbox(ArmoryDialog):
          to review and sign it."""))
 
 
-      self.connect(btnCreate, SIGNAL('clicked()'), self.doCreate)
-      self.connect(btnReview, SIGNAL('clicked()'), self.doReview)
-      self.connect(btnCancel, SIGNAL('clicked()'), self.reject)
+      btnCreate.clicked.connect(self.doCreate)
+      btnReview.clicked.connect(self.doReview)
+      btnCancel.clicked.connect(self.reject)
 
       frmTop = makeHorizFrame([lblDescr], STYLE_STYLED)
 
@@ -2036,10 +2023,10 @@ class DlgSimulfundSelect(ArmoryDialog):
          Review and signed a simulfunding transaction (after all promissory
          notes have been collected)"""))
 
-      self.connect(btnCreate,  SIGNAL('clicked()'), self.doCreate)
-      self.connect(btnCollect, SIGNAL('clicked()'), self.doCollect)
-      self.connect(btnReview,  SIGNAL('clicked()'), self.doReview)
-      self.connect(btnCancel,  SIGNAL('clicked()'), self.reject)
+      btnCreate.clicked.connect(self.doCreate)
+      btnCollect.clicked.connect(self.doCollect)
+      btnReview.clicked.connect(self.doReview)
+      btnCancel.clicked.connect(self.reject)
 
       frmTop = makeVertFrame([lblTitle, lblDescr], STYLE_STYLED)
 
@@ -2103,9 +2090,9 @@ class DlgImportAsciiBlock(ArmoryDialog):
       btnCancel = QPushButton(tr("Cancel"))
 
                               
-      self.connect(btnLoad,   SIGNAL('clicked()'), self.loadfile)
-      self.connect(btnDone,   SIGNAL('clicked()'), self.clickedDone)
-      self.connect(btnCancel, SIGNAL('clicked()'), self.reject)
+      btnLoad.clicked.connect(self.loadfile)
+      btnDone.clicked.connect(self.clickedDone)
+      btnCancel.clicked.connect(self.reject)
 
       frmLoadButton = makeHorizFrame(['Stretch', btnLoad])
       frmBottomRow  = makeHorizFrame([btnCancel, 'Stretch', btnDone])
@@ -2205,7 +2192,7 @@ class DlgSelectPublicKey(ArmoryDialog):
       self.lblDetect.setVisible(True)
 
       #btnExportKey = QPushButton(tr('Send to Organizer'))
-      #self.connect(btnExportKey, SIGNAL('clicked()'), self.doExportKey)
+      #btnExportKey.clicked.connect(self.doExportKey)
       #frmButtons = makeHorizFrame([QRichLabel(tr('When finished:')),
                                    #btnExportKey, 
                                    #'Stretch'])
@@ -2228,8 +2215,8 @@ class DlgSelectPublicKey(ArmoryDialog):
 
       btnDone = QPushButton(tr('Continue'))
       btnCancel = QPushButton(tr('Cancel'))
-      self.connect(btnDone,   SIGNAL('clicked()'), self.doDone)
-      self.connect(btnCancel, SIGNAL('clicked()'), self.reject)
+      btnDone.clicked.connect(self.doDone)
+      btnCancel.clicked.connect(self.reject)
       frmDone = makeHorizFrame([btnCancel, 'Stretch', btnDone])
       
 
@@ -2330,10 +2317,10 @@ class DlgExportAsciiBlock(ArmoryDialog):
       btnMail = QPushButton(tr("Send Email"))
       btnDone = QPushButton(tr("Done"))
 
-      self.connect(btnCopy, SIGNAL('clicked()'), self.clipcopy)
-      self.connect(btnSave, SIGNAL('clicked()'), self.savefile)
-      self.connect(btnMail, SIGNAL('clicked()'), self.mailLB)
-      self.connect(btnDone, SIGNAL('clicked()'), self.accept)
+      btnCopy.clicked.connect(self.clipcopy)
+      btnSave.clicked.connect(self.savefile)
+      btnMail.clicked.connect(self.mailLB)
+      btnDone.clicked.connect(self.accept)
 
       frmCopy = makeHorizFrame([btnSave, btnCopy, btnMail, self.lblCopyMail, \
                                 'Stretch'])
@@ -2417,9 +2404,9 @@ class DlgImportLockbox(ArmoryDialog):
       btnCancel = QPushButton(tr("Cancel"))
 
                               
-      self.connect(btnLoad,   SIGNAL('clicked()'), self.loadfile)
-      self.connect(btnDone,   SIGNAL('clicked()'), self.clickedDone)
-      self.connect(btnCancel, SIGNAL('clicked()'), self.reject)
+      btnLoad.clicked.connect(self.loadfile)
+      btnDone.clicked.connect(self.clickedDone)
+      btnCancel.clicked.connect(self.reject)
 
       frmLoadButton = makeHorizFrame(['Stretch', btnLoad])
       frmBottomRow  = makeHorizFrame([btnCancel, 'Stretch', btnDone])
@@ -2725,8 +2712,7 @@ class DlgMultiSpendReview(ArmoryDialog):
             layoutInputs.addWidget(iWidgMap['KeyImg' ][i], row,2)
             layoutInputs.addWidget(iWidgMap['KeyLbl' ][i], row,3)
 
-            self.connect(iWidgMap['SignBtn'][i], SIGNAL('clicked()'), \
-                                           createSignCallback(idStr, i))
+            iWidgMap['SignBtn'][i].clicked.connect(createSignCallback(idStr, i))
 
             lbox = iBundle.lockbox
             M = lbox.M if lbox else 1
@@ -2875,9 +2861,9 @@ class DlgMultiSpendReview(ArmoryDialog):
       frmButtons = QFrame()
       frmButtons.setLayout(layoutBtns)
 
-      self.connect(self.btnLoadImport,  SIGNAL('clicked()'), self.doImport)
-      self.connect(self.btnFinalBroad,  SIGNAL('clicked()'), self.doBroadcast)
-      self.connect(self.btnFinalExport, SIGNAL('clicked()'), self.doExport)
+      self.btnLoadImport.clicked.connect(self.doImport)
+      self.btnFinalBroad.clicked.connect(self.doBroadcast)
+      self.btnFinalExport.clicked.connect(self.doExport)
 
       frmMain = makeVertFrame([lblDescr, 
                                HLINE(),
@@ -3239,8 +3225,8 @@ class DlgCreatePromNote(ArmoryDialog):
 
       btnExit = QPushButton(tr('Cancel'))
       btnDone = QPushButton(tr('Continue'))
-      self.connect(btnExit, SIGNAL('clicked()'), self.reject)
-      self.connect(btnDone, SIGNAL('clicked()'), self.doContinue)
+      btnExit.clicked.connect(self.reject)
+      btnDone.clicked.connect(self.doContinue)
       frmButtons = makeHorizFrame([btnExit, 'Stretch', btnDone])
 
       mainLayout = QVBoxLayout()
@@ -3582,8 +3568,8 @@ class DlgMergePromNotes(ArmoryDialog):
 
       btnImport = QPushButton(tr('Import Promissory Note'))
       btnCreate = QPushButton(tr('Create && Add Promissory Note'))
-      self.connect(btnImport, SIGNAL('clicked()'), self.importNote)
-      self.connect(btnCreate, SIGNAL('clicked()'), self.createPromAdd)
+      btnImport.clicked.connect(self.importNote)
+      btnCreate.clicked.connect(self.createPromAdd)
       frmImport = makeHorizFrame(['Stretch', btnImport, btnCreate, 'Stretch'])
 
       btnCancel = QPushButton(tr('Cancel'))
@@ -3595,8 +3581,8 @@ class DlgMergePromNotes(ArmoryDialog):
                          This is only needed for very specific use cases, 
                          and otherwise creates blockchain bloat."""))
       btnFinish = QPushButton(tr('Continue'))
-      self.connect(btnCancel, SIGNAL('clicked()'), self.reject)
-      self.connect(btnFinish, SIGNAL('clicked()'), self.mergeNotesCreateUSTX)
+      btnCancel.clicked.connect(self.reject)
+      btnFinish.clicked.connect(self.mergeNotesCreateUSTX)
       frmButtons = makeHorizFrame([btnCancel, 
                                    'Stretch', 
                                    self.chkBareMS, 
@@ -3885,9 +3871,9 @@ class DlgSelectMultiSigOption(ArmoryDialog):
          a multi-sig lockbox"""))
 
 
-      self.connect(self.btnCreate,  SIGNAL('clicked()'), self.openCreate)
-      self.connect(self.btnFund,    SIGNAL('clicked()'), self.openFund)
-      self.connect(self.btnSpend,   SIGNAL('clicked()'), self.openSpend)
+      self.btnCreate.clicked.connect(self.openCreate)
+      self.btnFund.clicked.connect(self.openFund)
+      self.btnSpend.clicked.connect(self.openSpend)
 
       layoutTop = QVBoxLayout()
       layoutTop.addWidget(lblDescr)
@@ -3934,7 +3920,7 @@ class DlgSelectMultiSigOption(ArmoryDialog):
 
 
       btnDone = QPushButton(tr("Done"))
-      self.connect(btnDone, SIGNAL('clicked()'), self.accept)
+      btnDone.clicked.connect(self.accept)
       frmDone = makeHorizFrame(['Stretch', btnDone])
 
       layoutMaster = QVBoxLayout()

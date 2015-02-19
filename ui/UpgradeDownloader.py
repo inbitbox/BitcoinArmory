@@ -61,8 +61,7 @@ class UpgradeDownloader:
       bottomRowLayout.addWidget(self.progressBar, +1)
 
       self.downloadButton = QPushButton(tr("Download"), self.frame)
-      self.frame.connect(self.downloadButton, SIGNAL('clicked()'), \
-                                                      self.startOrStopDownload)
+      self.downloadButton.clicked.connect(self.startOrStopDownload)
       bottomRowLayout.addWidget(self.downloadButton)
 
       return self.frame
@@ -79,8 +78,8 @@ class UpgradeDownloader:
       req = QNetworkRequest(QUrl.fromEncoded(self.url))
       self.receivedData = ""
       self.downloadFile = self.networkAccess.get(req)
-      QObject.connect(self.downloadFile, SIGNAL('readyRead()'), self.readMoreDownloadData)
-      QObject.connect(self.downloadFile, SIGNAL('finished()'), self.downloadFinished)
+      self.downloadFile.readyRead.connect(self.readMoreDownloadData)
+      self.downloadFile.finished.connect(self.downloadFinished)
 
       if not self.downloadButton is None:
          self.downloadButton.setText(tr("Cancel"))
@@ -297,24 +296,22 @@ class UpgradeDownloaderDialog(ArmoryDialog):
       packages.header().setResizeMode(0, QHeaderView.Stretch)
       packages.header().setResizeMode(1, QHeaderView.Stretch)
 
-      self.connect(self.os, SIGNAL("activated(int)"), self.cascadeOsVer)
-      self.connect(self.osver, SIGNAL("activated(int)"), self.cascadeOsArch)
-      self.connect(self.osarch, SIGNAL("activated(int)"), self.displayPackages)
+      self.os.activated.connect(self.cascadeOsVer)
+      self.osver.activated.connect(self.cascadeOsArch)
+      self.osarch.activated.connect(self.displayPackages)
 
-      self.connect(packages, \
-         SIGNAL('currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)'), \
-         self.useSelectedPackage)
+      packages.currentItemChanged.connect(self.useSelectedPackage)
 
       self.changelogView = QTextBrowser(self)
       self.changelogView.setOpenExternalLinks(True)
 
       self.saveAsOfflinePackage = QCheckBox(tr("Save with offline-verifiable signature"))
       self.closeButton = QPushButton(tr("Close"), self)
-      self.connect(self.closeButton, SIGNAL('clicked()'), self.accept)
+      self.closeButton.clicked.connect(self.accept)
 
       self.btnDLInfo = QLabelButton('Download Info')
       self.btnDLInfo.setVisible(False)
-      self.connect(self.btnDLInfo, SIGNAL('clicked()'), self.popupPackageInfo)
+      self.btnDLInfo.clicked.connect(self.popupPackageInfo)
 
 
       self.lblSelectedSimple = QRichLabel(tr('No download selected'),
@@ -328,7 +325,7 @@ class UpgradeDownloaderDialog(ArmoryDialog):
 
 
       self.btnShowComplex = QLabelButton(tr('Show all downloads for all OS'))
-      self.connect(self.btnShowComplex, SIGNAL('clicked()'), self.showComplex)
+      self.btnShowComplex.clicked.connect(self.showComplex)
 
       frmDisp = makeHorizFrame(['Stretch', self.lblSelectedSimpleMore, 'Stretch'])
       frmBtnShowComplex = makeHorizFrame(['Stretch', self.btnShowComplex])

@@ -31,7 +31,7 @@ class ArmoryWizard(QWizard):
       self.setFont(GETFONT('var'))
       self.setWindowFlags(Qt.Window)
       # Need to adjust the wizard frame size whenever the page changes.
-      self.connect(self, SIGNAL('currentIdChanged(int)'), self.fitContents)
+      self.currentIdChanged(self.fitContents)
       if USE_TESTNET:
          self.setWindowTitle('Armory - Bitcoin Wallet Management [TESTNET]')
          self.setWindowIcon(QIcon(':/armory_icon_green_32x32.png'))
@@ -226,7 +226,7 @@ class SetPassphrasePage(ArmoryWizardPage):
       self.updateNextButton()
 
    def updateNextButton(self):
-      self.emit(SIGNAL("completeChanged()"))
+      self.completeChanged.emit()
    
    def isComplete(self):
       return self.pageFrame.checkPassphrase(False)
@@ -289,7 +289,7 @@ class TxWizard(ArmoryWizard):
 
       self.setButtonText(QWizard.NextButton, tr('Create Unsigned Transaction'))
       self.setButtonText(QWizard.CustomButton1, tr('Send!'))
-      self.connect(self, SIGNAL('customButtonClicked(int)'), self.sendClicked)
+      self.customButtonClicked.connect(self.sendClicked)
       self.setButtonLayout([QWizard.CancelButton,
                             QWizard.BackButton,
                             QWizard.Stretch,

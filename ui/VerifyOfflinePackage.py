@@ -5,8 +5,8 @@
 # See LICENSE or http://www.gnu.org/licenses/agpl.html                         #
 #                                                                              #
 ################################################################################
-from PyQt4.Qt import * #@UnusedWildImport
-from PyQt4.QtGui import * #@UnusedWildImport
+from PyQt5.Qt import * #@UnusedWildImport
+from PyQt5.QtGui import * #@UnusedWildImport
 from qtdefines import tr, QRichLabel, ArmoryDialog
 from armoryengine.parseAnnounce import *
 from armorycolors import htmlColor

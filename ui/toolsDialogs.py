@@ -5,9 +5,9 @@
 # See LICENSE or http://www.gnu.org/licenses/agpl.html                         #
 #                                                                              #
 ################################################################################
-from PyQt4 import Qt, QtCore
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt5 import Qt, QtCore
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
 
 from armorycolors import htmlColor
 from jasvet import ASv0, ASv1B64, ASv1CS, verifySignature, readSigBlock

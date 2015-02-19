@@ -7,7 +7,7 @@
 import ast
 import urllib2
 
-from PyQt4.Qt import QPushButton, SIGNAL, Qt, QLineEdit, QTableWidget, \
+from PyQt5.Qt import QPushButton, SIGNAL, Qt, QLineEdit, QTableWidget, \
    QGridLayout, QSpacerItem, QWidget, QScrollArea, QTableWidgetItem
 
 from armorycolors import htmlColor

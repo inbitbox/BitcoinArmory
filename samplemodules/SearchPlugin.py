@@ -1,4 +1,4 @@
-from PyQt4.Qt import QPushButton, SIGNAL, QTextEdit, QScrollArea, QTabWidget,\
+from PyQt5.Qt import QPushButton, SIGNAL, QTextEdit, QScrollArea, QTabWidget,\
    QLineEdit
 
 from qtdefines import QRichLabel, makeHorizFrame, GETFONT, relaxedSizeNChar, \

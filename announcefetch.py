@@ -11,8 +11,7 @@ from jasvet import verifySignature, readSigBlock
 import os
 import sys
 import time
-from six.moves import urllib
-#import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.parse, urllib.error
 
 
 DEFAULT_FETCH_INTERVAL = 30*MINUTE

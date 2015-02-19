@@ -1,10 +1,10 @@
-from PyQt4.Qt import QPushButton, SIGNAL, QTextEdit, QScrollArea, QTabWidget
+from PyQt5.Qt import QPushButton, SIGNAL, QTextEdit, QScrollArea, QTabWidget
 
 from armoryengine.ArmoryUtils import getLastBytesOfFile, ARMORY_LOG_FILE,\
    ARMCPP_LOG_FILE
 from qtdefines import QRichLabel, makeHorizFrame, GETFONT, relaxedSizeNChar, \
    makeVertFrame
-from PyQt4 import QtGui
+from PyQt5. import QtGui
 
 
 class PluginObject(object):

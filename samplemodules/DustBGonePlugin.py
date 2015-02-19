@@ -5,7 +5,7 @@
 # file can use any utils or objects accessible to functions in ArmoryQt.py.
 from socket import socket
 
-from PyQt4.Qt import QMessageBox, QPushButton, SIGNAL, QLabel, QLineEdit, Qt, \
+from PyQt5.Qt import QMessageBox, QPushButton, SIGNAL, QLabel, QLineEdit, Qt, \
    QTableView, QScrollArea, QAbstractTableModel, QModelIndex, QVariant
 
 from armorycolors import Colors

@@ -42,7 +42,6 @@ import shutil
 import base64
 import socket
 import subprocess
-import six
 
 #from psutil import Popen
 import psutil
@@ -138,14 +137,9 @@ BASE16CHARS  = '0123456789abcdefABCDEF'
 LITTLEENDIAN  = '<'
 BIGENDIAN     = '>'
 NETWORKENDIAN = '!'
-if six.PY2:
-   ONE_BTC       = long(100000000)
-   DONATION       = long(5000000)
-   CENT          = long(1000000)
-else:
-   ONE_BTC       = int(100000000)
-   DONATION       = int(5000000)
-   CENT          = int(1000000)
+ONE_BTC       = int(100000000)
+DONATION       = int(5000000)
+CENT          = int(1000000)
 
 UNINITIALIZED = None
 UNKNOWN       = -2
@@ -253,7 +247,7 @@ CLI_ARGS = None
 # This is probably an abuse of the CLI_OPTIONS structure, but not
 # automatically expanding "~" symbols is killing me
 for opt,val in list(CLI_OPTIONS.__dict__.items()):
-   if not isinstance(val, six.string_types) or not val.startswith('~'):
+   if not isinstance(val, str) or not val.startswith('~'):
       continue
 
    if os.path.exists(os.path.expanduser(val)):
@@ -1902,8 +1896,6 @@ def int_to_hex(i, widthBytes=0, endOut=LITTLEENDIAN):
    if you are expecting constant-length output.
    """
    h = hex(i)[2:]
-   if six.PY2 and isinstance(i,long):
-      h = h[:-1]
    if len(h)%2 == 1:
       h = '0'+h
    if not widthBytes==0:
@@ -2208,22 +2200,13 @@ def readSixteenEasyBytes(et18):
 def ubtc_to_floatStr(n):
    return '%d.%08d' % divmod (n, ONE_BTC)
 def floatStr_to_ubtc(s):
-   if six.PY2:
-      return long(round(float(s) * ONE_BTC))
-   else:
-      return int(round(float(s) * ONE_BTC))
+   return int(round(float(s) * ONE_BTC))
 def float_to_btc (f):
-   if six.PY2:
-      return long(round(f * ONE_BTC))
-   else:
-      return int(round(f * ONE_BTC))
+   return int(round(f * ONE_BTC))
 
 # From https://en.bitcoin.it/wiki/Proper_Money_Handling_(JSON-RPC)
 def JSONtoAmount(value):
-   if six.PY2:
-      return long(round(float(value) * 1e8))
-   else:
-      return int(round(float(value) * 1e8))
+   return int(round(float(value) * 1e8))
 def AmountToJSON(amount):
    return float(amount / 1e8)
 
@@ -2574,7 +2557,7 @@ class FiniteField(object):
 
 ################################################################################
 def SplitSecret(secret, needed, pieces, nbytes=None, use_random_x=False):
-   if not isinstance(secret, six.string_types):
+   if not isinstance(secret, str):
       secret = secret.toBinStr()
 
    if nbytes==None:
@@ -2903,7 +2886,6 @@ def parseBitcoinURI(uriStr):
    data = {}
 
    # Split URI into parts. Let Python do the heavy lifting.
-   from six.moves.urllib.urlparse import urlparse, parse_qs
    uri = urlparse(uriStr)
    query = parse_qs(uri.query)
 
@@ -3461,20 +3443,17 @@ def HardcodedKeyMaskParams():
 
    paramMap['IV']    = SecureBinaryData( hash256(digits_pi)[:16] )
    paramMap['SALT']  = SecureBinaryData( hash256(digits_e) )
-   if six.PY2:
-      paramMap['KDFBYTES'] = long(16*MEGABYTE)
-   else:
-      paramMap['KDFBYTES'] = int(16*MEGABYTE)
+   paramMap['KDFBYTES'] = int(16*MEGABYTE)
 
    def hardcodeCreateSecurePrintPassphrase(secret):
-      if isinstance(secret, six.string_types):
+      if isinstance(secret, str):
          secret = SecureBinaryData(secret)
       bin7 = HMAC512(secret.getHash256(), paramMap['SALT'].toBinStr())[:7]
       out,bin7 = SecureBinaryData(binary_to_base58(bin7 + hash256(bin7)[0])), None
       return out
 
    def hardcodeCheckSecurePrintCode(securePrintCode):
-      if isinstance(securePrintCode, six.string_types):
+      if isinstance(securePrintCode, str):
          pwd = base58_to_binary(securePrintCode)
       else:
          pwd = base58_to_binary(securePrintCode.toBinStr())
@@ -3483,7 +3462,7 @@ def HardcodedKeyMaskParams():
       return isgood
 
    def hardcodeApplyKdf(secret):
-      if isinstance(secret, six.string_types):
+      if isinstance(secret, str):
          secret = SecureBinaryData(secret)
       kdf = KdfRomix()
       kdf.usePrecomputedKdfParams(paramMap['KDFBYTES'], 1, paramMap['SALT'])
@@ -3620,9 +3599,9 @@ class SettingsFile(object):
          try:
             # Skip anything that throws an exception
             valStr = ''
-            if   isinstance(val, six.string_types):
+            if   isinstance(val, str):
                valStr = val
-            elif isinstance(val, six.integer_types) or \
+            elif isinstance(val, int) or \
                  isinstance(val, float):
                valStr = str(val)
             elif isinstance(val, list) or \
@@ -3749,11 +3728,11 @@ def isInternetAvailable(forceOnline = False):
       internetStatus = INTERNET_STATUS.DidNotCheck
    else:
       try:
-         from six.moves import urllib
+         import urllib.request
          urllib.request.urlopen('http://google.com', timeout=CLI_OPTIONS.nettimeout)
          internetStatus = INTERNET_STATUS.Available
       except ImportError:
-         LOGERROR('No module urllib2 -- cannot determine if internet is '
+         LOGERROR('No module urllib -- cannot determine if internet is '
             'available')
       except urllib.URLError:
          # In the extremely rare case that google might be down (or just to try

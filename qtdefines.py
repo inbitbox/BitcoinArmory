@@ -8,8 +8,9 @@
 import struct
 from tempfile import mkstemp
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 from six.moves import urllib
 #import urllib.request, urllib.parse, urllib.error
 
@@ -412,6 +413,8 @@ def QDoneButton():
 class QLabelButton(QLabel):
    mousePressOn = set()
 
+   clicked = pyqtSignal(name="clicked")
+
    def __init__(self, txt):
       colorStr = htmlColor('LBtnNormalFG')
       QLabel.__init__(self, '<font color=%s>%s</u></font>' % (colorStr, txt))
@@ -432,7 +435,7 @@ class QLabelButton(QLabel):
       txt = toBytes(str(self.text()))
       if txt in self.mousePressOn:
          self.mousePressOn.remove(txt)
-         self.emit(SIGNAL('clicked()'))  
+         self.clicked.emit() 
 
    def enterEvent(self, ev):  
       ssStr = "QLabel { background-color : %s }" % htmlColor('LBtnHoverBG')
@@ -578,8 +581,8 @@ def MsgBoxWithDNAA(parent, main, wtype, title, msg, dnaaMsg, wCancel=False, \
          if dtype==MSGBOX.Question:
             btnYes = QPushButton(yesStr)
             btnNo  = QPushButton(noStr)
-            self.connect(btnYes, SIGNAL('clicked()'), self.accept)
-            self.connect(btnNo,  SIGNAL('clicked()'), self.reject)
+            btnYes.clicked.connect(self.accept)
+            btnNo.clicked.connect(self.reject)
             buttonbox.addButton(btnYes,QDialogButtonBox.AcceptRole)
             buttonbox.addButton(btnNo, QDialogButtonBox.RejectRole)
          else:
@@ -742,11 +745,11 @@ class ArmoryDialog(QDialog):
    #create a signal with a random name that children to this dialog will 
    #connect to close themselves if the parent is closed first   
 
+   close = pyqtSignal(name=str(random.random()))
       
    def __init__(self, parent=None, main=None):
       super(ArmoryDialog, self).__init__(parent)
 
-      self.closeSignal = str(random.random())       
       self.parent = parent
       self.main   = main
       
@@ -769,7 +772,7 @@ class ArmoryDialog(QDialog):
       return super(ArmoryDialog, self).exec_()
    
    def reject(self):
-      self.emit(SIGNAL(self.closeSignal))
+      self.close.emit()
       super(ArmoryDialog, self).reject()
       
 

@@ -6,8 +6,8 @@
 #                                                                              #
 ################################################################################
 
-from PyQt4.Qt import * #@UnusedWildImport
-from PyQt4.QtGui import * #@UnusedWildImport
+from PyQt5.Qt import * #@UnusedWildImport
+from PyQt5.QtGui import * #@UnusedWildImport
 from armoryengine.ArmoryUtils import USE_TESTNET
 from ui.WalletFrames import NewWalletFrame, SetPassphraseFrame, VerifyPassphraseFrame,\
    WalletBackupFrame, WizardCreateWatchingOnlyWalletFrame

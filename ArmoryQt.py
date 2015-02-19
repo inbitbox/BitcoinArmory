@@ -30,8 +30,8 @@ import traceback
 import webbrowser
 
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
 import psutil
 from twisted.internet.defer import Deferred
 from twisted.internet.protocol import Protocol, ClientFactory
@@ -87,6 +87,12 @@ MODULES_ZIP_DIR_NAME = 'modules'
 
 class ArmoryMainWindow(QMainWindow):
    """ The primary Armory window """
+
+   initSignal = pyqtSignal(name='initTrigger')
+   execSignal = pyqtSignal(name='execTrigger')
+   negImportSignal = pyqtSignal(name='checkForNegImports')
+   methodSignal = pyqtSignal(name='method_signal')
+   cppSignal = pyqtSignal(name='cppNotify')
 
    #############################################################################
 
@@ -190,15 +196,15 @@ class ArmoryMainWindow(QMainWindow):
       self.delayedURIData['qLen'] = 0
 
       #Setup the signal to spawn progress dialogs from the main thread
-      self.connect(self, SIGNAL('initTrigger') , self.initTrigger)
-      self.connect(self, SIGNAL('execTrigger'), self.execTrigger)
-      self.connect(self, SIGNAL('checkForNegImports'), self.checkForNegImports)
+      self.initSignal.connect(self.initTrigger)
+      self.execSignal.connect(self.execTrigger)
+      self.negImportSignal.connect(self.checkForNegImports)
 
       #generic signal to run pass any method as the arg
-      self.connect(self, SIGNAL('method_signal') , self.method_signal)  
+      self.methodSignal.connect(self.method_signal)  
                 
       #push model BDM notify signal
-      self.connect(self, SIGNAL('cppNotify'), self.handleCppNotification)
+      self.cppSignal.connect(self.handleCppNotification)
       TheBDM.registerCppNotification(self.cppNotifySignal)
 
       # We want to determine whether the user just upgraded to a new version
@@ -295,7 +301,7 @@ class ArmoryMainWindow(QMainWindow):
       self.walletsView.verticalHeader().setDefaultSectionSize(sectionSz)
       self.walletsView.setMinimumSize(viewWidth, viewHeight)
       self.walletsView.setItemDelegate(AllWalletsCheckboxDelegate(self))
-      self.walletsView.horizontalHeader().setResizeMode(0, QHeaderView.Fixed)
+      self.walletsView.horizontalHeader().setSectionResizeMode(0, QHeaderView.Fixed)
       
 
       self.walletsView.hideColumn(0)
@@ -310,10 +316,8 @@ class ArmoryMainWindow(QMainWindow):
             self.walletsView.showColumn(0)
 
 
-      self.connect(self.walletsView, SIGNAL('doubleClicked(QModelIndex)'), 
-                   self.execDlgWalletDetails)
-      self.connect(self.walletsView, SIGNAL('clicked(QModelIndex)'), 
-                   self.execClickRow)
+      self.walletsView.doubleClicked.connect(self.execDlgWalletDetails)
+      self.walletsView.clicked.connect(self.execClickRow)
 
       self.walletsView.setColumnWidth(WLTVIEWCOLS.Visible, 20)
       w,h = tightSizeNChar(GETFONT('var'), 100)
@@ -344,8 +348,8 @@ class ArmoryMainWindow(QMainWindow):
 
       self.ledgerView.verticalHeader().setDefaultSectionSize(sectionSz)
       self.ledgerView.verticalHeader().hide()
-      self.ledgerView.horizontalHeader().setResizeMode(0, QHeaderView.Fixed)
-      self.ledgerView.horizontalHeader().setResizeMode(3, QHeaderView.Fixed)
+      self.ledgerView.horizontalHeader().setSectionResizeMode(0, QHeaderView.Fixed)
+      self.ledgerView.horizontalHeader().setSectionResizeMode(3, QHeaderView.Fixed)
 
       self.ledgerView.hideColumn(LEDGERCOLS.isOther)
       self.ledgerView.hideColumn(LEDGERCOLS.UnixTime)
@@ -371,16 +375,15 @@ class ArmoryMainWindow(QMainWindow):
       tWidth = 72 # date icon width
       initialColResize(self.ledgerView, [cWidth, 0, dateWidth, tWidth, 0.30, 0.40, 0.3])
 
-      self.connect(self.ledgerView, SIGNAL('doubleClicked(QModelIndex)'), \
-                   self.dblClickLedger)
+      self.ledgerView.doubleClicked.connect(self.dblClickLedger)
 
       self.ledgerView.setContextMenuPolicy(Qt.CustomContextMenu)
       self.ledgerView.customContextMenuRequested.connect(self.showContextMenuLedger)
 
       btnAddWallet  = QPushButton(tr("Create Wallet"))
       btnImportWlt  = QPushButton(tr("Import or Restore Wallet"))
-      self.connect(btnAddWallet,  SIGNAL('clicked()'), self.startWalletWizard)
-      self.connect(btnImportWlt,  SIGNAL('clicked()'), self.execImportWallet)
+      btnAddWallet.clicked.connect(self.startWalletWizard)
+      btnImportWlt.clicked.connect(self.execImportWallet)
 
       # Put the Wallet info into it's own little box
       lblAvail = QLabel(tr("<b>Available Wallets:</b>"))
@@ -408,13 +411,11 @@ class ArmoryMainWindow(QMainWindow):
       # Combo box to filter ledger display
       self.comboWltSelect = QComboBox()
       self.populateLedgerComboBox()
-      self.connect(self.ledgerView.horizontalHeader(), \
-                   SIGNAL('sortIndicatorChanged(int,Qt::SortOrder)'), \
-                   self.changeLedgerSorting)
+      self.ledgerView.horizontalHeader().sortIndicatorChanged.connect(
+         self.changeLedgerSorting)
 
 
-      self.connect(self.comboWltSelect, SIGNAL('activated(int)'), 
-                   self.changeWltFilter)
+      self.comboWltSelect.activated.connect(self.changeWltFilter)
       
 
       self.lblTot  = QRichLabel('<b>Maximum Funds:</b>', doWrap=False);
@@ -470,8 +471,7 @@ class ArmoryMainWindow(QMainWindow):
       self.PageLineEdit = QLineEdit('1')
       self.lblNPages    = QRichLabel(' out of 1') 
       
-      self.connect(self.PageLineEdit, SIGNAL('editingFinished()'), \
-                   self.loadNewPage)
+      self.PageLineEdit.editingFinished.connect(self.loadNewPage)
             
       self.changeWltFilter()      
       
@@ -499,9 +499,9 @@ class ArmoryMainWindow(QMainWindow):
       self.btnLedgDn.setAlignment(Qt.AlignVCenter | Qt.AlignHCenter)
 
 
-      self.connect(self.comboNumShow, SIGNAL('activated(int)'), self.changeNumShow)
-      self.connect(self.btnLedgUp,    SIGNAL('clicked()'),      self.clickLedgUp)
-      self.connect(self.btnLedgDn,    SIGNAL('clicked()'),      self.clickLedgDn)
+      self.comboNumShow.activated.connect(self.changeNumShow)
+      self.btnLedgUp.clicked.connect(self.clickLedgUp)
+      self.btnLedgDn.clicked.connect(self.clickLedgDn)
 
       frmFilter = makeVertFrame([QLabel(tr('Filter:')), self.comboWltSelect, 'Stretch'])
 
@@ -551,11 +551,11 @@ class ArmoryMainWindow(QMainWindow):
       btnOfflineTx = QPushButton(tr("Offline Transactions"))
       btnMultisig  = QPushButton(tr("Lockboxes (Multi-Sig)"))
 
-      self.connect(btnWltProps, SIGNAL('clicked()'), self.execDlgWalletDetails)
-      self.connect(btnRecvBtc,  SIGNAL('clicked()'), self.clickReceiveCoins)
-      self.connect(btnSendBtc,  SIGNAL('clicked()'), self.clickSendBitcoins)
-      self.connect(btnOfflineTx,SIGNAL('clicked()'), self.execOfflineTx)
-      self.connect(btnMultisig, SIGNAL('clicked()'), self.browseLockboxes)
+      btnWltProps.clicked.connect(self.execDlgWalletDetails)
+      btnRecvBtc.clicked.connect(self.clickReceiveCoins)
+      btnSendBtc.clicked.connect(self.clickSendBitcoins)
+      btnOfflineTx.clicked.connect(self.execOfflineTx)
+      btnMultisig.clicked.connect(self.browseLockboxes)
 
       verStr = 'Armory %s / %s' % (getVersionString(BTCARMORY_VERSION),
                                               UserModeStr(self.usermode))
@@ -1414,9 +1414,8 @@ class ArmoryMainWindow(QMainWindow):
       self.sysTray.setIcon( QIcon(self.iconfile) )
       self.sysTray.setVisible(True)
       self.sysTray.setToolTip('Armory' + (' [Testnet]' if USE_TESTNET else ''))
-      self.connect(self.sysTray, SIGNAL('messageClicked()'), self.bringArmoryToFront)
-      self.connect(self.sysTray, SIGNAL('activated(QSystemTrayIcon::ActivationReason)'), \
-                   self.sysTrayActivated)
+      self.sysTray.messageClicked.connect(self.bringArmoryToFront)
+      self.sysTray.activated.connect(self.sysTrayActivated)
       menu = QMenu(self)
 
       def traySend():
@@ -1790,9 +1789,9 @@ class ArmoryMainWindow(QMainWindow):
 
       if isCheckable:
          theAction.setCheckable(True)
-         self.connect(theAction, SIGNAL('toggled(bool)'), slot)
+         theAction.toggled.connect(slot)
       else:
-         self.connect(theAction, SIGNAL('triggered()'), slot)
+         theAction.triggered.connect(slot)
 
       if ttip:
          theAction.setToolTip(ttip)
@@ -4367,8 +4366,7 @@ class ArmoryMainWindow(QMainWindow):
 
 
       self.btnModeSwitch = QPushButton('')
-      self.connect(self.btnModeSwitch, SIGNAL('clicked()'), \
-                                       self.executeModeSwitch)
+      self.btnModeSwitch.clicked.connect(self.executeModeSwitch)
 
 
       # Will switch this to array/matrix of widgets if I get more than 2 rows
@@ -4492,15 +4490,11 @@ class ArmoryMainWindow(QMainWindow):
 
 
 
-      self.connect(self.dashBtns[DASHBTNS.Close][BTN], SIGNAL('clicked()'), \
-                                                   self.closeExistingBitcoin)
-      self.connect(self.dashBtns[DASHBTNS.Install][BTN], SIGNAL('clicked()'), \
-                                                     self.openDLSatoshi)
-      self.connect(self.dashBtns[DASHBTNS.Browse][BTN], SIGNAL('clicked()'), \
-                                                             openBitcoinOrg)
-      self.connect(self.dashBtns[DASHBTNS.Settings][BTN], SIGNAL('clicked()'), \
-                                                           self.openSettings)
-      #self.connect(self.dashBtns[DASHBTNS.Instruct][BTN], SIGNAL('clicked()'), \
+      self.dashBtns[DASHBTNS.Close][BTN].clicked.connect(self.closeExistingBitcoin)
+      self.dashBtns[DASHBTNS.Install][BTN].clicked.connect(self.openDLSatoshi)
+      self.dashBtns[DASHBTNS.Browse][BTN].clicked.connect(openBitcoinOrg)
+      self.dashBtns[DASHBTNS.Settings][BTN].clicked.connect(self.openSettings)
+      #self.connect(self.dashBtns[DASHBTNS.Instruct][BTN], SIGNAL('"clicked()"'), \
                                                      #self.openInstructWindow)
 
       self.dashBtns[DASHBTNS.Close][LBL] = QRichLabel( \
@@ -4624,7 +4618,7 @@ class ArmoryMainWindow(QMainWindow):
 
       self.lblLastUpdated = QRichLabel('', doWrap=False)
       self.btnCheckForUpdates  = QPushButton(tr('Check for Updates'))
-      self.connect(self.btnCheckForUpdates, SIGNAL(CLICKED), checkUpd)
+      self.btnCheckForUpdates.clicked.connect(checkUpd)
 
 
       frmLastUpdate = makeHorizFrame(['Stretch', \
@@ -4642,8 +4636,8 @@ class ArmoryMainWindow(QMainWindow):
       self.btnSecureDLSatoshi = QPushButton(tr('Secure Downloader'))
       self.btnSecureDLArmory.setVisible(False)
       self.btnSecureDLSatoshi.setVisible(False)
-      self.connect(self.btnSecureDLArmory, SIGNAL(CLICKED), self.openDLArmory)
-      self.connect(self.btnSecureDLSatoshi, SIGNAL(CLICKED), self.openDLSatoshi)
+      self.btnSecureDLArmory.clicked.connect(self.openDLArmory)
+      self.btnSecureDLSatoshi.clicked.connect(self.openDLSatoshi)
 
 
       frmVersions = QFrame()
@@ -4692,8 +4686,8 @@ class ArmoryMainWindow(QMainWindow):
       for i in range(10):
          for j in range(3):
             layoutTable.addWidget(self.announceTableWidgets[i][j], i,j)
-         self.connect(self.announceTableWidgets[i][2], SIGNAL(CLICKED), \
-                      self.announceTableWidgets[i][3])
+         self.announceTableWidgets[i][2].clicked.connect(
+            self.announceTableWidgets[i][3])
 
       layoutTable.setColumnStretch(0,0)
       layoutTable.setColumnStretch(1,1)

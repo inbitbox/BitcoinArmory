@@ -529,7 +529,7 @@ def sign_message_Bitcoin(secret, msg, pureECDSASigning=False):
 
 def FormatText(t, sigctx=False, verbose=False):   #sigctx: False=what is displayed, True=what is signed
    r=''
-   te=t.split('\n')
+   te=t.decode("ascii").split('\n')
    for l in te:
       while len(l) and l[len(l)-1] in [' ', '\r', '\t', chr(9)]:
          l=l[:-1]
@@ -558,7 +558,6 @@ def crc24(m):
    crc = INIT
    r = ''
    for o in m:
-      o=ord(o)
       crc ^= (o << 16)
       for i in range(8):
          crc <<= 1

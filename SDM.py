@@ -215,7 +215,7 @@ class SatoshiDaemonManager(object):
 
       #####
       def warnUserHashFail():
-         from PyQt4.QtGui import QMessageBox
+         from PyQt5.QtGui import QMessageBox
          QMessageBox.warning(self, tr('Hash Failure'), tr("""The torrent download 
             is currently encountering too many packet hash failures to allow it to 
             progress properly. As a result, the torrent engine has been halted. You 

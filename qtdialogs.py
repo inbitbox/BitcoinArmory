@@ -15,8 +15,8 @@ import sys
 import time
 from zipfile import ZipFile, ZIP_DEFLATED
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
 
 from armoryengine.ALL import *
 from armorycolors import Colors, htmlColor
@@ -4028,9 +4028,9 @@ class DlgEULA(ArmoryDialog):
       self.btnCancel = QPushButton("Cancel")
       self.btnAccept = QPushButton("Accept")
       self.btnAccept.setEnabled(False)
-      self.connect(self.btnCancel, SIGNAL(clicked()), self.reject)
-      self.connect(self.btnAccept, SIGNAL(clicked()), self.accept)
-      self.connect(self.chkAgree, SIGNAL('toggled(bool)'), self.toggleChkBox)
+      self.btnCancel.clicked.connect(self.reject)
+      self.btnAccept.clicked.connect(self.accept)
+      self.chkAgree.stateChanged.connect(self.toggleChkBox)
       btnBox = makeHorizFrame([STRETCH, self.btnCancel, self.btnAccept])
 
 
@@ -4123,9 +4123,9 @@ class DlgIntroMessage(ArmoryDialog):
          self.btnCreate = QPushButton("Create Your First Wallet!")
          self.btnImport = QPushButton("Import Existing Wallet")
          self.btnCancel = QPushButton("Skip")
-         self.connect(self.btnCreate, SIGNAL(clicked()), self.createClicked)
-         self.connect(self.btnImport, SIGNAL(clicked()), self.importClicked)
-         self.connect(self.btnCancel, SIGNAL(clicked()), self.reject)
+         self.btnCreate.clicked.connect(self.createClicked)
+         self.btnImport.clicked.connect(self.importClicked)
+         self.btnCancel.clicked.connect(self.reject)
          buttonBox.addButton(self.btnCreate, QDialogButtonBox.AcceptRole)
          buttonBox.addButton(self.btnImport, QDialogButtonBox.AcceptRole)
          buttonBox.addButton(self.btnCancel, QDialogButtonBox.RejectRole)

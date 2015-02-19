@@ -88,13 +88,13 @@ MODULES_ZIP_DIR_NAME = 'modules'
 class ArmoryMainWindow(QMainWindow):
    """ The primary Armory window """
 
-   initSignal = pyqtSignal(name='initTrigger')
-   execSignal = pyqtSignal(name='execTrigger')
+   initSignal = pyqtSignal(object, name='initTrigger')
+   execSignal = pyqtSignal(object, name='execTrigger')
    negImportSignal = pyqtSignal(name='checkForNegImports')
    methodSignal = pyqtSignal(name='method_signal')
-   cppSignal = pyqtSignal(name='cppNotify')
-   uwcsSignal = pyqtSignal(name='UWCS')
-   pwceSignal = pyqtSignal(name='PWCE')
+   cppSignal = pyqtSignal(int, list, name='cppNotify')
+   uwcsSignal = pyqtSignal(list, name='UWCS')
+   pwceSignal = pyqtSignal(object, object, str, bool, name='PWCE')
    checkForkedSignal = pyqtSignal(name='checkForkedImport')
 
    #############################################################################

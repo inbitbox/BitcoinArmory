@@ -815,7 +815,7 @@ class ArmoryBlockAndDateSelector():
 ################################################################################
 class ArmoryTableView(QTableView):
 
-   centerViewSignal = pyqtSignal(name="centerView")
+   centerViewSignal = pyqtSignal(object, name="centerView")
    goToTopSignal = pyqtSignal(name="goToTop")
 
    def __init__(self, parent, main, controlFrame):

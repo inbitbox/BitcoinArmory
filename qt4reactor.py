@@ -45,10 +45,10 @@ from twisted.internet import posixbase
 from twisted.python.runtime import platformType, platform
 
 try:
-    from PyQt5.QtCore import QSocketNotifier, QObject, pyqtSignal, QTimer, QCoreApplication
+    from PyQt5.QtCore import QSocketNotifier, QObject, QTimer, QCoreApplication
     from PyQt5.QtCore import QEventLoop
 except ImportError:
-    from PySide.QtCore import QSocketNotifier, QObject, pyqtSignal, QTimer, QCoreApplication
+    from PySide.QtCore import QSocketNotifier, QObject, QTimer, QCoreApplication
     from PySide.QtCore import QEventLoop
 
 

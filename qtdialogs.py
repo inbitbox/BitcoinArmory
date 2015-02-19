@@ -14159,8 +14159,8 @@ class DlgProgress(ArmoryDialog):
    updated through UpdateText(str)
    """
 
-   updateSignal = pyqtSignal(name='Update')
-   passphraseSignal = pyqtSignal(name='PromptPassphrase')
+   updateSignal = pyqtSignal(str, int, str, name='Update')
+   passphraseSignal = pyqtSignal(object, name='PromptPassphrase')
    exitSignal = pyqtSignal(name='Exit')
 
 
@@ -14361,12 +14361,12 @@ class DlgProgress(ArmoryDialog):
 #################################################################################
 class DlgCorruptWallet(DlgProgress):
 
-   ucfSignal = pyqtSignal(name="UCF")
+   ucfSignal = pyqtSignal(object, bool, name="UCF")
    showSignal = pyqtSignal(name="Show")
    execSignal = pyqtSignal(name="Exec")
-   snpSignal = pyqtSignal(name="SNP")
-   lfwSignal = pyqtSignal(name="LFW")
-   srdSignal = pyqtSignal(name="SRP")
+   snpSignal = pyqtSignal(list, name="SNP")
+   lfwSignal = pyqtSignal(list, name="LFW")
+   srdSignal = pyqtSignal(list, list, list, list, name="SRP")
 
 
    def __init__(self, wallet, status, main=None, parent=None, alreadyFailed=True):

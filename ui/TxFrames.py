@@ -457,7 +457,7 @@ class SendBitcoinsFrame(ArmoryFrame):
                atype, a160 = addrStr_to_hash160(addrList[row]) 
                if atype == -1 or not atype in [ADDRBYTE,P2SHBYTE]:
                   net = 'Unknown Network'
-                  if NETWORKS.has_key(addrList[row][0]):
+                  if addrList[row][0] in NETWORKS:
                      net = NETWORKS[addrList[row][0]]
                   QMessageBox.warning(self, tr('Wrong Network!'), tr("""
                      Address %d is for the wrong network!  You are on the <b>%s</b>
@@ -651,7 +651,7 @@ class SendBitcoinsFrame(ArmoryFrame):
          if reply == QMessageBox.No:
             pass
          elif reply == QMessageBox.Yes:
-            fee = long(minFee)
+            fee = int(minFee)
 
 
       # Warn user of excessive fee specified
@@ -1094,13 +1094,13 @@ class SendBitcoinsFrame(ArmoryFrame):
             self.makeRecipFrame(len(self.widgetTable) + 1)
 
          self.widgetTable[-1]['QLE_ADDR'].setText(dlg.uriDict['address'])
-         if dlg.uriDict.has_key('amount'):
+         if 'amount' in dlg.uriDict:
             amtStr = coin2str(dlg.uriDict['amount'], maxZeros=1).strip()
             self.widgetTable[-1]['QLE_AMT'].setText(amtStr)
 
 
-         haveLbl = dlg.uriDict.has_key('label')
-         haveMsg = dlg.uriDict.has_key('message')
+         haveLbl = 'label' in dlg.uriDict
+         haveMsg = 'message' in dlg.uriDict
 
          dispComment = ''
          if haveLbl and haveMsg:

@@ -120,7 +120,7 @@ class ArmoryMainWindow(QMainWindow):
       if not OS_MACOSX:
          self.setWindowIcon(QIcon(self.iconfile))
       else:
-         self.notifCtr = ArmoryMac.MacNotificationHandler.None
+#         self.notifCtr = ArmoryMac.MacNotificationHandler.None
          if USE_TESTNET:
             self.iconfile = ':/armory_icon_green_fullres.png'
             ArmoryMac.MacDockIconHandler.instance().setMainWindow(self)
@@ -2755,8 +2755,8 @@ class ArmoryMainWindow(QMainWindow):
       # short-term ignore requests to it
       notifyStr = self.getSettingOrSetDefault('NotifyIgnore', '')
       nsz = len(notifyStr)
-      self.notifyIgnoreLong  = set(notifyStr[8*i:8*(i+1)] for i in range(nsz/8))
-      self.notifyIgnoreShort = set(notifyStr[8*i:8*(i+1)] for i in range(nsz/8))
+      self.notifyIgnoreLong  = set(notifyStr[8*i:8*(i+1)] for i in range(int(nsz/8)))
+      self.notifyIgnoreShort = set(notifyStr[8*i:8*(i+1)] for i in range(int(nsz/8)))
 
 
       # Load wallets found in the .armory directory

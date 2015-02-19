@@ -68,7 +68,7 @@ class VerifyOfflinePackageDialog(ArmoryDialog):
       signatureData = allfile[len(magicstart):end]
       fileData = allfile[end+len(magicend):]
       
-      print "All:",end, end+len(magicend), len(fileData), len(allfile)
+      print("All:",end, end+len(magicend), len(fileData), len(allfile))
       
       allsigs = downloadLinkParser(filetext=signatureData).downloadMap
       
@@ -76,14 +76,14 @@ class VerifyOfflinePackageDialog(ArmoryDialog):
       
       good=False
       url=None
-      print "Hash of package file: ", res
+      print("Hash of package file: ", res)
       
       # simply check if any of the hashes match
-      for pack in allsigs.itervalues():
-         for packver in pack.itervalues():
-            for packos in packver.itervalues():
-               for packosver in packos.itervalues():
-                  for packosarch in packosver.itervalues():
+      for pack in allsigs.values():
+         for packver in pack.values():
+            for packos in packver.values():
+               for packosver in packos.values():
+                  for packosarch in packosver.values():
                      okhash = packosarch[1]
                      if okhash == res:
                         url = packosarch[0]

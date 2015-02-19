@@ -38,7 +38,7 @@ Subsequent port by therve
 
 import sys
 import time
-from zope.interface import implements
+from zope.interface import implementer
 from twisted.internet.interfaces import IReactorFDSet
 from twisted.python import log, runtime
 from twisted.internet import posixbase
@@ -124,8 +124,8 @@ class TwistedSocketNotifier(QObject):
 
 
 
+@implementer(IReactorFDSet)
 class QtReactor(posixbase.PosixReactorBase):
-    implements(IReactorFDSet)
 
     def __init__(self):
         self._reads = {}

@@ -22,7 +22,7 @@ from ui.MultiSigModels import \
 import webbrowser
 from armoryengine.CoinSelection import PySelectCoins, PyUnspentTxOut, \
                                     pprintUnspentTxOutList
-import cStringIO
+from io import StringIO
 import textwrap
 
 #############################################################################
@@ -72,7 +72,7 @@ class DlgLockboxEditor(ArmoryDialog):
                                                                openMoreInfo)
 
 
-      self.createDate = long(RightNow())
+      self.createDate = int(RightNow())
       self.loadedID = None
       self.comboM = QComboBox()
       self.comboN = QComboBox()
@@ -175,7 +175,7 @@ class DlgLockboxEditor(ArmoryDialog):
       self.edtBoxName.setMaxLength(64)
 
       self.btnLongDescr = QLabelButton(tr("Set extended info"))
-      self.longDescr = u''
+      self.longDescr = ''
       self.connect(self.btnLongDescr, SIGNAL('clicked()'), self.setLongDescr)
 
       frmName = makeHorizFrame(['Stretch', 
@@ -289,7 +289,7 @@ class DlgLockboxEditor(ArmoryDialog):
 
    #############################################################################
    def clickNameButton(self, i):
-      currName = unicode(self.widgetMap[i]['LBL_NAME'].text())
+      currName = str(self.widgetMap[i]['LBL_NAME'].text())
       dlgComm = DlgSetComment(self, self.main, currName, \
                               'public key', 'ID or contact info')
       if dlgComm.exec_():
@@ -357,7 +357,7 @@ class DlgLockboxEditor(ArmoryDialog):
 
       dlg = DlgSetLongDescr(self, self.longDescr)
       if dlg.exec_():
-         self.longDescr = unicode(dlg.descr.toPlainText())
+         self.longDescr = str(dlg.descr.toPlainText())
    
       
 
@@ -445,8 +445,8 @@ class DlgLockboxEditor(ArmoryDialog):
    def clearAll(self):
       self.edtBoxName.clear()
       self.longDescr = ''
-      for index,widMap in self.widgetMap.iteritems():
-         for key,widget in widMap.iteritems():
+      for index,widMap in self.widgetMap.items():
+         for key,widget in widMap.items():
             if key in ['QLE_PUBK', 'LBL_NAME']:
                widget.clear()
 
@@ -518,7 +518,7 @@ class DlgLockboxEditor(ArmoryDialog):
                QMessageBox.Ok)
             return
 
-         keyComment = unicode(self.widgetMap[i]['LBL_NAME'].text())
+         keyComment = str(self.widgetMap[i]['LBL_NAME'].text())
          #self.widgetMap[i]['METADATA'][binPub] = [wltLoc, authMeth, authData]
          extras = [None, None, None]
          if pkBin in self.widgetMap[i]['METADATA']:
@@ -570,7 +570,7 @@ class DlgLockboxEditor(ArmoryDialog):
             if not reply==QMessageBox.Ok:
                return
             else:
-               self.createDate = long(RightNow())
+               self.createDate = int(RightNow())
       
       if not USE_TESTNET and isMofNNonStandardToSpend(currM, currN):
          reply = QMessageBox.warning(self, tr('Non-Standard to Spend'), tr("""
@@ -1314,7 +1314,7 @@ class DlgLockboxManager(ArmoryDialog):
    def showLedgerTx(self):
       row = self.ledgerView.selectedIndexes()[0].row()
       txHash = str(self.ledgerView.model().index(row, LEDGERCOLS.TxHash).data().toString())
-      txtime = unicode(self.ledgerView.model().index(row, LEDGERCOLS.DateStr).data().toString())
+      txtime = str(self.ledgerView.model().index(row, LEDGERCOLS.DateStr).data().toString())
 
       pytx = None
       txHashBin = hex_to_binary(txHash)
@@ -1574,13 +1574,13 @@ class DlgLockboxManager(ArmoryDialog):
          dateFmt = DEFAULT_DATE_FORMAT
 
       if tr is None:
-         tr = lambda x: unicode(x)
+         tr = lambda x: str(x)
 
-      EMPTYLINE = u''
+      EMPTYLINE = ''
 
       shortName = toUnicode(lb.shortName)
       if len(shortName.strip())==0:
-         shortName = u'<No Lockbox Name'
+         shortName = '<No Lockbox Name'
 
       longDescr = toUnicode(lb.longDescr)
       if len(longDescr.strip())==0:
@@ -2266,7 +2266,7 @@ class DlgSelectPublicKey(ArmoryDialog):
             "02", "03" or "04"."""), QMessageBox.Ok)
          return None
 
-      comm = unicode(self.edtContact.text()).strip() 
+      comm = str(self.edtContact.text()).strip() 
       dPubKey = DecoratedPublicKey(binPub, comm)
       return dPubKey.serializeAscii()
       
@@ -2369,7 +2369,7 @@ class DlgExportAsciiBlock(ArmoryDialog):
       # Iterate over the text block and get the public key ID.
       # WARNING: For now, the code assumes there will be only one ID returned.
       # If this changes in the future, the code must be adjusted as necessary.
-      blockIO = cStringIO.StringIO(self.asciiBlock)
+      blockIO = StringIO.StringIO(self.asciiBlock)
       pkID = getBlockID(blockIO, self.exportObj.BLKSTRING+'-')[0]
 
       # Prepare to send an email with the public key. For now, the email text
@@ -2780,7 +2780,7 @@ class DlgMultiSpendReview(ArmoryDialog):
    
             
 
-         for widgetName,widgetList in iWidgMap.iteritems():
+         for widgetName,widgetList in iWidgMap.items():
             if widgetName in ['HeadLbl', 'Amount']:
                continue
 
@@ -2944,7 +2944,7 @@ class DlgMultiSpendReview(ArmoryDialog):
       self.alreadySigned = {}
 
       # Not sure if we really need this...
-      for wltID,pyWlt in self.main.walletMap.iteritems():
+      for wltID,pyWlt in self.main.walletMap.items():
          txss = self.ustx.evaluateSigningStatus(pyWlt.cppWallet)
          self.relevancyMap[wltID]  = txss.wltIsRelevant
          self.canSignMap[wltID]    = txss.wltCanSign
@@ -2954,7 +2954,7 @@ class DlgMultiSpendReview(ArmoryDialog):
       # This is complex, for sure.  
       #    The outermost loop goes over all inputs and outputs
       #    Then goes over all N public keys
-      for idStr,ib in self.inputBundles.iteritems():
+      for idStr,ib in self.inputBundles.items():
          iWidgMap = self.iWidgets[idStr]
 
          # Since we are calling this without a wlt, each key state can only
@@ -3708,7 +3708,7 @@ class DlgMergePromNotes(ArmoryDialog):
          # desriable in certain contexts).
          self.chkBareMS.setVisible(False)
          self.ttipBareMS.setVisible(False)
-         for lbID,cppWlt in self.main.cppLockboxWltMap.iteritems():
+         for lbID,cppWlt in self.main.cppLockboxWltMap.items():
             if cppWlt.hasScrAddress(promTarget):
                LOGINFO('Have lockbox for the funding target: %s' % lbID)
                lb = self.main.getLockboxByID(lbID) 

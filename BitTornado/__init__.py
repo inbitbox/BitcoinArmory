@@ -4,8 +4,9 @@ version_short = 'T-0.3.17'
 version = version_short+' ('+product_name+')'
 report_email = version_short+'@degreez.net'
 
-from types import StringType
-from sha import sha
+import six
+
+import hashlib 
 from time import time, clock
 try:
     from os import getpid
@@ -28,7 +29,7 @@ _idrandom = [None]
 def resetPeerIDs():
     try:
         f = open('/dev/urandom','rb')
-        x = f.read(20)
+        x = f.read(20).decode("ascii")
         f.close()
     except:
         x = ''
@@ -38,26 +39,25 @@ def resetPeerIDs():
     while t == clock():
         l1 += 1
     l2 = 0
-    t = long(time()*100)
-    while t == long(time()*100):
+    t = int(time()*100)
+    while t == int(time()*100):
         l2 += 1
     l3 = 0
     if l2 < 1000:
-        t = long(time()*10)
-        while t == long(clock()*10):
+        t = int(time()*10)
+        while t == int(clock()*10):
             l3 += 1
-    x += ( repr(time()) + '/' + str(time()) + '/'
-           + str(l1) + '/' + str(l2) + '/' + str(l3) + '/'
-           + str(getpid()) )
+    z = "%s/%s/%s/%s/%s/%s" % ( time(), time(), l1, l2 , l3, getpid())
+    x += z
 
     s = ''
-    for i in sha(x).digest()[-11:]:
-        s += mapbase64[ord(i) & 0x3F]
+    for i in hashlib.sha1(x.encode("ascii")).digest()[-11:]:
+        s += mapbase64[i & 0x3F]
     _idrandom[0] = s
         
 resetPeerIDs()
 
 def createPeerID(ins = '---'):
-    assert type(ins) is StringType
+    assert isinstance(ins, six.string_types)
     assert len(ins) == 3
     return _idprefix + ins + _idrandom[0]

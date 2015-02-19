@@ -14,11 +14,11 @@
 ################################################################################
 import ast
 from datetime import datetime
-from email.MIMEMultipart import MIMEMultipart
-from email.MIMEBase import MIMEBase
-from email.MIMEText import MIMEText
-from email.Utils import COMMASPACE, formatdate
-from email import Encoders
+from email.mime.multipart import MIMEMultipart, MIMEBase
+from email.mime import text as MIMEText
+from email.utils import COMMASPACE, formatdate
+
+import binascii
 import hashlib
 import inspect
 import locale
@@ -253,7 +253,7 @@ CLI_ARGS = None
 # This is probably an abuse of the CLI_OPTIONS structure, but not
 # automatically expanding "~" symbols is killing me
 for opt,val in list(CLI_OPTIONS.__dict__.items()):
-   if not isinstance(val, basestring) or not val.startswith('~'):
+   if not isinstance(val, six.string_types) or not val.startswith('~'):
       continue
 
    if os.path.exists(os.path.expanduser(val)):
@@ -1107,13 +1107,13 @@ def GetSystemDetails():
    out.Machine  = platform.machine().lower()
    if OS_LINUX:
       # Get total RAM
-      freeStr = subprocess_check_output('free -m', shell=True)
+      freeStr = subprocess_check_output('free -m', shell=True).decode("ascii")
       totalMemory = freeStr.split('\n')[1].split()[1]
       out.Memory = int(totalMemory) * 1024
 
       # Get CPU name
       out.CpuStr = 'Unknown'
-      cpuinfo = subprocess_check_output(['cat','/proc/cpuinfo'])
+      cpuinfo = subprocess_check_output(['cat','/proc/cpuinfo']).decode("ascii")
       for line in cpuinfo.split('\n'):
          if line.strip().lower().startswith('model name'):
             out.CpuStr = line.split(':')[1].strip()
@@ -1651,16 +1651,16 @@ def isASCII(theStr):
 
 
 def toBytes(theStr, theEncoding=DEFAULT_ENCODING):
-   if isinstance(theStr, unicode):
+   if isinstance(theStr, str):
       return theStr.encode(theEncoding)
-   elif isinstance(theStr, str):
+   elif isinstance(theStr, bytes):
       return theStr
    else:
       LOGERROR('toBytes() not been defined for input: %s', str(type(theStr)))
 
 
 def toUnicode(theStr, theEncoding=DEFAULT_ENCODING):
-   if isinstance(theStr, unicode):
+   if isinstance(theStr, str):
       return theStr
    elif isinstance(theStr, str):
       return unicode(theStr, theEncoding)
@@ -1935,7 +1935,7 @@ def hex_to_binary(h, endIn=LITTLEENDIAN, endOut=LITTLEENDIAN):
    bout = h.replace(' ','')  # copies data, no references
    if not endIn==endOut:
       bout = hex_switchEndian(bout)
-   return bout.decode('hex_codec')
+   return binascii.unhexlify(bout)
 
 
 def binary_to_hex(b, endOut=LITTLEENDIAN, endIn=LITTLEENDIAN):
@@ -1943,7 +1943,7 @@ def binary_to_hex(b, endOut=LITTLEENDIAN, endIn=LITTLEENDIAN):
    Converts binary to hexadecimal.  Endianness is only switched
    if (endIn != endOut)
    """
-   hout = b.encode('hex_codec')
+   hout = binascii.hexlify(b)
    if not endOut==endIn:
       hout = hex_switchEndian(hout)
    return hout
@@ -2014,7 +2014,7 @@ def binary_to_base58(binstr):
    n = 0
    for ch in binstr:
       n *= 256
-      n += ord(ch)
+      n += ch
 
    b58 = ''
    while n > 0:
@@ -2094,7 +2094,7 @@ def hash160_to_addrStr(binStr, netbyte=ADDRBYTE):
    if not len(binStr) == 20:
       raise InvalidHashError('Input string is %d bytes' % len(binStr))
 
-   addr21 = netbyte + binStr
+   addr21 = netbyte.encode("utf-32") + binStr
    addr25 = addr21 + hash256(addr21)[:4]
    return binary_to_base58(addr25);
 
@@ -2243,7 +2243,7 @@ def unixTimeToFormatStr(unixTime, formatStr=DEFAULT_DATE_FORMAT):
    pleasant, human-readable format
    """
    dtobj = datetime.fromtimestamp(unixTime)
-   dtstr = '' + dtobj.strftime(formatStr).decode('utf-8')
+   dtstr = '' + dtobj.strftime(formatStr)
    dtstr = dtstr.encode('ascii', errors='replace')
    return dtstr[:-2] + dtstr[-2:].lower()
 
@@ -2443,20 +2443,12 @@ def CreateQRMatrix(dataToEncode, errLevel=QRErrorCorrectLevel.L):
 
 
 # The following params are for the Bitcoin elliptic curves (secp256k1)
-if six.PY2:
-   SECP256K1_MOD   = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2FL
-   SECP256K1_ORDER = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141L
-   SECP256K1_B     = 0x0000000000000000000000000000000000000000000000000000000000000007L
-   SECP256K1_A     = 0x0000000000000000000000000000000000000000000000000000000000000000L
-   SECP256K1_GX    = 0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798L
-   SECP256K1_GY    = 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8L
-else:
-   SECP256K1_MOD   = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F
-   SECP256K1_ORDER = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141
-   SECP256K1_B     = 0x0000000000000000000000000000000000000000000000000000000000000007
-   SECP256K1_A     = 0x0000000000000000000000000000000000000000000000000000000000000000
-   SECP256K1_GX    = 0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798
-   SECP256K1_GY    = 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8
+SECP256K1_MOD   = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F
+SECP256K1_ORDER = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141
+SECP256K1_B     = 0x0000000000000000000000000000000000000000000000000000000000000007
+SECP256K1_A     = 0x0000000000000000000000000000000000000000000000000000000000000000
+SECP256K1_GX    = 0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798
+SECP256K1_GY    = 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8
 
 ################################################################################
 ################################################################################
@@ -3638,10 +3630,10 @@ class SettingsFile(object):
                valStr = ' $  '.join([str(v) for v in val])
             f.write(key.ljust(36))
             f.write(' | ')
-            f.write(toBytes(valStr))
+            f.write(toBytes(valStr).decode("UTF-8"))
             f.write('\n')
          except:
-            LOGEXCEPT('Invalid entry in SettingsFile... skipping')
+            LOGEXCEPT('Invalid entry in SettingsFile %s: %s... skipping' % (key, val))
       f.close()
 
 
@@ -3654,7 +3646,7 @@ class SettingsFile(object):
          raise FileExistsError('Settings file DNE:' + path)
 
       f = open(path, 'rb')
-      sdata = f.read()
+      sdata = f.read().decode("ascii")
       f.close()
 
       # Automatically convert settings to numeric if possible
@@ -3673,8 +3665,7 @@ class SettingsFile(object):
             else:
                return toUnicode(v)
 
-
-      sdata = [line.strip() for line in sdata.split('\n')]
+      sdata = [line.strip() for line in sdata.split("\n")]
       for line in sdata:
          if len(line.strip())==0:
             continue
@@ -3719,6 +3710,7 @@ class FakeTDM(object):
 DISABLE_TORRENTDL = CLI_OPTIONS.disableTorrent
 TheTDM = FakeTDM()
 try:
+   raise RuntimeError("")
    from . import torrentDL
    TheTDM = torrentDL.TorrentDownloadManager()
 except:

@@ -2674,7 +2674,7 @@ def PyCreateAndSignTx(ustxiList, dtxoList, sbdPrivKeyMap, hashcode=1, DetSign=Tr
 #
 def PyCreateAndSignTx_old(srcTxOuts, dstAddrsVals):
    # This needs to support multisig. Perhaps the funct should just be moved....
-   from armoryengine.MultiSigUtils import *
+   from armoryengine.MultiSigUtils import MultiSigLockbox
 
    newTx = PyTx()
    newTx.version    = 1

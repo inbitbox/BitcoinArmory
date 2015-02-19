@@ -5,9 +5,9 @@
 # See LICENSE or http://www.gnu.org/licenses/agpl.html                         #
 #                                                                              #
 ################################################################################
-from armoryengine.ArmoryUtils import *
-from armoryengine.Transaction import *
-from armoryengine.Script import *
+from .ArmoryUtils import *
+from .Transaction import *
+from .Script import *
 
 MULTISIG_VERSION = 1
 

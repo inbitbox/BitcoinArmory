@@ -512,8 +512,8 @@ class SetPassphraseFrame(ArmoryFrame):
       p2 = self.editPasswd2.text()
       goodColor = htmlColor('TextGreen')
       badColor = htmlColor('TextRed')
-      if not isASCII(unicode(p1)) or \
-         not isASCII(unicode(p2)):
+      if not isASCII(str(p1)) or \
+         not isASCII(str(p2)):
          if sideEffects:
             self.lblMatches.setText('<font color=%s><b>Passphrase is non-ASCII!</b></font>' % badColor)
          result = False

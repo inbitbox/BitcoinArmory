@@ -622,9 +622,9 @@ class UpgradeDownloaderDialog(ArmoryDialog):
    # to look into
    def cascadeOs(self):
       allOSes = set()
-      for pack in self.nestedDownloadMap.itervalues():
-         for packver in pack.itervalues():
-            for os in packver.iterkeys():
+      for pack in self.nestedDownloadMap.values():
+         for packver in pack.values():
+            for os in packver.keys():
                allOSes.add(os)
       self.cascade(self.os, allOSes, self.cascadeOsVer)
 
@@ -635,10 +635,10 @@ class UpgradeDownloaderDialog(ArmoryDialog):
          return
 
       allVers = set()
-      for pack in self.nestedDownloadMap.itervalues():
-         for packver in pack.itervalues():
+      for pack in self.nestedDownloadMap.values():
+         for packver in pack.values():
             if chosenos in packver:
-               for osver in packver[chosenos].iterkeys():
+               for osver in packver[chosenos].keys():
                   allVers.add(osver)
 
       # We use a list here because we need to sort the subvers
@@ -652,10 +652,10 @@ class UpgradeDownloaderDialog(ArmoryDialog):
          return
 
       allArchs = set()
-      for pack in self.nestedDownloadMap.itervalues():
-         for packver in pack.itervalues():
+      for pack in self.nestedDownloadMap.values():
+         for packver in pack.values():
             if chosenos in packver and chosenosver in packver[chosenos]:
-               for osarch in packver[chosenos][chosenosver].iterkeys():
+               for osarch in packver[chosenos][chosenosver].keys():
                   allArchs.add(osarch)
       self.cascade(self.osarch, allArchs, self.displayPackages)
 
@@ -668,8 +668,8 @@ class UpgradeDownloaderDialog(ArmoryDialog):
       if len(chosenosarch)==0:
          return
 
-      for packname,pack in self.nestedDownloadMap.iteritems():
-         for packvername,packver in pack.iteritems():
+      for packname,pack in self.nestedDownloadMap.items():
+         for packvername,packver in pack.items():
             if chosenos in packver \
                and chosenosver in packver[chosenos] \
                and chosenosarch in packver[chosenos][chosenosver]:

@@ -1855,7 +1855,5 @@ class SignBroadcastOfflineTxFrame(ArmoryFrame):
          
 
 # Need to put circular imports at the end of the script to avoid an import deadlock
-from qtdialogs import clicked(), DlgConfirmSend, DlgUriCopyAndPaste, \
-         DlgUnlockWallet, extractTxInfo, DlgDispTxInfo, NO_CHANGE, STRETCH
-
-
+from qtdialogs import DlgConfirmSend, DlgUriCopyAndPaste, DlgUnlockWallet, \
+   extractTxInfo, DlgDispTxInfo, NO_CHANGE, STRETCH

@@ -1041,6 +1041,7 @@ class WizardCreateWatchingOnlyWalletFrame(ArmoryFrame):
    def setWallet(self, wlt):
       self.wlt = wlt
       
-# Need to put circular imports at the end of the script to avoid an import deadlock
-from qtdialogs import clicked(), DlgCoinControl, STRETCH, MIN_PASSWD_WIDTH, \
+# Need to put circular imports at the end of the script to avoid an import
+# deadlock
+from qtdialogs import DlgCoinControl, STRETCH, MIN_PASSWD_WIDTH, \
    QRadioButtonBackupCtr, OpenPaperBackupWindow, DlgUnlockWallet, DlgShowKeyList

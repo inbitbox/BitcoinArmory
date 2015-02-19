@@ -338,9 +338,9 @@ class BlockDataManager(object):
       bdmConfig.pruneType = Cpp.DB_PRUNE_NONE
       bdmConfig.blkFileLocation = blockdir
       bdmConfig.levelDBLocation = armoryDBDir
-      bdmConfig.setGenesisBlockHash(GENESIS_BLOCK_HASH.encode("utf-32"))
-      bdmConfig.setGenesisTxHash(GENESIS_TX_HASH.encode("utf-32"))
-      bdmConfig.setMagicBytes(MAGIC_BYTES.encode("utf-32"))
+      bdmConfig.setGenesisBlockHash(GENESIS_BLOCK_HASH)
+      bdmConfig.setGenesisTxHash(GENESIS_TX_HASH)
+      bdmConfig.setMagicBytes(MAGIC_BYTES)
 
       return bdmConfig
 

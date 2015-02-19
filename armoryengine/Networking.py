@@ -231,7 +231,7 @@ class ArmoryClient(Protocol):
          msg.payload.hashList = [self.factory.bdm.bdm.getHeaderByHeight(i).getHash() for i in numList]
       else:
          msg.payload.hashList = []
-      msg.payload.hashStop = '\x00'*32
+      msg.payload.hashStop = b'\x00'*32
    
       self.sentHeadersReq = True
 
@@ -246,7 +246,7 @@ class ArmoryClient(Protocol):
          msg.payload.hashList = [self.factory.bdm.bdm.getHeaderByHeight(i).getHash() for i in numList]
       else:
          msg.payload.hashList = []
-      msg.payload.hashStop = '\x00'*32
+      msg.payload.hashStop = b'\x00'*32
 
 
    ############################################################
@@ -455,7 +455,7 @@ class PyMessage(object):
    def serialize(self):
       bp = BinaryPacker()
       bp.put(BINARY_CHUNK, self.magic,                    width= 4)
-      bp.put(BINARY_CHUNK, self.cmd.ljust(12, '\x00'),    width=12)
+      bp.put(BINARY_CHUNK, self.cmd.ljust(12, b'\x00'),    width=12)
       payloadBin = self.payload.serialize()
       bp.put(UINT32, len(payloadBin))
       bp.put(BINARY_CHUNK, hash256(payloadBin)[:4],     width= 4)
@@ -470,7 +470,7 @@ class PyMessage(object):
 
 
       self.magic = msgData.get(BINARY_CHUNK, 4)
-      self.cmd   = msgData.get(BINARY_CHUNK, 12).strip('\x00')
+      self.cmd   = msgData.get(BINARY_CHUNK, 12).strip(b'\x00')
       length     = msgData.get(UINT32)
       chksum     = msgData.get(BINARY_CHUNK, 4)
       payload    = msgData.get(BINARY_CHUNK, length)
@@ -535,7 +535,7 @@ class PyNetAddress(object):
       if withTimeField:
          bp.put(UINT32,       self.time)
       bp.put(UINT64,       bitset_to_int(self.services))
-      bp.put(BINARY_CHUNK, quad_to_binary(self.addrQuad).rjust(16,'\x00'))
+      bp.put(BINARY_CHUNK, quad_to_binary(self.addrQuad).rjust(16,b'\x00'))
       bp.put(UINT16,       self.port, endianness=NETWORKENDIAN)
       return bp.getBinaryString()
 

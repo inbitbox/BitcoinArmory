@@ -2885,17 +2885,13 @@ class ArmoryMainWindow(QMainWindow):
       # calls a dialog produces better results but still freezes under some
       # circumstances.
       if not OS_MACOSX:
-         fullPath = str(QFileDialog.getSaveFileName(self, title, startPath,
-                                                        typesStr))
+         fullPath, filterType = QFileDialog.getSaveFileName(self, title, startPath, typesStr)
       else:
-         fullPath = str(QFileDialog.getSaveFileName(self, title, startPath,
-                                                        typesStr,
-                                       options=QFileDialog.DontUseNativeDialog))
+         fullPath, filterType = QFileDialog.getSaveFileName(self, title, startPath, typesStr, options=QFileDialog.DontUseNativeDialog)
 
       fdir,fname = os.path.split(fullPath)
       if fdir:
          self.writeSetting('LastDirectory', fdir)
-      LOGERROR("%s" % fullPath)
       return fullPath
 
 

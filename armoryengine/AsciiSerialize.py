@@ -63,7 +63,7 @@ class AsciiSerializable(object):
 
    #############################################################################
    def serializeAscii(self):
-      headStr = '%s-%s' % (self.BLKSTRING, self.asciiID)
+      headStr = self.BLKSTRING + b"-" + self.asciiID
       return makeAsciiBlock(self.serialize(), headStr)
 
 
@@ -74,7 +74,7 @@ class AsciiSerializable(object):
          LOGERROR('Expected str "%s", got "%s"' % (self.BLKSTRING, headStr))
          raise UnserializeError('Unexpected BLKSTRING')
 
-      expectID = headStr.split('-')[-1]
+      expectID = headStr.split(b'-')[-1]
       return self.unserialize(rawData, expectID, skipMagicCheck)
    
 

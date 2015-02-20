@@ -33,6 +33,8 @@ import signal
 import smtplib
 from struct import pack, unpack
 
+from urllib.parse import urlparse, parse_qs
+
 #from subprocess import PIPE
 import sys
 import threading
@@ -69,17 +71,17 @@ LEVELDB_HEADERS = 'leveldb_headers'
 BTCARMORY_VERSION    = (0, 93,  0, 0)  # (Major, Minor, Bugfix, AutoIncrement) 
 PYBTCWALLET_VERSION  = (1, 35,  0, 0)  # (Major, Minor, Bugfix, AutoIncrement)
 
-ARMORY_DONATION_ADDR = '1ArmoryXcfq7TnCSuZa9fQjRYwJ4bkRKfv'
-ARMORY_DONATION_PUBKEY = ( '04'
-      '11d14f8498d11c33d08b0cd7b312fb2e6fc9aebd479f8e9ab62b5333b2c395c5'
-      'f7437cab5633b5894c4a5c2132716bc36b7571cbe492a7222442b75df75b9a84')
-ARMORY_INFO_SIGN_ADDR = '1NWvhByxfTXPYNT4zMBmEY3VL8QJQtQoei'
-ARMORY_INFO_SIGN_PUBLICKEY = ('04'
-      'af4abc4b24ef57547dd13a1110e331645f2ad2b99dfe1189abb40a5b24e4ebd8'
-      'de0c1c372cc46bbee0ce3d1d49312e416a1fa9c7bb3e32a7eb3867d1c6d1f715')
-SATOSHI_PUBLIC_KEY = ( '04'
-      'fc9702847840aaf195de8442ebecedf5b095cdbb9bc716bda9110971b28a49e0'
-      'ead8564ff0db22209e0374782c093bb899692d524e9d6a6956e7c5ecbcd68284')
+ARMORY_DONATION_ADDR = b'1ArmoryXcfq7TnCSuZa9fQjRYwJ4bkRKfv'
+ARMORY_DONATION_PUBKEY = ( b'04'
+      + b'11d14f8498d11c33d08b0cd7b312fb2e6fc9aebd479f8e9ab62b5333b2c395c5'
+      + b'f7437cab5633b5894c4a5c2132716bc36b7571cbe492a7222442b75df75b9a84')
+ARMORY_INFO_SIGN_ADDR = b'1NWvhByxfTXPYNT4zMBmEY3VL8QJQtQoei'
+ARMORY_INFO_SIGN_PUBLICKEY = (b'04'
+      + b'af4abc4b24ef57547dd13a1110e331645f2ad2b99dfe1189abb40a5b24e4ebd8'
+      + b'de0c1c372cc46bbee0ce3d1d49312e416a1fa9c7bb3e32a7eb3867d1c6d1f715')
+SATOSHI_PUBLIC_KEY = ( b'04'
+      + b'fc9702847840aaf195de8442ebecedf5b095cdbb9bc716bda9110971b28a49e0'
+      + b'ead8564ff0db22209e0374782c093bb899692d524e9d6a6956e7c5ecbcd68284')
 
 
 indent = ' '*3
@@ -132,8 +134,8 @@ parser.add_option("--coverage_output_dir", dest="coverageOutputDir", default=Non
 parser.add_option("--coverage_include", dest="coverageInclude", default=None, type="str", help="Unit Test Argument - Do not consume")
 
 # Some useful constants to be used throughout everything
-BASE58CHARS  = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
-BASE16CHARS  = '0123456789abcdefABCDEF'
+BASE58CHARS  = b'123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
+BASE16CHARS  = b'0123456789abcdefABCDEF'
 LITTLEENDIAN  = '<'
 BIGENDIAN     = '>'
 NETWORKENDIAN = '!'
@@ -164,7 +166,7 @@ YEAR     = 365*DAY
 UNCOMP_PK_LEN = 65
 COMP_PK_LEN   = 33
 
-KILOBYTE = 1024.0
+KILOBYTE = 1024
 MEGABYTE = 1024*KILOBYTE
 GIGABYTE = 1024*MEGABYTE
 TERABYTE = 1024*GIGABYTE
@@ -364,7 +366,7 @@ def getVersionInt(vquad, numPieces=4):
    return vint
 
 def readVersionString(verStr):
-   verList = [int(piece) for piece in verStr.split(b'.')]
+   verList = [int(piece) for piece in verStr.split('.')]
    while len(verList)<4:
       verList.append(0)
    return tuple(verList)
@@ -756,7 +758,7 @@ def LOGWARN(msg, *a):
    try:
       logstr = msg if len(a)==0 else (msg%a)
       callerStr = getCallerLine() + ' - '
-      logging.warn(callerStr + logstr)
+      logging.warning(callerStr + logstr)
    except TypeError:
       traceback.print_stack()
       raise
@@ -790,7 +792,7 @@ def chopLogFile(filename, size):
       print('Log file doesn\'t exist [yet]')
       return
 
-   logFile = open(filename, 'r')
+   logFile = open(filename, 'rb')
    logFile.seek(0,2) # move the cursor to the end of the file
    currentSize = logFile.tell()
    if currentSize > size:
@@ -813,7 +815,7 @@ def chopLogFile(filename, size):
    
       logFile = open(filename, 'w')
       for line in logLines[-nLines:]:
-         logFile.write(line)
+         logFile.write(line.decode('ascii'))
       logFile.close()
 
 # Cut down the log file to just the most recent 1 MB
@@ -1036,11 +1038,11 @@ def addWalletToList(inWltPath, inWltList):
    '''Helper function that checks to see if a path contains a valid wallet. If
       so, the wallet will be added to the incoming list.'''
    if os.path.isfile(inWltPath):
-      if not inWltPath.endswith('backup.wallet'):
+      if not inWltPath[-13:] == b'backup.wallet':
          openfile = open(inWltPath, 'rb')
          first8 = openfile.read(8)
          openfile.close()
-         if first8=='\xbaWALLET\x00':
+         if first8==b'\xbaWALLET\x00':
             inWltList.append(inWltPath)
    else:
       if not os.path.isdir(inWltPath):
@@ -1302,56 +1304,58 @@ def coin2str_approx(nSatoshi, sigfig=3):
 
 
 def str2coin(theStr, negAllowed=True, maxDec=8, roundHighPrec=True):
-   coinStr = str(theStr)
+   assert(isinstance(theStr, bytes))
+   coinStr = theStr
    if len(coinStr.strip())==0:
       raise ValueError
 
-   isNeg = ('-' in coinStr)
-   coinStrPos = coinStr.replace('-','')
-   if not '.' in coinStrPos:
+   isNeg = (b'-' in coinStr)
+   coinStrPos = coinStr.replace(b'-',b'')
+   if not b'.' in coinStrPos:
       if not negAllowed and isNeg:
          raise NegativeValueError
       return (int(coinStrPos)*ONE_BTC)*(-1 if isNeg else 1)
    else:
-      lhs,rhs = coinStrPos.strip().split('.')
-      if len(lhs.strip('-'))==0:
-         lhs='0'
+      lhs,rhs = coinStrPos.strip().split(b'.')
+      if len(lhs.strip(b'-'))==0:
+         lhs=b'0'
       if len(rhs)>maxDec and not roundHighPrec:
          raise TooMuchPrecisionError
       if not negAllowed and isNeg:
          raise NegativeValueError
-      fullInt = (int(lhs + rhs[:9].ljust(9,'0')) + 5) / 10
+      fullInt = (int(lhs + rhs[:9].ljust(9,b'0')) + 5) // 10
       return fullInt*(-1 if isNeg else 1)
 
 
 
 ################################################################################
-def makeAsciiBlock(binStr, headStr='', wid=64, newline='\n'):
+def makeAsciiBlock(binStr, headStr=b'', wid=64, newline=b'\n'):
    # Convert the raw chunk of binary data
    b64Data = base64.b64encode(binStr)
    sz = len(b64Data)
-   firstLine = '=====%s' % headStr
-   lines = [firstLine.ljust(wid, '=')]
-   lines.extend([b64Data[wid*i:wid*(i+1)] for i in range((sz-1)/wid+1)])
-   lines.append("="*wid)
+   firstLine = b'=====' + headStr
+   lines = [firstLine.ljust(wid, b'=')]
+   lines.extend([b64Data[wid*i:wid*(i+1)] for i in range((sz-1)//wid+1)])
+   lines.append(b"="*wid)
    return newline.join(lines)
 
 
 ################################################################################
-def readAsciiBlock(ablock, headStr=''):
-   headStr = ''
+def readAsciiBlock(ablock, headStr=b''):
+   assert(isinstance(ablock, bytes))
+   headStr = b''
    rawData = None
 
    # Contiue only if we actually get data.
    if len(ablock) > 0:
       lines = ablock.strip().split()
-      if not lines[0].startswith('=====%s' % headStr) or \
-         not lines[-1].startswith('======'):
+      if not lines[0][:5+len(headStr)] == b'=====' + headStr or \
+         not lines[-1][:6] == b'======':
          LOGERROR('Attempting to unserialize something not an ASCII block')
-         return lines[0].strip('='), None
+         return lines[0].replace(b'=',b''), None
 
-      headStr = lines[0].strip('=')
-      rawData = base64.b64decode(''.join(lines[1:-1]))
+      headStr = lines[0].replace(b'=',b'')
+      rawData = base64.b64decode(b''.join(lines[1:-1]))
 
    return (headStr, rawData)
 
@@ -1447,12 +1451,9 @@ def hash160_to_p2pkhash_script(binStr20):
 
    from .Transaction import getOpCode
    from .Script import scriptPushData
-   outScript = ''.join([  getOpCode('OP_DUP'        ), \
-                          getOpCode('OP_HASH160'    ), \
-                          scriptPushData(binStr20),
-                          getOpCode('OP_EQUALVERIFY'), \
-                          getOpCode('OP_CHECKSIG'   )])
-   return outScript
+   scr = [i for i in scriptPushData(binStr20)]
+   return bytes([ getOpCode('OP_DUP'), getOpCode('OP_HASH160') ] + scr +
+                [ getOpCode('OP_EQUALVERIFY'), getOpCode('OP_CHECKSIG')])
 
 
 ################################################################################
@@ -1464,10 +1465,9 @@ def hash160_to_p2sh_script(binStr20):
 
    from .Transaction import getOpCode
    from .Script import scriptPushData
-   outScript = ''.join([  getOpCode('OP_HASH160'), 
-                          scriptPushData(binStr20),
-                          getOpCode('OP_EQUAL')])
-   return outScript
+   scr = [i for i in scriptPushData(binStr20)]
+   return bytes([getOpCode('OP_HASH160')] + scr + [getOpCode('OP_EQUAL')])
+
 
 ################################################################################
 # Convert an arbitrary script into a P2SH script
@@ -1487,7 +1487,7 @@ def pubkey_to_p2pk_script(binStr33or65):
    from .Transaction import getOpCode
    from .Script import scriptPushData
    serPubKey = scriptPushData(binStr33or65)
-   outScript = serPubKey + getOpCode('OP_CHECKSIG')
+   outScript = serPubKey + bytes([getOpCode('OP_CHECKSIG')])
    return outScript
 
 
@@ -1514,14 +1514,14 @@ def pubkeylist_to_multisig_script(pkList, M, withSort=True):
    if withSort:
       newPkList = sorted(pkList)
 
-   outScript = opM
+   outScript = [opM]
    for pk in newPkList:
-      outScript += int_to_binary(len(pk), widthBytes=1)
+      outScript.append(len(pk))
       outScript += pk
-   outScript += opN
-   outScript += getOpCode('OP_CHECKMULTISIG')
+   outScript += [opN]
+   outScript += [getOpCode('OP_CHECKMULTISIG')]
 
-   return outScript
+   return bytes(outScript)
 
 ################################################################################
 def scrAddr_to_script(scraddr):
@@ -1532,12 +1532,15 @@ def scrAddr_to_script(scraddr):
    a scrAddr is intended to be an intelligent "hash" of the script, 
    and it's a perk that most of the time we can reverse it to get the script.
    """
+
+   assert(isinstance(scraddr, bytes))
+
    if len(scraddr)==0:
       raise BadAddressError('Empty scraddr')
 
-   prefix = scraddr[0]
-   if not prefix in SCRADDR_BYTE_LIST or not len(scraddr)==21:
-      LOGERROR('Bad scraddr: "%s"' % binary_to_hex(scraddr))
+   prefix = scraddr[0:1]
+   if prefix not in SCRADDR_BYTE_LIST or not len(scraddr)==21:
+      LOGERROR('Bad scraddr: "%s"' % binary_to_hex(scraddr).decode())
       raise BadAddressError('Invalid ScrAddress')
 
    if prefix==SCRADDR_P2PKH_BYTE:
@@ -1551,23 +1554,24 @@ def scrAddr_to_script(scraddr):
 
 ################################################################################
 def script_to_scrAddr(binScript):
+   assert(isinstance(binScript, bytes))
    """ Convert a binary script to scrAddr string (used by BDM) """
    return Cpp.BtcUtils().getScrAddrForScript(binScript)
 
 ################################################################################
 def script_to_addrStr(binScript):
+   assert(isinstance(binScript, bytes))
    """ Convert a binary script to scrAddr string (used by BDM) """
    return scrAddr_to_addrStr(script_to_scrAddr(binScript))
 
 ################################################################################
 def scrAddr_to_addrStr(scrAddr):
+   assert(isinstance(scrAddr, bytes))
    if len(scrAddr)==0:
       raise BadAddressError('Empty scrAddr')
-
-   prefix = scrAddr[0]
+   prefix = scrAddr[0:1]
    if not prefix in SCRADDR_BYTE_LIST or not len(scrAddr)==21:
       raise BadAddressError('Invalid ScrAddress')
-
    if prefix==SCRADDR_P2PKH_BYTE:
       return hash160_to_addrStr(scrAddr[1:])
    elif prefix==SCRADDR_P2SH_BYTE:
@@ -1580,6 +1584,7 @@ def scrAddr_to_addrStr(scrAddr):
 # We beat around the bush here, to make sure it goes through addrStr which
 # triggers errors if this isn't a regular addr or P2SH addr
 def scrAddr_to_hash160(scrAddr):
+   assert(isinstance(scrAddr, bytes))
    addr = scrAddr_to_addrStr(scrAddr)
    atype, a160 = addrStr_to_hash160(addr)
    return (atype, a160)
@@ -1587,6 +1592,7 @@ def scrAddr_to_hash160(scrAddr):
 
 ################################################################################
 def addrStr_to_scrAddr(addrStr):
+   assert(isinstance(addrStr, bytes))
    if not checkAddrStrValid(addrStr):
       BadAddressError('Invalid address: "%s"' % addrStr)
 
@@ -1602,6 +1608,7 @@ def addrStr_to_scrAddr(addrStr):
 ################################################################################
 def addrStr_to_script(addrStr):
    """ Convert an addr string to a binary script """
+   assert(isinstance(addrStr, bytes))
    return scrAddr_to_script(addrStr_to_scrAddr(addrStr))
 
 
@@ -1660,6 +1667,8 @@ def toBytes(theStr, theEncoding=DEFAULT_ENCODING):
 def toUnicode(theStr, theEncoding=DEFAULT_ENCODING):
    if isinstance(theStr, str):
       return theStr
+   elif isinstance(theStr, bytes):
+      return theStr.decode("utf-8")
    else:
       try:
          return str(theStr)
@@ -1900,8 +1909,8 @@ def pprintDiff(str1, str2, indent=''):
 ##### Switch endian-ness #####
 def hex_switchEndian(s):
    """ Switches the endianness of a hex string (in pairs of hex chars) """
-   pairList = [s[i]+s[i+1] for i in range(0,len(s),2)]
-   return ''.join(pairList[::-1])
+   pairList = [s[i:i+2] for i in range(0,len(s),2)]
+   return b''.join(pairList[::-1])
 def binary_switchEndian(s):
    """ Switches the endianness of a binary string """
    return s[::-1]
@@ -1915,15 +1924,12 @@ def int_to_hex(i, widthBytes=0, endOut=LITTLEENDIAN):
    little-endian.   Use the widthBytes argument to add 0-padding where needed
    if you are expecting constant-length output.
    """
-   h = hex(i)[2:]
-   if len(h)%2 == 1:
-      h = '0'+h
-   if not widthBytes==0:
-      nZero = 2*widthBytes - len(h)
-      if nZero > 0:
-         h = '0'*nZero + h
-   if endOut==LITTLEENDIAN:
-      h = hex_switchEndian(h)
+   assert(isinstance(i, int))
+
+   b = int_to_binary(i, widthBytes // 2, endOut)
+   h = binary_to_hex(b)
+   if len(b) < widthBytes:
+      h += b'00' * (widthBytes - len(b))
    return h
 
 
@@ -1932,7 +1938,7 @@ def hex_to_int(h, endIn=LITTLEENDIAN):
    Convert hex-string to integer (or long).  Default behavior is to interpret
    hex string as little-endian
    """
-   hstr = h.replace(' ','')  # copies data, no references
+   hstr = h.replace(b' ',b'')  # copies data, no references
    if endIn==LITTLEENDIAN:
       hstr = hex_switchEndian(hstr)
    return( int(hstr, 16) )
@@ -1944,7 +1950,8 @@ def hex_to_binary(h, endIn=LITTLEENDIAN, endOut=LITTLEENDIAN):
    Converts hexadecimal to binary (in a python string).  Endianness is
    only switched if (endIn != endOut)
    """
-   bout = h.replace(' ','')  # copies data, no references
+   assert(isinstance(h, bytes))
+   bout = h.replace(b' ',b'')  # copies data, no references
    if not endIn==endOut:
       bout = hex_switchEndian(bout)
    return binascii.unhexlify(bout)
@@ -1955,9 +1962,7 @@ def binary_to_hex(b, endOut=LITTLEENDIAN, endIn=LITTLEENDIAN):
    Converts binary to hexadecimal.  Endianness is only switched
    if (endIn != endOut)
    """
-   if not isinstance(b, bytes):
-      raise RuntimeError("text should be binary, not %s" % type(b))
-
+   assert(isinstance(b, bytes))
    hout = binascii.hexlify(b)
    if not endOut==endIn:
       hout = hex_switchEndian(hout)
@@ -1974,8 +1979,21 @@ def int_to_binary(i, widthBytes=0, endOut=LITTLEENDIAN):
    as necessary, and to use little-endian.  This can be changed with
    the two optional input arguemnts.
    """
-   h = int_to_hex(i,widthBytes)
-   return hex_to_binary(h, endOut=endOut)
+   assert(isinstance(i, int))
+
+   ints = []
+   while i > 0:
+      i, m = divmod(i, 256)
+      ints.append(m)
+
+   if len(ints) < widthBytes:
+      for x in range(widthBytes - len(ints)):
+         ints.append(0)
+
+   if endOut == BIGENDIAN:
+      return bytes(ints[::-1])
+   else:
+      return bytes(ints)
 
 def binary_to_int(b, endIn=LITTLEENDIAN):
    """
@@ -2004,7 +2022,7 @@ def bitset_to_int(bitset):
 
 
 
-EmptyHash = hex_to_binary('00'*32)
+EmptyHash = hex_to_binary(b'00'*32)
 
 
 ################################################################################
@@ -2019,9 +2037,11 @@ def binary_to_base58(binstr):
    special kind of Base58 converter, which makes it usable for encoding other
    data, such as ECDSA keys or scripts.
    """
+   assert(isinstance(binstr, bytes))
+
    padding = 0;
    for b in binstr:
-      if b=='\x00':
+      if b==0:
          padding+=1
       else:
          break
@@ -2031,11 +2051,11 @@ def binary_to_base58(binstr):
       n *= 256
       n += ch
 
-   b58 = ''
+   b58 = b''
    while n > 0:
       n, r = divmod (n, 58)
-      b58 = BASE58CHARS[r] + b58
-   return '1'*padding + b58
+      b58 = BASE58CHARS[r:r+1] + b58
+   return b'1'*padding + b58
 
 
 ################################################################################
@@ -2049,10 +2069,13 @@ def base58_to_binary(addr):
    special kind of Base58 converter, which makes it usable for encoding other
    data, such as ECDSA keys or scripts.
    """
+
+   assert(isinstance(addr, bytes))
+
    # Count the zeros ('1' characters) at the beginning
    padding = 0;
    for c in addr:
-      if c=='1':
+      if c==BASE58CHARS[0]:
          padding+=1
       else:
          break
@@ -2061,16 +2084,16 @@ def base58_to_binary(addr):
    for ch in addr:
       n *= 58
       if ch in BASE58CHARS:
-         n += BASE58CHARS.index(ch)
+         n += BASE58CHARS.index(bytes([ch]))
       else:
          raise NonBase58CharacterError("Unrecognized Base 58 Character: %s" % ch)
 
-   binOut = ''
+   binOut = b''
    while n>0:
       d,m = divmod(n,256)
-      binOut = chr(m) + binOut
+      binOut = bytes([m]) + binOut
       n = d
-   return '\x00'*padding + binOut
+   return b'\x00'*padding + binOut
 
 
 ################################################################################
@@ -2105,22 +2128,25 @@ def hash160_to_addrStr(binStr, netbyte=ADDRBYTE):
    Converts the 20-byte pubKeyHash to 25-byte binary Bitcoin address
    which includes the network byte (prefix) and 4-byte checksum (suffix)
    """
+   assert(isinstance(binStr, bytes))
 
    if not len(binStr) == 20:
       raise InvalidHashError('Input string is %d bytes' % len(binStr))
 
    addr21 = netbyte + binStr
    addr25 = addr21 + hash256(addr21)[:4]
-   return binary_to_base58(addr25);
+   return binary_to_base58(addr25)
 
 ################################################################################
 def hash160_to_p2shAddrStr(binStr):
+   assert(isinstance(binStr, bytes))
+
    if not len(binStr) == 20:
       raise InvalidHashError('Input string is %d bytes' % len(binStr))
 
    addr21 = P2SHBYTE + binStr
    addr25 = addr21 + hash256(addr21)[:4]
-   return binary_to_base58(addr25);
+   return binary_to_base58(addr25)
 
 ################################################################################
 def binScript_to_p2shAddrStr(binScript):
@@ -2128,10 +2154,11 @@ def binScript_to_p2shAddrStr(binScript):
 
 ################################################################################
 def addrStr_is_p2sh(b58Str):
+   assert(isinstance(b58Str, bytes))
    if len(b58Str)==0:
       return False
 
-   if sum([(0 if c in BASE58CHARS else 1) for c in b58Str]) > 0:
+   if sum([(0 if bytes([c]) in BASE58CHARS else 1) for c in b58Str]) > 0:
       return False
 
    binStr = base58_to_binary(b58Str)
@@ -2141,15 +2168,16 @@ def addrStr_is_p2sh(b58Str):
    if not hash256(binStr[:21])[:4] == binStr[-4:]:
       return False
 
-   return (binStr[0] == P2SHBYTE)
+   return (binStr[0:1] == P2SHBYTE)
 
 ################################################################################
 # As of version 0.90.1, this returns the prefix byte with the hash160.  This is
 # because we need to handle/distinguish regular addresses from P2SH.  All code
 # using this method must be updated to expect 2 outputs and check the prefix.
 def addrStr_to_hash160(b58Str, p2shAllowed=True):
+   assert(isinstance(b58Str, bytes))
    binStr = base58_to_binary(b58Str)
-   if not p2shAllowed and binStr[0]==P2SHBYTE:
+   if not p2shAllowed and binStr[0:1]==P2SHBYTE:
       raise P2SHNotSupportedError
    if not len(binStr) == 25:
       raise BadAddressError('Address string is %d bytes' % len(binStr))
@@ -2157,10 +2185,10 @@ def addrStr_to_hash160(b58Str, p2shAllowed=True):
    if not hash256(binStr[:21])[:4] == binStr[-4:]:
       raise ChecksumError('Address string has invalid checksum')
 
-   if not binStr[0] in (ADDRBYTE, P2SHBYTE):
+   if not binStr[0:1] in (ADDRBYTE, P2SHBYTE):
       raise BadAddressError('Unknown addr prefix: %s' % binary_to_hex(binStr[0]))
 
-   return (binStr[0], binStr[1:-4])
+   return (binStr[0:1], binStr[1:-4])
 
 
 ###### Typing-friendly Base16 #####
@@ -2297,14 +2325,14 @@ def bytesToHumanSize(nBytes):
 ##### HEXSTR/VARINT #####
 def packVarInt(n):
    """ Writes 1,3,5 or 9 bytes depending on the size of n """
-   if   n < 0xfd:  return [chr(n), 1]
-   elif n < 1<<16: return ['\xfd'+pack('<H',n), 3]
-   elif n < 1<<32: return ['\xfe'+pack('<I',n), 5]
-   else:           return ['\xff'+pack('<Q',n), 9]
+   if   n < 0xfd:  return [bytes([n]), 1]
+   elif n < 1<<16: return [b'\xfd'+pack('<H',n), 3]
+   elif n < 1<<32: return [b'\xfe'+pack('<I',n), 5]
+   else:           return [b'\xff'+pack('<Q',n), 9]
 
 def unpackVarInt(hvi):
    """ Returns a pair: the integer value and number of bytes read """
-   code = unpack('<B', hvi[0])[0]
+   code = unpack('<B', hvi[0:1])[0]
    if   code  < 0xfd: return [code, 1]
    elif code == 0xfd: return [unpack('<H',hvi[1:3])[0], 3]
    elif code == 0xfe: return [unpack('<I',hvi[1:5])[0], 5]
@@ -2321,16 +2349,25 @@ def fixChecksumError(binaryStr, chksum, hashFunc=hash256):
    not going to bother implementing it until I need it.  If it's
    not a one-byte error, it's most likely a different problem
    """
-   for byte in range(len(binaryStr)):
-      binaryArray = [binaryStr[i] for i in range(len(binaryStr))]
-      for val in range(256):
-         binaryArray[byte] = chr(val)
-         if hashFunc(b''.join(binaryArray)).startswith(chksum):
-            return b''.join(binaryArray)
+   assert(isinstance(binaryStr, bytes))
+   assert(isinstance(chksum, bytes))
 
-   return ''
+   for i,byte in enumerate(binaryStr):
+      for val in range(256):
+         newStr = b''
+         if i > 0:
+            newStr += binaryStr[:i]
+         newStr += bytes([val])
+         if i < len(binaryStr) - 1:
+            newStr += binaryStr[i+1:]
+         newChksum = hashFunc(newStr)[:len(chksum)]
+         if newChksum == chksum:
+            return newStr
+   return b''
 
 def computeChecksum(binaryStr, nBytes=4, hashFunc=hash256):
+   if binaryStr is None:
+      binaryStr = b''
    return hashFunc(binaryStr)[:nBytes]
 
 
@@ -2352,11 +2389,16 @@ def verifyChecksum(binaryStr, chksum, hashFunc=hash256, fixIfNecessary=True, \
    error and simply return the original string, then PyBtcWallet will correct
    the checksum in the file, next time it reserializes the data.
    """
+
+   assert(isinstance(binaryStr, bytes))
+   assert(isinstance(chksum, bytes))
+
    bin1 = binaryStr
    bin2 = binary_switchEndian(binaryStr)
 
+   origHash = hashFunc(bin1)
 
-   if hashFunc(bin1).startswith(chksum):
+   if origHash.startswith(chksum):
       return bin1
    elif hashFunc(bin2).startswith(chksum):
       if not beQuiet: LOGWARN( '***Checksum valid for input with reversed endianness')
@@ -2372,28 +2414,29 @@ def verifyChecksum(binaryStr, chksum, hashFunc=hash256, fixIfNecessary=True, \
          # ONE LAST CHECK SPECIFIC TO MY SERIALIZATION SCHEME:
          # If the string was originally all zeros, chksum is hash256('')
          # ...which is a known value, and frequently used in my files
-         if chksum==hex_to_binary('5df6e0e2'):
+         if chksum==hex_to_binary(b'5df6e0e2'):
             if not beQuiet: LOGWARN('fixed!')
-            return ''
-
+            return b''
 
    # ID a checksum byte error...
    origHash = hashFunc(bin1)
    for i in range(len(chksum)):
       chkArray = [chksum[j] for j in range(len(chksum))]
       for ch in range(256):
-         chkArray[i] = chr(ch)
-         if origHash.startswith(''.join(chkArray)):
+         chkArray[i] = ch
+         if origHash.startswith(bytes(chkArray)):
             LOGWARN('***Checksum error!  Incorrect byte in checksum!')
             return bin1
 
    LOGWARN('Checksum fix failed')
-   return ''
+   return b''
 
 
 # Taken directly from rpc.cpp in reference bitcoin client, 0.3.24
 def binaryBits_to_difficulty(b):
    """ Converts the 4-byte binary difficulty string to a float """
+   assert(isinstance(b, bytes))
+
    i = binary_to_int(b)
    nShift = (i >> 24) & 0xff
    dDiff = float(0x0000ffff) / float(i & 0x00ffffff)
@@ -2580,17 +2623,22 @@ class FiniteField(object):
 
 ################################################################################
 def SplitSecret(secret, needed, pieces, nbytes=None, use_random_x=False):
-   if not isinstance(secret, str):
-      secret = secret.toBinStr()
+   if isinstance(secret, bytes):
+      byteSecret = secret
+      a = binary_to_int(byteSecret, BIGENDIAN)
+   else:
+      if not isinstance(secret, str):
+         secret = secret.toBinStr()
+      byteSecret = SecureBinaryData(secret).toHexStr().encode("ascii")
+      a = hex_to_int(byteSecret,BIGENDIAN)
 
    if nbytes==None:
       nbytes = len(secret)
 
    ff = FiniteField(nbytes)
    fragments = []
-
+   
    # Convert secret to an integer
-   a = binary_to_int(SecureBinaryData(secret).toBinStr(),BIGENDIAN)
    if not a<ff.prime:
       LOGERROR('Secret must be less than %s', int_to_hex(ff.prime,endOut=BIGENDIAN))
       LOGERROR('             You entered %s', int_to_hex(a,endOut=BIGENDIAN))
@@ -2608,10 +2656,10 @@ def SplitSecret(secret, needed, pieces, nbytes=None, use_random_x=False):
 
    # We deterministically produce the coefficients so that we always use the
    # same polynomial for a given secret
-   lasthmac = secret[:]
+   lasthmac = byteSecret[:]
    othernum = []
    for i in range(pieces+needed-1):
-      lasthmac = HMAC512(lasthmac, 'splitsecrets')[:nbytes]
+      lasthmac = HMAC512(lasthmac, b'splitsecrets')[:nbytes]
       othernum.append(binary_to_int(lasthmac))
 
    def poly(x):
@@ -2789,6 +2837,7 @@ def checkAddrBinValid(addrBin, validPrefixes=None):
 ################################################################################
 def checkAddrStrValid(addrStr):
    """ Check that a Base58 address-string is valid on this network """
+   assert(isinstance(addrStr, bytes))
    return checkAddrBinValid(base58_to_binary(addrStr))
 
 
@@ -2818,15 +2867,17 @@ def decodeMiniPrivateKey(keyStr):
    Converts a 22, 26 or 30-character Base58 mini private key into a
    32-byte binary private key.
    """
+   assert(isinstance(keyStr, bytes))
+
    if not len(keyStr) in (22,26,30):
       return ''
 
-   keyQ = keyStr + '?'
+   keyQ = keyStr + b'?'
    theHash = sha256(keyQ)
 
-   if binary_to_hex(theHash[0]) == '01':
+   if binary_to_hex(theHash[0:1]) == b'01':
       raise KeyDataError('PBKDF2-based mini private keys not supported!')
-   elif binary_to_hex(theHash[0]) != '00':
+   elif binary_to_hex(theHash[0:1]) != b'00':
       raise KeyDataError('Invalid mini private key... double check the entry')
 
    return sha256(keyStr)
@@ -2906,6 +2957,7 @@ URI_VERSION_STR = '1.0'
 # the URI isn't a Bitcoin URI, return an empty dictionary.
 def parseBitcoinURI(uriStr):
    """ Takes a URI string, returns normalized dicitonary with pieces """
+   assert(isinstance(uriStr, bytes))
    data = {}
 
    # Split URI into parts. Let Python do the heavy lifting.
@@ -2919,7 +2971,7 @@ def parseBitcoinURI(uriStr):
          query[k] = v[0]
 
    # Now start walking through the parts and get the info out of it.
-   if uri.scheme == 'bitcoin':
+   if uri.scheme == b'bitcoin':
       data['address'] = uri.path
 
       # Apply filters to known keys. Do NOT filter based on the "req-"
@@ -2927,10 +2979,10 @@ def parseBitcoinURI(uriStr):
       for k in query:
          v = query[k]
          kl = k.lower()
-         if kl == 'amount':
+         if kl == b'amount':
             data['amount'] = str2coin(v) # Convert to Satoshis
          else:
-            data[k] = v
+            data[k.decode()] = v
 
    return data
 
@@ -3001,26 +3053,27 @@ def createDERSigFromRS(rBin, sBin):
 
 ################################################################################
 def getRSFromDERSig(derSig):
-   if not isinstance(derSig, str):
+   
+   if not isinstance(derSig, bytes):
       # In case this is a SecureBinaryData object...
-      derSig = derSig.toBinStr()
+      derSig = hex_to_binary(derSig.toHexStr().encode("ascii"))
 
-   codeByte = derSig[0]
-   nBytes   = binary_to_int(derSig[1])
+   codeByte = derSig[0:1]
+   nBytes   = derSig[1]
    rsStr    = derSig[2:2+nBytes]
-   assert(codeByte == '\x30')
+   assert(codeByte == b'\x30')
    assert(nBytes == len(rsStr))
    # Read r
-   codeByte  = rsStr[0]
-   rBytes    = binary_to_int(rsStr[1])
+   codeByte  = rsStr[0:1]
+   rBytes    = rsStr[1]
    r         = rsStr[2:2+rBytes]
-   assert(codeByte == '\x02')
+   assert(codeByte == b'\x02')
    sStr      = rsStr[2+rBytes:]
    # Read s
-   codeByte  = sStr[0]
-   sBytes    = binary_to_int(sStr[1])
+   codeByte  = sStr[0:1]
+   sBytes    = sStr[1]
    s         = sStr[2:2+sBytes]
-   assert(codeByte == '\x02')
+   assert(codeByte == b'\x02')
    # Now we have the (r,s) values of the
 
    return r[-32:], s[-32:]

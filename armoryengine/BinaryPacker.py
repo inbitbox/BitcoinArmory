@@ -33,7 +33,7 @@ class BinaryPacker(object):
       self.binaryConcat = []
 
    def getSize(self):
-      return sum([len(a) for a in self.binaryConcat])
+      return len(self.binaryConcat)
 
    def getBinaryString(self):
       return bytes(self.binaryConcat)
@@ -69,15 +69,20 @@ class BinaryPacker(object):
       elif varType == VAR_INT:
          self.binaryConcat += packVarInt(theData)[0]
       elif varType == VAR_STR:
-         self.binaryConcat += packVarInt(len(theData))[0].encode('ascii')
-         self.binaryConcat += theData.encode("ascii")
+         self.binaryConcat += packVarInt(len(theData))[0]
+         if isinstance(theData, str):
+            self.binaryConcat += theData.encode("ascii")
+         else:
+            self.binaryConcat += theData
       elif varType == FLOAT:
          self.binaryConcat += pack(E+'f', theData)
       elif varType == BINARY_CHUNK:
          if isinstance(theData, str):
             theData = theData.encode("ascii")
-         if width==None:
+         if width is None:
             self.binaryConcat += theData
+         elif theData is None:
+            self.binaryConcat += b''.ljust(width, b'\x00')
          else:
             if len(theData)>width:
                raise PackerError('Too much data to fit into fixed width field')

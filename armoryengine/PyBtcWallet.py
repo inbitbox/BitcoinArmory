@@ -1541,7 +1541,7 @@ class PyBtcWallet(object):
 
       mem   = kdf.getMemoryReqtBytes()
       nIter = kdf.getNumIterations()
-      salt  = SecureBinaryData(kdf.getSalt().toBinStr())
+      salt  = SecureBinaryData(kdf.getSalt().getPtr())
       return (mem, nIter, salt)
 
    #############################################################################

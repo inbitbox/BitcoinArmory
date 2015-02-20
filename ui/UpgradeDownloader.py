@@ -376,9 +376,9 @@ class UpgradeDownloaderDialog(ArmoryDialog):
 
       # Above we had to select *something*, we should check that the
       # architecture actually matches our system.  If not, warn
-      trueBits = b'64' if SystemSpecs.IsX64 else b'32'
+      trueBits = '64' if SystemSpecs.IsX64 else '32'
       selectBits = self.itemData(self.osarch)[:2]
-      if showPackage and not trueBits==selectBits:
+      if showPackage and not trueBits==selectBits.decode("ascii"):
          QMessageBox.warning(self, tr("Wrong Architecture"), tr("""
             You appear to be on a %s-bit architecture, but the only
             available download is for %s-bit systems.  It is unlikely
@@ -531,13 +531,13 @@ class UpgradeDownloaderDialog(ArmoryDialog):
             else:
                for i in range(startIndex, stopIndex):
                   block = self.changelog[i]
-                  logHtml += "<h2>" + tr("Version {0}").format(block[0]) + "</h2>\n"
-                  logHtml += "<em>" + tr("Released on {0}").format(block[1]) + "</em>\n"
+                  logHtml += "<h2>" + tr("Version {0}").format(block[0].decode()) + "</h2>\n"
+                  logHtml += "<em>" + tr("Released on {0}").format(block[1].decode()) + "</em>\n"
    
                   features = block[2]
                   logHtml += "<ul>"
                   for f in features:
-                     logHtml += "<li>" + tr("<b>{0}</b>: {1}").format(f[0], f[1]) + "</li>\n"
+                     logHtml += "<li>" + tr("<b>{0}</b>: {1}").format(f[0].decode(), f[1].decode()) + "</li>\n"
                   logHtml += "</ul>\n\n"
          else:
             if packagename == b"Satoshi":
@@ -698,7 +698,7 @@ class UpgradeDownloaderDialog(ArmoryDialog):
             format(tr(pkgName), tr(pkgVer), tr(osName), tr(osVer), tr(osArch)))
 
          self.lblSelectedSimple.setText(tr(""" <font size=4><b>Securely
-            download latest version of <u>%s</u></b></font>""") % pkgName)
+            download latest version of <u>%s</u></b></font>""") % pkgName.decode())
 
          self.lblCurrentVersion.setText('')
          currVerStr = b''
@@ -717,17 +717,18 @@ class UpgradeDownloaderDialog(ArmoryDialog):
             <b>Software Download:</b>  %s version %s<br>
             <b>Operating System:</b>  %s %s <br>
             <b>System Architecture:</b> <font color="%s">%s</font> """) % \
-            (tr(pkgName), tr(pkgVer), tr(osName), tr(osVer), self.bitsColor, tr(osArch)))
+                                            (tr(pkgName.decode()), tr(pkgVer.decode()), tr(osName.decode()), tr(osVer.decode()), self.bitsColor, tr(osArch.decode())))
 
    # get the untranslated name from the combobox specified
    def itemData(self, combobox):
       return combobox.itemData(combobox.currentIndex())
 
    def localized(self, v):
-      if v in self.localizedData:
-         return str(self.localizedData[v])
+      s = v.decode()
+      if s in self.localizedData:
+         return str(self.localizedData[s])
       else:
-         return str(v)
+         return str(s)
 
 
 # kate: indent-width 3; replace-tabs on;

@@ -117,7 +117,7 @@ class ArmoryDTiabTest(TiabTest):
    def armoryDTiabTestCallback(self, action, args):
       if action == REFRESH_ACTION:
          for wltID in args:
-            print wltID
+            print(wltID)
             if wltID in self.wltIDs:
                self.numberOfWalletsScanned += 1
          
@@ -198,10 +198,10 @@ class ArmoryDTiabTest(TiabTest):
 
    def testListloadedwallets(self):
       result = self.jsonServer.jsonrpc_listloadedwallets()
-      self.assertEqual(len(result.keys()), 3)
-      self.assertTrue(FIRST_WLT_NAME in result.values())
-      self.assertTrue(SECOND_WLT_NAME in result.values())
-      self.assertTrue(THIRD_WLT_NAME in result.values())
+      self.assertEqual(len(list(result.keys())), 3)
+      self.assertTrue(FIRST_WLT_NAME in list(result.values()))
+      self.assertTrue(SECOND_WLT_NAME in list(result.values()))
+      self.assertTrue(THIRD_WLT_NAME in list(result.values()))
 
 
 
@@ -227,7 +227,7 @@ class ArmoryDTiabTest(TiabTest):
                                                             addrFromFirstWlt, \
                                                             SECOND_WLT_NAME, \
                                                             THIRD_WLT_NAME)
-      self.assertTrue(TWO_OF_THREE_LB_NAME in actualResult1.values())
+      self.assertTrue(TWO_OF_THREE_LB_NAME in list(actualResult1.values()))
 
       # This test should fail because the first createlockbox() used the 2nd &
       # 3rd addresses.
@@ -243,8 +243,8 @@ class ArmoryDTiabTest(TiabTest):
                                                             addrFromThirdWlt)
       self.assertEqual(TWO_OF_TWO_LB_NAME, actualResult3['id'])
       listResult3 = self.jsonServer.jsonrpc_listloadedlockboxes()
-      self.assertEqual(len(listResult3.keys()), 2)
-      self.assertTrue(TWO_OF_TWO_LB_NAME in listResult3.values())
+      self.assertEqual(len(list(listResult3.keys())), 2)
+      self.assertTrue(TWO_OF_TWO_LB_NAME in list(listResult3.values()))
 
       # This test should fail because of a bad wallet name.
       actualResult4 = self.jsonServer.jsonrpc_createlockbox(2, 2, \
@@ -549,7 +549,7 @@ class ArmoryDTiabTest(TiabTest):
                   'ultimate'  :  FIRST_WLT_BALANCE, \
                   'unspent' :  FIRST_WLT_BALANCE, \
                   'full' :  FIRST_WLT_BALANCE}
-      for balanceType in balances.keys():
+      for balanceType in list(balances.keys()):
          result = self.jsonServer.jsonrpc_getbalance(balanceType)
          self.assertEqual(result,
                           AmountToJSON(self.wltA.getBalance(balanceType)))

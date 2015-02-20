@@ -10188,63 +10188,63 @@ class DlgNotificationWithDNAA(ArmoryDialog):
       super(DlgNotificationWithDNAA, self).__init__(parent, main)
 
       self.notifyID = nid
-      isUpgrade = ('upgrade' in notifyMap['ALERTTYPE'].lower())
-      isTesting = (notifyMap['ALERTTYPE'].lower()=='upgrade-testing')
+      isUpgrade = (b'upgrade' in notifyMap[b'ALERTTYPE'])
+      isTesting = (notifyMap[b'ALERTTYPE']==b'upgrade-testing')
 
       #if notifyMap is None:
          #notifyMap = self.main.almostFullNotificationList[nid]
 
-      priority   = int(notifyMap['PRIORITY'])
-      shortDescr = notifyMap['SHORTDESCR']
-      longDescr  = notifyMap['LONGDESCR']
-      startTime  = int(notifyMap['STARTTIME'])
+      priority   = int(notifyMap[b'PRIORITY'])
+      shortDescr = notifyMap[b'SHORTDESCR'].decode()
+      longDescr  = notifyMap[b'LONGDESCR']
+      startTime  = int(notifyMap[b'STARTTIME'])
 
-      minver  = notifyMap['MINVERSION']
-      maxver  = notifyMap['MAXVERSION']
-      minExclude = minver.startswith('>')
-      maxExclude = maxver.startswith('<')
+      minver  = notifyMap[b'MINVERSION']
+      maxver  = notifyMap[b'MAXVERSION']
+      minExclude = minver.startswith(b'>')
+      maxExclude = maxver.startswith(b'<')
       minver  = minver[1:] if minExclude else minver
       maxver  = maxver[1:] if maxExclude else maxver
 
 
-      LTE = '\xe2\x89\xa4'
-      GTE = '\xe2\x89\xa5'
+      LTE = b'\xe2\x89\xa4'
+      GTE = b'\xe2\x89\xa5'
 
       if isUpgrade:
          currVerStr = getVersionString(BTCARMORY_VERSION)
-         versionString = tr("""You are using version %s<br>""") % currVerStr
+         versionString = tr("""You are using version %s<br>""") % currVerStr.decode()
       elif minver=='*':
          versionString = tr('Affects Armory versions:  ')
          if maxver=='*':
             versionString = 'Affects all Armory versions'
          elif maxExclude:
-            versionString += tr('before %s<br>' % maxver)
+            versionString += tr('before %s<br>' % maxver.decode())
          else:
-            versionString += tr('%s%s<br>' % (LTE, maxver))
+            versionString += tr('%s%s<br>' % (LTE.decode(), maxver.decode()))
       elif minExclude:
          versionString = tr('Affects Armory versions ')
          if maxver=='*':
             versionString += tr('after %s<br>' % minver)
          elif maxExclude:
-            versionString += tr('between %s and %s<br>' % (minver, maxver))
+            versionString += tr('between %s and %s<br>' % (minver.decode(), maxver.decode()))
          else:
-            versionString += tr('after %s,  %s%s<br>' % (minver, LTE, maxver))
+            versionString += tr('after %s,  %s%s<br>' % (minver.decode(), LTE.decode(), maxver.decode()))
       else:
          versionString = tr('Affects Armory versions ')
          if maxver=='*':
-            versionString += tr('%s%s<br>' % (GTE,minver))
+            versionString += tr('%s%s<br>' % (GTE.decode(),minver.decode()))
          elif maxExclude:
-            versionString += tr('%s%s and before %s<br>' % (GTE, minver, maxver))
+            versionString += tr('%s%s and before %s<br>' % (GTE.decode(), minver.decode(), maxver.decode()))
          else:
-            versionString += tr('%s%s and %s%s<br>' % (GTE,minver,LTE,maxver))
+            versionString += tr('%s%s and %s%s<br>' % (GTE.decode(),minver.decode(),LTE.decode(),maxver.decode()))
 
 
       startTimeStr = ''
       if startTime > 0:
          if isUpgrade:
             for verStr,dateStr,updList in self.main.changelog:
-               if verStr==notifyMap['MAXVERSION'][1:]:
-                  startTimeStr = tr('Released: %s<br>' % dateStr)
+               if verStr==notifyMap[b'MAXVERSION'][1:]:
+                  startTimeStr = tr('Released: %s<br>' % dateStr.decode())
                   break
          else:
             startTimeStr = unixTimeToFormatStr(startTime, 'Date: %B %d, %Y<br>')
@@ -10322,7 +10322,7 @@ class DlgNotificationWithDNAA(ArmoryDialog):
          webbrowser.open(str(url))
 
       self.txtLongDescr = QTextBrowser()
-      self.txtLongDescr.setHtml(longDescr)
+      self.txtLongDescr.setHtml(longDescr.decode("ascii"))
       self.txtLongDescr.setOpenExternalLinks(True)
 
 

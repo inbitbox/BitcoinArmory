@@ -315,7 +315,7 @@ opCodeLookup['OP_CHECKMULTISIGVERIFY'] =   175
 
 ################################################################################
 def getOpCode(name):
-   return int_to_binary(opCodeLookup[name], widthBytes=1)
+   return opCodeLookup[name]
 
 
 ################################################################################
@@ -1016,9 +1016,9 @@ class UnsignedTxInput(AsciiSerializable):
       self.txoScript   = txout.getScript()
       self.scriptType  = getTxOutScriptType(self.txoScript)
       self.value       = txout.getValue()
-      self.contribID   = '' if contribID is None else contribID
-      self.contribLabel= '' if contribLabel is None else contribLabel
-      self.p2shScript  = '' if p2sh is None else p2sh
+      self.contribID   = b'' if contribID is None else contribID
+      self.contribLabel= b'' if contribLabel is None else contribLabel
+      self.p2shScript  = b'' if p2sh is None else p2sh
       self.sequence    = sequence
 
       # Each of these will be a single value for single-signature UTXOs
@@ -1034,7 +1034,7 @@ class UnsignedTxInput(AsciiSerializable):
       if pubKeyMap is not None and not isinstance(pubKeyMap, dict):
          if isinstance(pubKeyMap, (list,tuple)):
             pub = dict([[SCRADDR_P2PKH_BYTE+hash160(pk), pk] for pk in pubKeyMap])
-         elif isinstance(pubKeyMap, str):
+         elif isinstance(pubKeyMap, bytes):
             pub = {SCRADDR_P2PKH_BYTE+hash160(pubKeyMap): pubKeyMap}
          else:
             LOGERROR('Invalid type for pub keys input: %s', str(type(pubKeyMap)))
@@ -1230,7 +1230,8 @@ class UnsignedTxInput(AsciiSerializable):
       appended to the end
       """
       # Make sure the supplied privateKey is relevant to this USTXI
-      computedPub = CryptoECDSA().ComputePublicKey(sbdPrivKey).toBinStr()
+      computedPub = hex_to_binary(CryptoECDSA().ComputePublicKey(sbdPrivKey).toHexStr().encode("ascii"))
+      LOGERROR("pubs %s vs pub %s" % (self.pubKeys, computedPub))
       if not computedPub in self.pubKeys:
          raise SignatureError('No PubKey that matches this privKey')
 
@@ -1320,7 +1321,7 @@ class UnsignedTxInput(AsciiSerializable):
 
 
       rBin, sBin = getRSFromDERSig(sigStr)
-      hashcode  = binary_to_int(sigStr[-1])
+      hashcode  = sigStr[-1]
       if not hashcode==1:
          LOGERROR('Cannot allow non-standard SIGHASH types: %d' % hashcode)
          return -1
@@ -1465,7 +1466,7 @@ class UnsignedTxInput(AsciiSerializable):
       bp.put(VAR_STR,      self.supportTx)
       bp.put(VAR_STR,      self.p2shScript)
       bp.put(VAR_STR,      self.contribID)
-      bp.put(VAR_STR,      toBytes(self.contribLabel))
+      bp.put(VAR_STR,      self.contribLabel)
       bp.put(UINT32,       self.sequence)
       bp.put(VAR_INT,      self.keysListed)
 
@@ -1488,7 +1489,7 @@ class UnsignedTxInput(AsciiSerializable):
       suppTx     = bu.get(VAR_STR)
       p2shScr    = bu.get(VAR_STR)
       contrib    = bu.get(VAR_STR)
-      contribLbl = toUnicode(bu.get(VAR_STR))
+      contribLbl = bu.get(VAR_STR)
       seq        = bu.get(UINT32)
       nEntry     = bu.get(VAR_INT)
 
@@ -1636,7 +1637,7 @@ class NullAuthData(object):
       pass
 
    def serialize(self):
-      return ''
+      return b''
 
    def unserialize(self, s):
       return self
@@ -1680,12 +1681,12 @@ class DecoratedTxOut(AsciiSerializable):
       self.version    = version
       self.binScript  = script
       self.value      = value
-      self.p2shScript = p2sh if p2sh else ''
-      self.wltLocator = wltLocator if wltLocator else ''
+      self.p2shScript = p2sh if p2sh else b''
+      self.wltLocator = wltLocator if wltLocator else b''
       self.authMethod = authMethod
       self.authData   = authData if authData else NullAuthData()
-      self.contribID  = contribID if contribID else ''
-      self.contribLabel = contribLabel if contribLabel else ''
+      self.contribID  = contribID if contribID else b''
+      self.contribLabel = contribLabel if contribLabel else b''
 
       # Derived values
       self.scrAddr    = script_to_scrAddr(script)
@@ -1850,7 +1851,7 @@ class DecoratedTxOut(AsciiSerializable):
       authMeth   = bu.get(VAR_STR)
       authData   = bu.get(VAR_STR)
       contribID  = bu.get(VAR_STR)
-      contribLBL = toUnicode(bu.get(VAR_STR))
+      contribLBL = bu.get(VAR_STR)
 
       if not magic==MAGIC_BYTES and not skipMagicCheck:
          LOGERROR('WRONG NETWORK!')
@@ -1957,7 +1958,7 @@ class UnsignedTransaction(AsciiSerializable):
    """
 
    OBJNAME   = "UnsignedTx"
-   BLKSTRING = "TXSIGCOLLECT"
+   BLKSTRING = b"TXSIGCOLLECT"
    EMAILSUBJ = 'Armory Multi-sig Transaction to Sign - %s'
    EMAILBODY = """
                The chunk of text below is a proposed spending transaction 
@@ -1978,8 +1979,8 @@ class UnsignedTransaction(AsciiSerializable):
                                        version=UNSIGNED_TX_VERSION):
       self.version         = version
       self.pytxObj         = UNINITIALIZED
-      self.uniqueIDB58     = ''
-      self.asciiID         = ''  # need a common name for all ser/unser classes
+      self.uniqueIDB58     = b''
+      self.asciiID         = b''  # need a common name for all ser/unser classes
       self.lockTime        = 0
       self.ustxInputs  = []
       self.decorTxOuts = []

@@ -2918,12 +2918,12 @@ class ArmoryMainWindow(QMainWindow):
       # calls a dialog produces better results but still freezes under some
       # circumstances.
       if not OS_MACOSX:
-         fullPath = str(QFileDialog.getOpenFileName(self, title, defaultDir,
-                                                        typesStr))
+         fullPath, junk = QFileDialog.getOpenFileName(self, title, defaultDir,
+                                                        typesStr)
       else:
-         fullPath = str(QFileDialog.getOpenFileName(self, title, defaultDir,
+         fullPath, junk = QFileDialog.getOpenFileName(self, title, defaultDir,
                                                         typesStr,
-                                       options=QFileDialog.DontUseNativeDialog))
+                                       options=QFileDialog.DontUseNativeDialog)
 
       self.writeSetting('LastDirectory', os.path.split(fullPath)[0])
       return fullPath
@@ -4801,7 +4801,7 @@ class ArmoryMainWindow(QMainWindow):
             version %s""") % getVersionString(BTCARMORY_VERSION))
       else:
          updTimeStr = unixTimeToFormatStr(lastUpdate)
-         self.lblLastUpdated.setText(tr("<u>Last Updated</u>: %s") % updTimeStr)
+         self.lblLastUpdated.setText(tr("<u>Last Updated</u>: %s") % updTimeStr.decode("ascii"))
 
 
       verStrToInt = lambda s: getVersionInt(readVersionString(s))
@@ -4846,7 +4846,7 @@ class ArmoryMainWindow(QMainWindow):
                self.btnSecureDLSatoshi.setVisible(False)
                self.icoSatoshiSWVersion.setPixmap(dispIcon)
                self.lblSatoshiSWVersion.setText(tr(""" You are using
-                  the latest version of core Bitcoin (%s)""") % satCurrStr)
+                  the latest version of core Bitcoin (%s)""") % satCurrStr.decode())
             else:
                dispIcon = QPixmap(iconWarnFile).scaled(24,24)
                self.btnSecureDLSatoshi.setVisible(True)
@@ -4860,14 +4860,14 @@ class ArmoryMainWindow(QMainWindow):
             self.btnSecureDLSatoshi.setVisible(False)
             self.icoSatoshiSWVersion.setPixmap(None)
             self.lblSatoshiSWVersion.setText(tr(""" You are using
-               core Bitcoin version %s""") % satCurrStr)
+               core Bitcoin version %s""") % satCurrStr.decode())
          elif satLatest:
             # only satLatest is avail (maybe offline)
             dispIcon = QPixmap(iconSatoshi).scaled(24,24)
             self.btnSecureDLSatoshi.setVisible(True)
             self.icoSatoshiSWVersion.setPixmap(dispIcon)
             self.lblSatoshiSWVersion.setText(tr("""Core Bitcoin version
-               %s is available.""") % satLastStr)
+               %s is available.""") % satLastStr.decode())
          else:
             # only satLatest is avail (maybe offline)
             dispIcon = QPixmap(iconSatoshi).scaled(24,24)
@@ -4925,9 +4925,9 @@ class ArmoryMainWindow(QMainWindow):
             pixm = QPixmap(':/MsgBox_info48.png')
 
 
-         shortDescr = self.almostFullNotificationList[nid][b'SHORTDESCR']
+         shortDescr = self.almostFullNotificationList[nid][b'SHORTDESCR'].decode()
          if priority>=4096:
-            shortDescr = '<font color="%s">' + shortDescr.decode("ascii") + '</font>'
+            shortDescr = '<font color="%s">' + shortDescr + '</font>'
             shortDescr = shortDescr % htmlColor('TextWarn')
 
          self.announceTableWidgets[i][0].setPixmap(pixm.scaled(24,24))

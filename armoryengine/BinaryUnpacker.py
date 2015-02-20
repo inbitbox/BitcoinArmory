@@ -38,6 +38,8 @@ class BinaryUnpacker(object):
       >> ...etc...
    """
    def __init__(self, binaryStr):
+      if not isinstance(binaryStr, bytes):
+         raise RuntimeError("BinaryUnpacker only takes bytes, not %s" % type(binaryStr))
       self.binaryStr = binaryStr
       self.pos = 0
 

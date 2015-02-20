@@ -85,7 +85,7 @@ fullFeatureLists = \
     
 
 
-downloadTestText = """
+downloadTestText = b"""
 -----BEGIN BITCOIN SIGNED MESSAGE-----
 
 # Armory for Windows

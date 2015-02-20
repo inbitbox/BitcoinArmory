@@ -240,7 +240,7 @@ def isMofNNonStandardToSpend(m, n):
 class MultiSigLockbox(AsciiSerializable):
 
    OBJNAME   = 'Lockbox'
-   BLKSTRING = 'LOCKBOX'
+   BLKSTRING = b'LOCKBOX'
    EMAILSUBJ = 'Armory Lockbox Definition - %s'
    EMAILBODY = """
                The chunk of text below is a complete lockbox definition 
@@ -616,7 +616,7 @@ class MultiSigLockbox(AsciiSerializable):
 class DecoratedPublicKey(AsciiSerializable):
 
    OBJNAME   = 'PublicKey'
-   BLKSTRING = 'PUBLICKEY'
+   BLKSTRING = b'PUBLICKEY'
    EMAILSUBJ = 'Armory Public Key for Lockbox Creation - %s'
    EMAILBODY = """
                The chunk of text below is a public key that can be imported
@@ -805,8 +805,8 @@ def computePromissoryID(ustxiList=None, dtxoTarget=None, feeAmt=None,
    outptList = sorted([ustxi.outpoint.serialize() for ustxi in ustxiList])
    targStr  = dtxoTarget.binScript 
    targStr += int_to_binary(dtxoTarget.value, widthBytes=8)
-   targStr += dtxoChange.binScript if dtxoChange else ''
-   return binary_to_base58(hash256(''.join(outptList) + targStr))[:8]
+   targStr += dtxoChange.binScript if dtxoChange else b''
+   return binary_to_base58(hash256(b''.join(outptList) + targStr))[:8]
    
 
 
@@ -815,7 +815,7 @@ def computePromissoryID(ustxiList=None, dtxoTarget=None, feeAmt=None,
 class MultiSigPromissoryNote(AsciiSerializable):
 
    OBJNAME   = 'PromNote'
-   BLKSTRING = 'PROMISSORY'
+   BLKSTRING = b'PROMISSORY'
    EMAILSUBJ = 'Armory Promissory Note for Simulfunding - %s'
    EMAILBODY = """
                The chunk of text below describes how this wallet will 
@@ -968,7 +968,7 @@ class MultiSigPromissoryNote(AsciiSerializable):
       for i in range(numUSTXI):
          ustxiList.append( UnsignedTxInput().unserialize(bu.get(VAR_STR), skipMagicCheck=skipMagicCheck) )
 
-      promLabel   = toUnicode(bu.get(VAR_STR))
+      promLabel   = bu.get(VAR_STR)
       lockboxKey  = bu.get(VAR_STR)
 
       if not version==MULTISIG_VERSION:

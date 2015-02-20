@@ -929,7 +929,7 @@ class PyBtcAddress(object):
          if isinstance(a, str):
             return a
          else:
-            return a.toBinStr()
+            return a.getPtr()
 
       def chk(a):
          if isinstance(a, bytes):
@@ -937,7 +937,7 @@ class PyBtcAddress(object):
          elif isinstance(a, str):
             return computeChecksum(a.encode(),4)
          else:
-            return computeChecksum(a.toBinStr(),4)
+            return computeChecksum(a.getPtr(),4)
 
       # Use BinaryPacker "width" fields to guaranteee BINARY_CHUNK width.
       # Sure, if we have malformed data we might cut some of it off instead
@@ -999,16 +999,16 @@ class PyBtcAddress(object):
       if isinstance(toUnpack, BinaryUnpacker):
          serializedData = toUnpack
       else:
+         assert(isinstance(toUnpack, bytes))
          serializedData = BinaryUnpacker( toUnpack )
-
 
       def chkzero(a):
          """
          Due to fixed-width fields, we will get lots of zero-bytes
          even when the binary data container was empty
          """
-         if a.count('\x00')==len(a):
-            return ''
+         if a.count(b'\x00')==len(a):
+            return b''
          else:
             return a
 
@@ -1025,10 +1025,10 @@ class PyBtcAddress(object):
       flags = int_to_bitset(flags, widthBytes=8)
 
       # Interpret the flags
-      containsPrivKey              = (flags[0]=='1')
-      containsPubKey               = (flags[1]=='1')
-      self.useEncryption           = (flags[2]=='1')
-      self.createPrivKeyNextUnlock = (flags[3]=='1')
+      containsPrivKey              = (flags[0]==b'1')
+      containsPubKey               = (flags[1]==b'1')
+      self.useEncryption           = (flags[2]==b'1')
+      self.createPrivKeyNextUnlock = (flags[3]==b'1')
 
       addrChkError = False
       if len(self.addrStr20)==0:

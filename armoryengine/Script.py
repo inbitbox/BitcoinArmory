@@ -24,14 +24,14 @@ def convertScriptToOpStrings(binScript):
    sz = len(binScript)
    error = False;
    while i < sz:
-      nextOp = ord(binScript[i]);
+      nextOp = binScript[i]
       if nextOp == 0:
          opList.append("0")
          i+=1
       elif nextOp < 76:
          opList.append('PUSHDATA(%s)' % str(nextOp))
          binObj = binScript[i+1:i+1+nextOp]
-         opList.append('['+binary_to_hex(binObj)+']')
+         opList.append(b'['+binary_to_hex(binObj)+b']')
          i += nextOp+1
       elif nextOp == 76:
          nb = binary_to_int(binScript[i+1:i+2])
@@ -80,16 +80,17 @@ def pprintScript(binScript, nIndent=0):
       print((indstr + indent + op))
 
 def scriptPushData(binObj):
+   assert(isinstance(binObj, bytes))
    sz = len(binObj) 
    if sz <= 76:
-      lenByte = int_to_binary(sz, widthBytes=1)
+      lenByte = bytes([sz])
       return lenByte+binObj
    elif sz <= 256:
       lenByte = int_to_binary(sz, widthBytes=1)
-      return '\x4c' + lenByte + binObj
+      return b'\x4c' + lenByte + binObj
    elif sz <= 65536:
       lenBytes = int_to_binary(sz, widthBytes=2)
-      return '\x4d' + lenBytes + binObj
+      return b'\x4d' + lenBytes + binObj
    else:
       InvalidScriptError('Cannot use PUSHDATA for len(obj)>65536')
 

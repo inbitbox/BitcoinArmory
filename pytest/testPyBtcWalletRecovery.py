@@ -117,7 +117,7 @@ class PyBtcWalletRecoveryTest(TiabTest):
       
       #Bad Private Keys
       import operator
-      badKeys = [addrObj for addrObj in (sorted(badWlt.addrMap.values(), 
+      badKeys = [addrObj for addrObj in (sorted(list(badWlt.addrMap.values()), 
                              key=operator.attrgetter('chainIndex')))]
          
       #run through obdsPrivKey

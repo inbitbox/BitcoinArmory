@@ -106,26 +106,26 @@ class ScriptToDispStrTest(TiabTest):
       different inputs.  
       """
       def myTestFunc():
-         print ''
-         print '*'*80
-         print descr
-         print '*'*80
+         print('')
+         print('*'*80)
+         print(descr)
+         print('*'*80)
 
          wltMap = {}
          for wlt in wltList:
             wltMap[wlt.uniqueIDB58] = wlt
 
          for scr,addrStr in binScrList:
-            print '\nAddrStr:', addrStr
+            print('\nAddrStr:', addrStr)
             for pref in [True, False]:
-               print '   PrefID:', str(pref)
+               print('   PrefID:', str(pref))
                for lenMax in lenList:
                   outInfo = getDisplayStringForScript(scr, wltMap, lboxList, 
                                                       lenMax, prefIDOverAddr=pref)
                   outStr = outInfo['String']
                   lenStr = str(len(outStr)).rjust(3)
-                  print '      ', lenStr,outStr
-                  self.assertTrue(isinstance(outStr, basestring))
+                  print('      ', lenStr,outStr)
+                  self.assertTrue(isinstance(outStr, str))
                   self.assertTrue(len(outStr) <= lenMax)
 
       return myTestFunc

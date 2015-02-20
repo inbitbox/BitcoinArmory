@@ -10,12 +10,13 @@
 # Licence: Public domain or CC0
 
 import base64
+import binascii
 import hashlib
 import random
 import time
 
 import CppBlockUtils
-from armoryengine.ArmoryUtils import getVersionString, BTCARMORY_VERSION, \
+from armoryengine.ArmoryUtils import getVersionBytes, BTCARMORY_VERSION, \
    ChecksumError
 
 
@@ -30,16 +31,16 @@ _a = 0x0000000000000000000000000000000000000000000000000000000000000000
 _Gx = 0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798
 _Gy = 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8
 
-BEGIN_MARKER = '-----BEGIN '
-END_MARKER = '-----END '
-DASHX5 = '-----'
-RN = '\r\n'
-RNRN = '\r\n\r\n'
-CLEARSIGN_MSG_TYPE_MARKER = 'BITCOIN SIGNED MESSAGE'
-BITCOIN_SIG_TYPE_MARKER = 'BITCOIN SIGNATURE'
-BASE64_MSG_TYPE_MARKER = 'BITCOIN MESSAGE'
-BITCOIN_ARMORY_COMMENT = 'Comment: Signed by Bitcoin Armory v' +\
-   getVersionString(BTCARMORY_VERSION, 3)
+BEGIN_MARKER = b'-----BEGIN '
+END_MARKER = b'-----END '
+DASHX5 = b'-----'
+RN = b'\r\r\n'
+RNRN = b'\r\r\n\r\r\n'
+CLEARSIGN_MSG_TYPE_MARKER = b'BITCOIN SIGNED MESSAGE'
+BITCOIN_SIG_TYPE_MARKER = b'BITCOIN SIGNATURE'
+BASE64_MSG_TYPE_MARKER = b'BITCOIN MESSAGE'
+BITCOIN_ARMORY_COMMENT = b'Comment: Signed by Bitcoin Armory v' +\
+   getVersionBytes(BTCARMORY_VERSION, 3)
 class UnknownSigBlockType(Exception): pass
    
 def randomk():  
@@ -51,7 +52,7 @@ def randomk():
 
 # Common constants/functions for Bitcoin
 def hash_160_to_bc_address(h160, addrtype=0):
-   vh160 = chr(addrtype) + h160
+   vh160 = bytes([addrtype]) + h160
    h = Hash(vh160)
    addr = vh160 + h[0:4]
    return b58encode(addr)
@@ -75,7 +76,7 @@ __b58base = len(__b58chars)
 def b58encode(v):
    long_value = 0
    for (i, c) in enumerate(v[::-1]):
-      long_value += (256**i) * ord(c)
+      long_value += (256**i) * c
 
    result = ''
    while long_value >= __b58base:
@@ -86,7 +87,7 @@ def b58encode(v):
 
    nPad = 0
    for c in v:
-      if c == '\0': nPad += 1
+      if c == b'\0': nPad += 1
       else: break
 
    return (__b58chars[0]*nPad) + result
@@ -261,7 +262,7 @@ class Point( object ):
          assert x > 0
          result = 1
          while result <= x: result = 2 * result
-         return result / 2
+         return result // 2
 
       e = other
       if self.__order: e = e % self.__order
@@ -270,13 +271,13 @@ class Point( object ):
       assert e > 0
       e3 = 3 * e
       negative_self = Point( self.__curve, self.__x, -self.__y, self.__order )
-      i = leftmost_bit( e3 ) / 2
+      i = leftmost_bit( e3 ) // 2
       result = self
       while i > 1:
          result = result.double()
          if ( e3 & i ) != 0 and ( e & i ) == 0: result = result + self
          if ( e3 & i ) == 0 and ( e & i ) != 0: result = result + negative_self
-         i = i / 2
+         i = i // 2
       return result
 
    def __rmul__( self, other ):
@@ -316,7 +317,7 @@ def str_to_long(b):
    res = 0
    pos = 1
    for a in reversed(b):
-      res += ord(a) * pos
+      res += a * pos
       pos *= 256
    return res
 
@@ -353,15 +354,13 @@ class Public_key( object ):
    def ser(self):
       if self.compressed:
          if self.point.y() & 1:
-            key = '03' + '%064x' % self.point.x()
+            key = '03%064x' % self.point.x()
          else:
-            key = '02' + '%064x' % self.point.x()
+            key = '02%064x' % self.point.x()
       else:
-         key = '04' + \
-            '%064x' % self.point.x() + \
-            '%064x' % self.point.y()
+         key = '04%064x%064x' % (self.point.x(), self.point.y())
 
-      return key.decode('hex')
+      return binascii.unhexlify(key)
 
 
 class Signature( object ):
@@ -408,30 +407,30 @@ class EC_KEY(object):
       self.secret = secret
 
 def decbin(d, l=0, rev=False):
-   if l==0:
-      a="%x"%d
-      if len(a)%2: a='0'+a
-   else:
-      a=("%0"+str(2*l)+"x")%d
-   a=a.decode('hex')
+   a = []
+   while d > 0:
+      d, c = divmod(d, 256)
+      a.append(c)
+   if l > len(a):
+      a += [0] * (l - len(a))
    if rev:
       a=a[::-1]
-   return a
+   return bytes(a)
 
 def decvi(d):
    if d<0xfd:
       return decbin(d)
    elif d<0xffff:
-      return '\xfd'+decbin(d,2,True)
+      return b'\xfd'+decbin(d,2,True)
    elif d<0xffffffff:
-      return '\xfe'+decbin(d,4,True)
-   return '\xff'+decbin(d,8,True)
+      return b'\xfe'+decbin(d,4,True)
+   return b'\xff'+decbin(d,8,True)
 
 def format_msg_to_sign(msg):
-   return "\x18Bitcoin Signed Message:\n"+decvi(len(msg))+msg
+   return b"\x18Bitcoin Signed Message:\n"+decvi(len(msg))+msg
 
 def sqrt_mod(a, p):
-   return pow(a, (p+1)/4, p)
+   return pow(a, ((p+1)//4), p)
 
 
 
@@ -456,7 +455,7 @@ def verify_message_Bitcoin(signature, message, pureECDSASigning=False, networkVe
    if len(sig) != 65:
       raise Exception("vmB","Bad signature")
 
-   hb = ord(sig[0])
+   hb = sig[0]
    r,s = list(map(str_to_long,[sig[1:33],sig[33:65]]))
 
    if hb < 27 or hb >= 35:
@@ -466,7 +465,7 @@ def verify_message_Bitcoin(signature, message, pureECDSASigning=False, networkVe
       hb -= 4
 
    recid = hb - 27
-   x = (r + (recid/2) * order) % _p
+   x = (r + (recid//2) * order) % _p
    y2 = ( pow(x,3,_p) + _a*x + _b ) % _p
    yomy = sqrt_mod(y2, _p)
    if (yomy - recid) % 2 == 0:
@@ -528,17 +527,17 @@ def sign_message_Bitcoin(secret, msg, pureECDSASigning=False):
    raise Exception("smB","Unable to construct recoverable key")
 
 def FormatText(t, sigctx=False, verbose=False):   #sigctx: False=what is displayed, True=what is signed
-   r=''
-   te=t.decode("ascii").split('\n')
+   r=b''
+   te=t.split(b'\n')
    for l in te:
-      while len(l) and l[len(l)-1] in [' ', '\r', '\t', chr(9)]:
+      while len(l) and l[len(l)-1] in [b' ', b'\r', b'\t', b'\x09']:
          l=l[:-1]
-      if not len(l) or l[len(l)-1]!='\r':
-         l+='\r'
+      if not len(l) or l[len(l)-1]!=b'\r':
+         l+=b'\r'
       if not sigctx:
-         if len(l) and l[0]=='-':
-            l='- '+l
-      r+=l+'\n'
+         if len(l) and l[0]==b'-':
+            l=b'- '+l
+      r+=l+b'\n'
    r=r[:-2]
 
    global FTVerbose
@@ -556,7 +555,7 @@ def crc24(m):
    INIT = 0xB704CE
    POLY = 0x1864CFB
    crc = INIT
-   r = ''
+   r = []
    for o in m:
       crc ^= (o << 16)
       for i in range(8):
@@ -564,8 +563,8 @@ def crc24(m):
          if crc & 0x1000000:
             crc ^= POLY
    for i in range(3):
-      r += chr( ( crc & (0xff<<(8*i))) >> (8*i) )
-   return r
+      r.append( (crc & (0xff<<(8*i))) >> (8*i) )
+   return bytes(r)
 
 def chunks(t, n):
    return [t[i:i+n] for i in range(0, len(t), n)]
@@ -587,13 +586,13 @@ def readSigBlock(r):
    r = FormatText(r, True)
    name = r.split(BEGIN_MARKER)[1].split(DASHX5)[0]
    if name == BASE64_MSG_TYPE_MARKER:
-      encoded,crc = r.split(BEGIN_MARKER)[1].split(END_MARKER)[0].split(DASHX5)[1].strip().split('\n=')
+      encoded,crc = r.split(BEGIN_MARKER)[1].split(END_MARKER)[0].split(DASHX5)[1].strip().split(b'\n=')
       crc = crc.strip()
       # Always starts with a blank line (\r\n\r\n) chop that off with the
       # comment and process the rest
       encoded = encoded.split(RNRN)[1]
       # Combines 64 byte chunks that are separated by \r\n
-      encoded = ''.join(encoded.split(RN))
+      encoded = b''.join(encoded.split(RN))
       # decode the message.
       decoded = base64.b64decode(encoded)
       # Check sum of decoded messgae
@@ -614,9 +613,9 @@ def readSigBlock(r):
       msg = msg.split(RN+DASHX5)[0]
       # Only the signature is encoded, use the original r to pull out the encoded signature
       encoded =  r.split(BEGIN_MARKER)[2].split(DASHX5)[1].split(BITCOIN_SIG_TYPE_MARKER)[0]
-      encoded, crc = encoded.split('\n=')
-      encoded = ''.join(encoded.split('\n'))
-      signature = ''.join(encoded.split('\r'))
+      encoded, crc = encoded.split(b'\n=')
+      encoded = b''.join(encoded.split(b'\n'))
+      signature = b''.join(encoded.split(b'\r'))
       crc = crc.strip()
       if base64.b64decode(crc) != crc24(base64.b64decode(signature)):
          raise ChecksumError

@@ -1264,7 +1264,7 @@ class ArmoryMainWindow(QMainWindow):
          LOGEXCEPT('Error getting extra entropy from filesystem')
 
 
-      source3 = ''
+      source3 = b''
       try:
          pixDesk = QPixmap.grabWindow(QApplication.desktop().winId())
          pixRaw = QByteArray()
@@ -1278,15 +1278,15 @@ class ArmoryMainWindow(QMainWindow):
       if len(source3)==0:
          LOGWARN('Error getting extra entropy from screenshot')
 
-      LOGINFO('Adding %d keypress events to the entropy pool', len(source1)/3)
+      LOGINFO('Adding %d keypress events to the entropy pool', len(source1)//3)
       LOGINFO('Adding %s bytes of filesystem data to the entropy pool', 
                   bytesToHumanSize(len(str(source2))))
       LOGINFO('Adding %s bytes from desktop screenshot to the entropy pool', 
-                  bytesToHumanSize(len(str(source3))/2))
+                  bytesToHumanSize(len(str(source3))//2))
       
 
-      allEntropy = ''.join([str(a) for a in [source1, source1, source3]])
-      return SecureBinaryData(HMAC256('Armory Entropy', allEntropy))
+      allEntropy = b''.join([str(a).encode() for a in [source1, source1, source3]])
+      return SecureBinaryData(HMAC256(b'Armory Entropy', allEntropy).decode("cp437"))
       
 
 
@@ -1832,7 +1832,7 @@ class ArmoryMainWindow(QMainWindow):
    def getPreferredDateFormat(self):
       # Treat the format as "binary" to make sure any special symbols don't
       # interfere with the SettingsFile symbols
-      globalDefault = binary_to_hex(DEFAULT_DATE_FORMAT)
+      globalDefault = binary_to_hex(DEFAULT_DATE_FORMAT.encode())
       fmt = self.getSettingOrSetDefault('DateFormat', globalDefault)
       return hex_to_binary(str(fmt))  # short hex strings could look like int()
 
@@ -1849,7 +1849,7 @@ class ArmoryMainWindow(QMainWindow):
             QMessageBox.Ok)
          return False
 
-      self.writeSetting('DateFormat', binary_to_hex(fmtStr))
+      self.writeSetting('DateFormat', binary_to_hex(fmtStr.encode()))
       return True
 
 
@@ -1993,12 +1993,12 @@ class ArmoryMainWindow(QMainWindow):
          thisVer = getVersionInt(BTCARMORY_VERSION)
 
          # Check ARMORY versions
-         if not 'Armory' in self.downloadLinks:
+         if not b'Armory' in self.downloadLinks:
             LOGWARN('No Armory links in the downloads list')
          else:
             maxVer = 0
             self.versionNotification = {}
-            for verStr,vermap in list(self.downloadLinks['Armory'].items()):
+            for verStr,vermap in list(self.downloadLinks[b'Armory'].items()):
                dlVer = getVersionInt(readVersionString(verStr))
                if dlVer > maxVer:
                   maxVer = dlVer
@@ -2023,8 +2023,8 @@ class ArmoryMainWindow(QMainWindow):
                   self.versionNotification['LONGDESCR'] = \
                      self.getVersionNotifyLongDescr(verStr).replace('\n','<br>')
                      
-            if 'ArmoryTesting' in self.downloadLinks:
-               for verStr,vermap in list(self.downloadLinks['ArmoryTesting'].items()):
+            if b'ArmoryTesting' in self.downloadLinks:
+               for verStr,vermap in list(self.downloadLinks[b'ArmoryTesting'].items()):
                   dlVer = getVersionInt(readVersionString(verStr))
                   if dlVer > maxVer:
                      maxVer = dlVer
@@ -2053,12 +2053,12 @@ class ArmoryMainWindow(QMainWindow):
          # For Satoshi updates, we don't trigger any notifications like we
          # do for Armory above -- we will release a proper announcement if
          # necessary.  But we want to set a flag to
-         if not 'Satoshi' in self.downloadLinks:
+         if not b'Satoshi' in self.downloadLinks:
             LOGWARN('No Satoshi links in the downloads list')
          else:
             try:
                maxVer = 0
-               for verStr,vermap in list(self.downloadLinks['Satoshi'].items()):
+               for verStr,vermap in list(self.downloadLinks[b'Satoshi'].items()):
                   dlVer = getVersionInt(readVersionString(verStr))
                   if dlVer > maxVer:
                      maxVer = dlVer
@@ -2068,10 +2068,10 @@ class ArmoryMainWindow(QMainWindow):
                   return
 
                # This is to detect the running versions of Bitcoin-Qt/bitcoind
-               thisVerStr = self.NetworkingFactory.proto.peerInfo['subver']
-               thisVerStr = thisVerStr.strip('/').split(':')[-1]
+               thisVerStr = self.NetworkingFactory.proto.peerInfo[b'subver']
+               thisVerStr = thisVerStr.strip(b'/').split(b':')[-1]
 
-               if sum([0 if c in '0123456789.' else 1 for c in thisVerStr]) > 0:
+               if sum([0 if c in b'0123456789.' else 1 for c in thisVerStr]) > 0:
                   return
 
                self.satoshiVersions[0] = thisVerStr
@@ -2133,29 +2133,29 @@ class ArmoryMainWindow(QMainWindow):
 
       # Ignore transactions below the requested priority
       minPriority = self.getSettingOrSetDefault('NotifyMinPriority', 2048)
-      if int(notifyMap['PRIORITY']) < minPriority:
+      if int(notifyMap[b'PRIORITY']) < minPriority:
          return False
 
       # Ignore version upgrade notifications if disabled in the settings
-      if 'upgrade' in notifyMap['ALERTTYPE'].lower() and \
+      if b'upgrade' in notifyMap[b'ALERTTYPE'] and \
          self.getSettingOrSetDefault('DisableUpgradeNotify', False):
          return False
 
       if notifyID in self.notifyIgnoreShort:
          return False
 
-      if notifyMap['STARTTIME'].isdigit():
-         if currTime < int(notifyMap['STARTTIME']):
+      if notifyMap[b'STARTTIME'].isdigit():
+         if currTime < int(notifyMap[b'STARTTIME']):
             return False
 
-      if notifyMap['EXPIRES'].isdigit():
-         if currTime > int(notifyMap['EXPIRES']):
+      if notifyMap[b'EXPIRES'].isdigit():
+         if currTime > int(notifyMap[b'EXPIRES']):
             return False
 
 
       try:
-         minVerStr  = notifyMap['MINVERSION']
-         minExclude = minVerStr.startswith('>')
+         minVerStr  = notifyMap[b'MINVERSION']
+         minExclude = minVerStr.startswith(b'>')
          minVerStr  = minVerStr[1:] if minExclude else minVerStr
          minVerInt  = getVersionInt(readVersionString(minVerStr))
          minVerInt += 1 if minExclude else 0
@@ -2166,8 +2166,8 @@ class ArmoryMainWindow(QMainWindow):
 
 
       try:
-         maxVerStr  = notifyMap['MAXVERSION']
-         maxExclude = maxVerStr.startswith('<')
+         maxVerStr  = notifyMap[b'MAXVERSION']
+         maxExclude = maxVerStr.startswith(b'<')
          maxVerStr  = maxVerStr[1:] if maxExclude else maxVerStr
          maxVerInt  = getVersionInt(readVersionString(maxVerStr))
          maxVerInt -= 1 if maxExclude else 0
@@ -2210,7 +2210,7 @@ class ArmoryMainWindow(QMainWindow):
                                                      DEFAULT_MIN_PRIORITY)
       minmin = min(currMin, DEFAULT_MIN_PRIORITY)
       for nid,valmap in list(currNotificationList.items()):
-         if int(valmap['PRIORITY']) >= minmin:
+         if int(valmap[b'PRIORITY']) >= minmin:
             self.almostFullNotificationList[nid] = deepcopy(valmap)
 
 
@@ -2227,9 +2227,9 @@ class ArmoryMainWindow(QMainWindow):
             self.notifyIgnoreShort.add(nid)
             continue
 
-         if valmap['PRIORITY'].isdigit():
-            if int(valmap['PRIORITY']) > tabPriority:
-               tabPriority = int(valmap['PRIORITY'])
+         if valmap[b'PRIORITY'].isdigit():
+            if int(valmap[b'PRIORITY']) > tabPriority:
+               tabPriority = int(valmap[b'PRIORITY'])
                self.maxPriorityID = nid
 
          if not nid in self.almostFullNotificationList:
@@ -2895,6 +2895,7 @@ class ArmoryMainWindow(QMainWindow):
       fdir,fname = os.path.split(fullPath)
       if fdir:
          self.writeSetting('LastDirectory', fdir)
+      LOGERROR("%s" % fullPath)
       return fullPath
 
 
@@ -4268,7 +4269,7 @@ class ArmoryMainWindow(QMainWindow):
          # TODO: Interleave the C++ log and the python log.
          #       That could be a lot of work!
          defaultFN = 'armorylog_%s.txt' % \
-                     unixTimeToFormatStr(RightNow(),'%Y%m%d_%H%M')
+                     unixTimeToFormatStr(RightNow(),'%Y%m%d_%H%M').decode()
          saveFile = self.getFileSave(title='Export Log File', \
                                   ffilter=['Text Files (*.txt)'], \
                                   defaultFilename=defaultFN)
@@ -4737,13 +4738,13 @@ class ArmoryMainWindow(QMainWindow):
    def openDLArmory(self):
       dl,cl = self.getDownloaderData()
       if not dl is None and not cl is None:
-         UpgradeDownloaderDialog(self, self, 'Armory', dl, cl).exec_()
+         UpgradeDownloaderDialog(self, self, b'Armory', dl, cl).exec_()
 
    #############################################################################
    def openDLSatoshi(self):
       dl,cl = self.getDownloaderData()
       if not dl is None and not cl is None:
-         UpgradeDownloaderDialog(self, self, 'Satoshi', dl, cl).exec_()
+         UpgradeDownloaderDialog(self, self, b'Satoshi', dl, cl).exec_()
 
 
    #############################################################################
@@ -4912,7 +4913,7 @@ class ArmoryMainWindow(QMainWindow):
 
       alertsForSorting = []
       for nid,nmap in list(self.almostFullNotificationList.items()):
-         alertsForSorting.append([nid, int(nmap['PRIORITY'])])
+         alertsForSorting.append([nid, int(nmap[b'PRIORITY'])])
 
       sortedAlerts = sorted(alertsForSorting, key=lambda a: -a[1])[:10]
 
@@ -4928,9 +4929,9 @@ class ArmoryMainWindow(QMainWindow):
             pixm = QPixmap(':/MsgBox_info48.png')
 
 
-         shortDescr = self.almostFullNotificationList[nid]['SHORTDESCR']
+         shortDescr = self.almostFullNotificationList[nid][b'SHORTDESCR']
          if priority>=4096:
-            shortDescr = '<font color="%s">' + shortDescr + '</font>'
+            shortDescr = '<font color="%s">' + shortDescr.decode("ascii") + '</font>'
             shortDescr = shortDescr % htmlColor('TextWarn')
 
          self.announceTableWidgets[i][0].setPixmap(pixm.scaled(24,24))

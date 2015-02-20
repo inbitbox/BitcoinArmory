@@ -293,8 +293,8 @@ class UpgradeDownloaderDialog(ArmoryDialog):
       headerItem.setText(1,tr("Version"))
       packages.setHeaderItem(headerItem)
       packages.setMaximumHeight(int(7*tightSizeStr(packages, "Abcdefg")[1]))
-      packages.header().setResizeMode(0, QHeaderView.Stretch)
-      packages.header().setResizeMode(1, QHeaderView.Stretch)
+      packages.header().setSectionResizeMode(0, QHeaderView.Stretch)
+      packages.header().setSectionResizeMode(1, QHeaderView.Stretch)
 
       self.os.activated.connect(self.cascadeOsVer)
       self.osver.activated.connect(self.cascadeOsArch)
@@ -376,7 +376,7 @@ class UpgradeDownloaderDialog(ArmoryDialog):
 
       # Above we had to select *something*, we should check that the
       # architecture actually matches our system.  If not, warn
-      trueBits = '64' if SystemSpecs.IsX64 else '32'
+      trueBits = b'64' if SystemSpecs.IsX64 else b'32'
       selectBits = self.itemData(self.osarch)[:2]
       if showPackage and not trueBits==selectBits:
          QMessageBox.warning(self, tr("Wrong Architecture"), tr("""
@@ -389,17 +389,17 @@ class UpgradeDownloaderDialog(ArmoryDialog):
             packages.""") % (trueBits, selectBits), QMessageBox.Ok)
          self.bitsColor = htmlColor('TextRed')
 
-      if showPackage == 'Armory':
+      if showPackage == b'Armory':
          expectVer = self.main.armoryVersions[1]
-      elif showPackage == 'Satoshi':
+      elif showPackage == b'Satoshi':
          expectVer = self.main.satoshiVersions[1]
 
       if showPackage:
          for n in range(0, packages.topLevelItemCount()):
             row = packages.topLevelItem(n)
-            if str(row.data(0, 32).toString()).startswith(showPackage):
+            if row.data(0, 32).startswith(showPackage):
                packages.setCurrentItem(row)
-               if not expectVer or str(row.data(1, 32).toString())==expectVer:
+               if not expectVer or row.data(1, 32)==expectVer:
                   break
             self.useSelectedPackage(limit=True)
          else:
@@ -496,10 +496,10 @@ class UpgradeDownloaderDialog(ArmoryDialog):
             There is no version information to be shown here.""") +"</html>")
          self.downloader.setFile(None, None)
       else:
-         packagename = str(self.packages.currentItem().data(0, 32).toString())
-         packagever  = str(self.packages.currentItem().data(1, 32).toString())
-         packageurl  = str(self.packages.currentItem().data(2, 32).toString())
-         packagehash = str(self.packages.currentItem().data(3, 32).toString())
+         packagename = self.packages.currentItem().data(0, 32)
+         packagever  = self.packages.currentItem().data(1, 32)
+         packageurl  = self.packages.currentItem().data(2, 32)
+         packagehash = self.packages.currentItem().data(3, 32)
 
          self.downloader.setFile(packageurl, packagehash)
          self.selectedDLInfo = [packagename,packagever,packageurl,packagehash]
@@ -540,7 +540,7 @@ class UpgradeDownloaderDialog(ArmoryDialog):
                      logHtml += "<li>" + tr("<b>{0}</b>: {1}").format(f[0], f[1]) + "</li>\n"
                   logHtml += "</ul>\n\n"
          else:
-            if packagename == "Satoshi":
+            if packagename == b"Satoshi":
                logHtml = tr(
                   "No version information is available here for any of the "
                   "core Bitcoin software downloads. You can find the "
@@ -627,7 +627,7 @@ class UpgradeDownloaderDialog(ArmoryDialog):
 
 
    def cascadeOsVer(self):
-      chosenos = str(self.os.itemData(self.os.currentIndex()).toString())
+      chosenos = self.os.itemData(self.os.currentIndex())
       if len(chosenos)==0:
          return
 
@@ -643,8 +643,8 @@ class UpgradeDownloaderDialog(ArmoryDialog):
       self.cascade(self.osver, allVers, self.cascadeOsArch)
 
    def cascadeOsArch(self):
-      chosenos = str(self.os.itemData(self.os.currentIndex()).toString())
-      chosenosver = str(self.osver.itemData(self.osver.currentIndex()).toString())
+      chosenos = self.os.itemData(self.os.currentIndex())
+      chosenosver = self.osver.itemData(self.osver.currentIndex())
       if len(chosenosver)==0:
          return
 
@@ -659,9 +659,9 @@ class UpgradeDownloaderDialog(ArmoryDialog):
    def displayPackages(self):
       packages = self.packages
       packages.clear()
-      chosenos = str(self.os.itemData(self.os.currentIndex()).toString())
-      chosenosver = str(self.osver.itemData(self.osver.currentIndex()).toString())
-      chosenosarch = str(self.osarch.itemData(self.osarch.currentIndex()).toString())
+      chosenos = self.os.itemData(self.os.currentIndex())
+      chosenosver = self.osver.itemData(self.osver.currentIndex())
+      chosenosarch = self.osarch.itemData(self.osarch.currentIndex())
       if len(chosenosarch)==0:
          return
 
@@ -701,13 +701,13 @@ class UpgradeDownloaderDialog(ArmoryDialog):
             download latest version of <u>%s</u></b></font>""") % pkgName)
 
          self.lblCurrentVersion.setText('')
-         currVerStr = ''
-         if pkgName=='Satoshi':
+         currVerStr = b''
+         if pkgName==b'Satoshi':
             if self.main.satoshiVersions[0]:
                self.lblCurrentVersion.setText(tr("""
                   You are currently using Bitcoin Core version %s""") % \
                   self.main.satoshiVersions[0])
-         elif pkgName.startswith('Armory'):
+         elif pkgName.startswith(b'Armory'):
             if self.main.armoryVersions[0]:
                self.lblCurrentVersion.setText(tr("""
                   You are currently using Armory version %s""") % \
@@ -721,7 +721,7 @@ class UpgradeDownloaderDialog(ArmoryDialog):
 
    # get the untranslated name from the combobox specified
    def itemData(self, combobox):
-      return str(combobox.itemData(combobox.currentIndex()).toString())
+      return combobox.itemData(combobox.currentIndex())
 
    def localized(self, v):
       if v in self.localizedData:

@@ -350,6 +350,10 @@ def getVersionString(vquad, numPieces=4):
       vstr += '.%d' % vquad[3]
    return vstr
 
+def getVersionBytes(vquad, numPieces=4):
+   vstr = getVersionString(vquad, numPieces)
+   return vstr.encode("ascii")
+
 def getVersionInt(vquad, numPieces=4):
    vint  = int(vquad[0] * 1e7)
    vint += int(vquad[1] * 1e5)
@@ -360,7 +364,7 @@ def getVersionInt(vquad, numPieces=4):
    return vint
 
 def readVersionString(verStr):
-   verList = [int(piece) for piece in verStr.split('.')]
+   verList = [int(piece) for piece in verStr.split(b'.')]
    while len(verList)<4:
       verList.append(0)
    return tuple(verList)
@@ -1633,7 +1637,7 @@ DEFAULT_ENCODING = 'utf-8'
 
 def isASCII(theStr):
    try:
-      theStr.decode('ascii')
+      theStr.encode('ascii')
       return True
    except UnicodeEncodeError:
       return False
@@ -1656,11 +1660,9 @@ def toBytes(theStr, theEncoding=DEFAULT_ENCODING):
 def toUnicode(theStr, theEncoding=DEFAULT_ENCODING):
    if isinstance(theStr, str):
       return theStr
-   elif isinstance(theStr, str):
-      return unicode(theStr, theEncoding)
    else:
       try:
-         return unicode(theStr)
+         return str(theStr)
       except:
          LOGEXCEPT('toUnicode() not defined for %s', str(type(theStr)))
 
@@ -1797,30 +1799,48 @@ def RightNowStr(fmt=DEFAULT_DATE_FORMAT):
 # operations we ever do in the bitcoin network
 # UPDATE:  mini-private-key format requires vanilla sha256...
 def sha1(bits):
+   if not isinstance(bits, bytes):
+      raise RuntimeError("hashing only works on bytes, trying to hash %s" % type(bits))
    return hashlib.new('sha1', bits).digest()
 def sha256(bits):
+   if not isinstance(bits, bytes):
+      raise RuntimeError("hashing only works on bytes, trying to hash %s" % type(bits))
    return hashlib.new('sha256', bits).digest()
 def sha512(bits):
+   if not isinstance(bits, bytes):
+      raise RuntimeError("hashing only works on bytes, trying to hash %s" % type(bits))
    return hashlib.new('sha512', bits).digest()
 def ripemd160(bits):
+   if not isinstance(bits, bytes):
+      raise RuntimeError("hashing only works on bytes, trying to hash %s" % type(bits))
    # It turns out that not all python has ripemd160...?
    #return hashlib.new('ripemd160', bits).digest()
    return Cpp.BtcUtils().ripemd160_SWIG(bits)
 def hash256(s):
    """ Double-SHA256 """
+   if not isinstance(s, bytes):
+      raise RuntimeError("hashing only works on bytes, trying to hash %s" % type(s))
    return sha256(sha256(s))
 def hash160(s):
    """ RIPEMD160( SHA256( binaryStr ) ) """
+   if not isinstance(s, bytes):
+      raise RuntimeError("hashing only works on bytes, trying to hash %s" % type(s))
    return Cpp.BtcUtils().getHash160_SWIG(s)
 
 
 def HMAC(key, msg, hashfunc=sha512, hashsz=None):
    """ This is intended to be simple, not fast.  For speed, use HDWalletCrypto() """
-   hashsz = len(hashfunc('')) if hashsz==None else hashsz
+   if not isinstance(key, bytes):
+      raise RuntimeError("hashing only works on bytes, trying to hash %s" % type(key)) 
+
+   if not isinstance(msg, bytes):
+      raise RuntimeError("hashing only works on bytes, trying to hash %s" % type(msg)) 
+
+   hashsz = len(hashfunc(b'')) if hashsz==None else hashsz
    key = (hashfunc(key) if len(key)>hashsz else key)
-   key = key.ljust(hashsz, '\x00')
-   okey = ''.join([chr(ord('\x5c')^ord(c)) for c in key])
-   ikey = ''.join([chr(ord('\x36')^ord(c)) for c in key])
+   key = key.ljust(hashsz, b'\x00')
+   okey = bytes([ord(b'\x5c') ^ c for c in key])
+   ikey = bytes([ord(b'\x36') ^c for c in key])
    return hashfunc( okey + hashfunc(ikey + msg) )
 
 HMAC256 = lambda key,msg: HMAC(key, msg, sha256, 32)
@@ -1935,6 +1955,9 @@ def binary_to_hex(b, endOut=LITTLEENDIAN, endIn=LITTLEENDIAN):
    Converts binary to hexadecimal.  Endianness is only switched
    if (endIn != endOut)
    """
+   if not isinstance(b, bytes):
+      raise RuntimeError("text should be binary, not %s" % type(b))
+
    hout = binascii.hexlify(b)
    if not endOut==endIn:
       hout = hex_switchEndian(hout)
@@ -2302,8 +2325,8 @@ def fixChecksumError(binaryStr, chksum, hashFunc=hash256):
       binaryArray = [binaryStr[i] for i in range(len(binaryStr))]
       for val in range(256):
          binaryArray[byte] = chr(val)
-         if hashFunc(''.join(binaryArray)).startswith(chksum):
-            return ''.join(binaryArray)
+         if hashFunc(b''.join(binaryArray)).startswith(chksum):
+            return b''.join(binaryArray)
 
    return ''
 
@@ -2329,7 +2352,7 @@ def verifyChecksum(binaryStr, chksum, hashFunc=hash256, fixIfNecessary=True, \
    error and simply return the original string, then PyBtcWallet will correct
    the checksum in the file, next time it reserializes the data.
    """
-   bin1 = str(binaryStr)
+   bin1 = binaryStr
    bin2 = binary_switchEndian(binaryStr)
 
 

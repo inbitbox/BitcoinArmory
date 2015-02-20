@@ -49,7 +49,7 @@ class ArmoryClient(Protocol):
 
    ############################################################
    def __init__(self):
-      self.recvData = ''
+      self.recvData = b''
       self.gotVerack = False
       self.sentVerack = False
       self.sentHeadersReq = True
@@ -402,8 +402,8 @@ class ArmoryClientFactory(ReconnectingClientFactory):
 def quad_to_str( addrQuad):
    return '.'.join([str(a) for a in addrQuad])
 
-def quad_to_binary( addrQuad):
-   return ''.join([chr(a) for a in addrQuad])
+def quad_to_binary(addrQuad):
+   return bytes(addrQuad)
 
 def binary_to_quad(addrBin):
    return [ord(a) for a in addrBin]
@@ -442,11 +442,11 @@ class PyMessage(object):
       Can create a message by the command name, or the payload (or neither)
       """
       self.magic   = MAGIC_BYTES
-      self.cmd     = cmd
+      self.cmd     = cmd.encode()
       self.payload = payload
 
       if payload:
-         self.cmd = payload.command
+         self.cmd = payload.command.encode()
       elif cmd:
          self.payload = PayloadMap[self.cmd]()
 

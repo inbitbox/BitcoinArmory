@@ -18,8 +18,8 @@ from copy import deepcopy
 #        of text WITH OR WITHOUT the signature block data (either pass it 
 #        the signed block, or just whats inside the block).
 
-SIGNED_BLOCK_HEAD = '-----BEGIN BITCOIN SIGNED MESSAGE-----'
-SIGNED_BLOCK_TAIL = '-----BEGIN BITCOIN SIGNATURE-----'
+SIGNED_BLOCK_HEAD = b'-----BEGIN BITCOIN SIGNED MESSAGE-----'
+SIGNED_BLOCK_TAIL = b'-----BEGIN BITCOIN SIGNATURE-----'
 
 ################################################################################
 ################################################################################
@@ -80,19 +80,17 @@ class changelogParser(object):
    
    #############################################################################
    def parseChangelogText(self, fileText):
-   
+
       self.changelog = []
 
       if fileText is None:
          return None
 
-   
       try:
          if SIGNED_BLOCK_HEAD in fileText:
             fileText = readSigBlock(fileText)[1]
       
-         versionLines = [line.strip() for line in fileText.split('\n')][::-1]
-         
+         versionLines = [line.strip() for line in fileText.split(b'\n')][::-1]
             
          if len(versionLines)==0:
             return None
@@ -100,21 +98,20 @@ class changelogParser(object):
          # All lines have been stripped already
          while len(versionLines) > 0:
             line = versionLines.pop()
-      
-            if line.startswith('#') or len(line)==0:
+
+            if line.startswith(b'#') or len(line)==0:
                continue
-   
       
-            if line.startswith('VERSION') and len(line.split())==2:
-               self.changelog.append([line.split(' ')[-1], '', []])
-            elif line.upper().startswith('RELEASED'):
+            if line.startswith(b'VERSION') and len(line.split())==2:
+               self.changelog.append([line.split(b' ')[-1], b'', []])
+            elif line.upper().startswith(b'RELEASED'):
                self.changelog[-1][1] = line[8:].strip()
-            elif line.startswith('-'):
+            elif line.startswith(b'-'):
                featureTitle = line[2:]
-               self.changelog[-1][2].append([featureTitle, ''])
+               self.changelog[-1][2].append([featureTitle, b''])
             else:
                curr = self.changelog[-1][2][-1][-1]
-               self.changelog[-1][2][-1][-1] += ('' if len(curr)==0 else ' ') + line
+               self.changelog[-1][2][-1][-1] += (b'' if len(curr)==0 else b' ') + line
          return self.getChangelog()
       except:
          LOGEXCEPT('Failed to parse changelog')
@@ -219,16 +216,16 @@ class downloadLinkParser(object):
             fileText = readSigBlock(fileText)[1]
    
    
-         dlLines = [line.strip() for line in fileText.split('\n')][::-1]
+         dlLines = [line.strip() for line in fileText.split(b'\n')][::-1]
       
          while len(dlLines) > 0:
       
             line = dlLines.pop()
       
-            if line.startswith('#') or len(line)==0:
+            if line.startswith(b'#') or len(line)==0:
                continue
       
-            lineLists  = [pc.split(',') for pc in line.split()[:-2]]
+            lineLists  = [pc.split(b',') for pc in line.split()[:-2]]
             urlAndHash = line.split()[-2:]
       
             APPLIST, VERLIST, OSLIST, SUBOSLIST, BITLIST = list(range(5))
@@ -353,37 +350,37 @@ class notificationParser(object):
          if SIGNED_BLOCK_HEAD in fileText:
             fileText = readSigBlock(fileText)[1]
       
-         notifyLines = [line.strip() for line in fileText.split('\n')][::-1]
+         notifyLines = [line.strip() for line in fileText.split(b'\n')][::-1]
       
       
-         currID = ''
+         currID = b''
          readLongDescr = False
-         longDescrAccum = ''
+         longDescrAccum = b''
          
          while len(notifyLines) > 0:
       
             line = notifyLines.pop()
       
-            if not readLongDescr and (line.startswith('#') or len(line)==0):
+            if not readLongDescr and (line.startswith(b'#') or len(line)==0):
                continue
       
-            if line.upper().startswith('UNIQUEID'):
-               currID = line.split(':')[-1].strip()
+            if line.upper().startswith(b'UNIQUEID'):
+               currID = line.split(b':')[-1].strip()
                self.notifications[currID] = {}
-            elif line.upper().startswith('LONGDESCR'):
+            elif line.upper().startswith(b'LONGDESCR'):
                readLongDescr = True
-            elif line.startswith("*****"):
+            elif line.startswith(b"*****"):
                readLongDescr = False
-               self.notifications[currID]['LONGDESCR'] = longDescrAccum
-               longDescrAccum = ''
+               self.notifications[currID][b'LONGDESCR'] = longDescrAccum
+               longDescrAccum = b''
             elif readLongDescr:
                if len(line.strip())==0:
-                  longDescrAccum += '<br><br>'
+                  longDescrAccum += b'<br><br>'
                else:
-                  longDescrAccum += line.strip() + ' '
+                  longDescrAccum += line.strip() + b' '
             else:
-               key = line.split(':')[ 0].strip().upper()
-               val = line.split(':')[-1].strip()
+               key = line.split(b':')[ 0].strip().upper()
+               val = line.split(b':')[-1].strip()
                self.notifications[currID][key] = val
    
          return self.getNotificationMap()

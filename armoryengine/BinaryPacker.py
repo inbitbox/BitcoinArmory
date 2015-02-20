@@ -36,10 +36,10 @@ class BinaryPacker(object):
       return sum([len(a) for a in self.binaryConcat])
 
    def getBinaryString(self):
-      return ''.join(self.binaryConcat)
+      return bytes(self.binaryConcat)
 
    def __str__(self):
-      return self.getBinaryString()
+      return "%s" % self.getBinaryString()
 
 
    def put(self, varType, theData, width=None, endianness=LITTLEENDIAN):
@@ -69,11 +69,13 @@ class BinaryPacker(object):
       elif varType == VAR_INT:
          self.binaryConcat += packVarInt(theData)[0]
       elif varType == VAR_STR:
-         self.binaryConcat += packVarInt(len(theData))[0]
-         self.binaryConcat += theData
+         self.binaryConcat += packVarInt(len(theData))[0].encode('ascii')
+         self.binaryConcat += theData.encode("ascii")
       elif varType == FLOAT:
          self.binaryConcat += pack(E+'f', theData)
       elif varType == BINARY_CHUNK:
+         if isinstance(theData, str):
+            theData = theData.encode("ascii")
          if width==None:
             self.binaryConcat += theData
          else:
@@ -82,5 +84,3 @@ class BinaryPacker(object):
             self.binaryConcat += theData.ljust(width, b'\x00')
       else:
          raise PackerError("Var type not recognized!  VarType="+str(varType))
-
-

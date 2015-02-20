@@ -9013,7 +9013,7 @@ class DlgSettings(ArmoryDialog):
       lblStk = QRichLabel('; '.join(fmtSymbols))
 
       self.edtDateFormat = QLineEdit()
-      self.edtDateFormat.setText(fmt)
+      self.edtDateFormat.setText(fmt.decode())
       self.ttipFormatDescr = self.main.createToolTipWidget(ttipStr)
 
       self.lblDateExample = QRichLabel('', doWrap=False)
@@ -9383,7 +9383,7 @@ class DlgSettings(ArmoryDialog):
          self.main.createCombinedLedger()
       except: 
          pass
-      super(DlgSettings, self).accept(*args)
+      super(DlgSettings, self).accept()
 
 
    #############################################################################

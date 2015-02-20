@@ -31,7 +31,7 @@ class ArmoryWizard(QWizard):
       self.setFont(GETFONT('var'))
       self.setWindowFlags(Qt.Window)
       # Need to adjust the wizard frame size whenever the page changes.
-      self.currentIdChanged(self.fitContents)
+      self.currentIdChanged.connect(self.fitContents)
       if USE_TESTNET:
          self.setWindowTitle('Armory - Bitcoin Wallet Management [TESTNET]')
          self.setWindowIcon(QIcon(':/armory_icon_green_32x32.png'))

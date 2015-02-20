@@ -932,8 +932,10 @@ class PyBtcAddress(object):
             return a.toBinStr()
 
       def chk(a):
-         if isinstance(a, str):
+         if isinstance(a, bytes):
             return computeChecksum(a,4)
+         elif isinstance(a, str):
+            return computeChecksum(a.encode(),4)
          else:
             return computeChecksum(a.toBinStr(),4)
 

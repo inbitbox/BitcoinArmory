@@ -1762,10 +1762,10 @@ if CLI_OPTIONS.logDisable:
 # be valid entities for tracking in a wallet.  Until then, all of our python
 # utilities all use just hash160 values, and we manually add the prefix
 # before talking to the BDM.
-HASH160PREFIX  = '\x00'
-P2SHPREFIX     = '\x05'
-MSIGPREFIX     = '\xfe'
-NONSTDPREFIX   = '\xff'
+HASH160PREFIX  = b'\x00'
+P2SHPREFIX     = b'\x05'
+MSIGPREFIX     = b'\xfe'
+NONSTDPREFIX   = b'\xff'
 def CheckHash160(scrAddr):
    if not len(scrAddr)==21:
       raise BadAddressError("Supplied scrAddr is not a Hash160 value!")
@@ -2008,16 +2008,17 @@ def int_to_bitset(i, widthBytes=0):
    bitsOut = []
    while i>0:
       i,r = divmod(i,2)
-      bitsOut.append(['0','1'][r])
-   result = ''.join(bitsOut)
+      bitsOut.append(r)
+   result = bytes(bitsOut)
    if widthBytes != 0:
-      result = result.ljust(widthBytes*8,'0')
+      result = result.ljust(widthBytes*8,b'\x00')
    return result
 
 def bitset_to_int(bitset):
+   assert(isinstance(bitset, bytes))
    n = 0
    for i,bit in enumerate(bitset):
-      n += (0 if bit=='0' else 1) * 2**i
+      n += bit * 2**i
    return n
 
 
@@ -3366,20 +3367,22 @@ def isValidPK(inPK, inStr=False):
    checkVal = '\x00'
 
    if inStr:
-      checkVal = hex_to_binary(inPK)
-   else:
       checkVal = inPK
-   pkLen = len(checkVal)
+   else:
+      checkVal = binary_to_hex(inPK.encode())
+   pkLen = len(checkVal) // 2
 
    if pkLen == UNCOMP_PK_LEN or pkLen == COMP_PK_LEN:
+      s = SecureBinaryData()
+      s.createFromHex(checkVal.decode())
       # The "proper" way to check the key is to feed it to Crypto++.
-      if not CryptoECDSA().VerifyPublicKeyValid(SecureBinaryData(checkVal)):
-         LOGWARN('Pub key %s is invalid.' % binary_to_hex(inPK))
+      if not CryptoECDSA().VerifyPublicKeyValid(s):
+         LOGWARN('Pub key %s is invalid.' % inPK)
       else:
          retVal = True
    else:
       LOGWARN('Pub key %s has an invalid length (%d bytes).' % \
-              (len(inPK), binary_to_hex(inPK)))
+              (inPK, len(inPK) // 2))
 
    return retVal
 

@@ -83,7 +83,7 @@ class PyBtcAddress(object):
       because that is what is required by the C++ code.  See EncryptionUtils.h
       to see that available methods.
       """
-      self.addrStr20             = ''
+      self.addrStr20             = b''
       self.binPublicKey65        = SecureBinaryData()  # 0x04 X(BE) Y(BE)
       self.binPrivKey32_Encr     = SecureBinaryData()  # BIG-ENDIAN
       self.binPrivKey32_Plain    = SecureBinaryData()
@@ -263,18 +263,15 @@ class PyBtcAddress(object):
       """
       if not self.useEncryption or not self.hasPrivKey():
          return False
-
       if self.useEncryption and not secureKdfOutput:
          LOGERROR('No encryption key supplied to verifyEncryption!')
          return False
-
 
       decryptedKey = CryptoAES().DecryptCFB( self.binPrivKey32_Encr, \
                                              SecureBinaryData(secureKdfOutput), \
                                              self.binInitVect16)
       verified = False
-
-      if not self.isLocked:
+      if not self.isLocked and self.binPrivKey32_Plain.getSize() != 0:
          if decryptedKey==self.binPrivKey32_Plain:
             verified = True
       else:
@@ -533,7 +530,7 @@ class PyBtcAddress(object):
             self.isLocked = True
          elif self.binPrivKey32_Plain.getSize()==32:
             # Addr should be encrypted, but haven't computed encrypted value yet
-            if secureKdfOutput!=None:
+            if secureKdfOutput is not None:
                # We have an encryption key, use it
                if self.binInitVect16.getSize() < 16:
                   if not generateIVIfNecessary:
@@ -924,21 +921,24 @@ class PyBtcAddress(object):
       flags[1] = self.hasPubKey()
       flags[2] = serializeWithEncryption
       flags[3] = self.createPrivKeyNextUnlock
-      flags = ''.join([('1' if f else '0') for f in flags])
+      flags = bytes([(1 if f else 0) for f in flags])
 
       def raw(a):
-         if isinstance(a, str):
+         if isinstance(a, bytes):
             return a
+         elif isinstance(a, str):
+            raise RuntimeError("Should be only encrypting bytes or SecureBinary")
          else:
-            return hex_to_binary(a.toHexStr().encode("ascii"))
+            return hex_to_binary(a.toHexStr().encode())
 
       def chk(a):
          if isinstance(a, bytes):
             return computeChecksum(a,4)
          elif isinstance(a, str):
+            raise RuntimeError("Should be only encrypting bytes or SecureBinary")
             return computeChecksum(a.encode(),4)
          else:
-            return computeChecksum(hex_to_binary(a.toHexStr().encode("ascii")),4)
+            return computeChecksum(hex_to_binary(a.toHexStr().encode()),4)
 
       # Use BinaryPacker "width" fields to guaranteee BINARY_CHUNK width.
       # Sure, if we have malformed data we might cut some of it off instead
@@ -1019,25 +1019,24 @@ class PyBtcAddress(object):
 
       self.addrStr20 = serializedData.get(BINARY_CHUNK, 20)
       chkAddr20      = serializedData.get(BINARY_CHUNK,  4)
+      self.addrStr20 = verifyChecksum(self.addrStr20, chkAddr20)
+
 
       addrVerInt     = serializedData.get(UINT32)
       flags          = serializedData.get(UINT64)
-      self.addrStr20 = verifyChecksum(self.addrStr20, chkAddr20)
       flags = int_to_bitset(flags, widthBytes=8)
 
       # Interpret the flags
-      containsPrivKey              = (flags[0]==b'1')
-      containsPubKey               = (flags[1]==b'1')
-      self.useEncryption           = (flags[2]==b'1')
-      self.createPrivKeyNextUnlock = (flags[3]==b'1')
+      containsPrivKey              = (flags[0]==1)
+      containsPubKey               = (flags[1]==1)
+      self.useEncryption           = (flags[2]==1)
+      self.createPrivKeyNextUnlock = (flags[3]==1)
 
       addrChkError = False
       if len(self.addrStr20)==0:
          addrChkError = True
          if not containsPrivKey and not containsPubKey:
             raise UnserializeError('Checksum mismatch in addrStr')
-
-
 
       # Write out address-chaining parameters (for deterministic wallets)
       self.chaincode   = chkzero(serializedData.get(BINARY_CHUNK, 32))
@@ -1047,7 +1046,10 @@ class PyBtcAddress(object):
       self.createPrivKeyNextUnlock_ChainDepth = depth
 
       # Correct errors, convert to secure container
-      self.chaincode = SecureBinaryData(verifyChecksum(self.chaincode, chkChaincode))
+      ver = verifyChecksum(self.chaincode, chkChaincode)
+      tmp = SecureBinaryData()
+      tmp.createFromHex(binary_to_hex(ver).decode())
+      self.chaincode = tmp
 
 
       # Write out whatever is appropriate for private-key data
@@ -1056,19 +1058,23 @@ class PyBtcAddress(object):
       chkIv   =         serializedData.get(BINARY_CHUNK,  4)
       privKey = chkzero(serializedData.get(BINARY_CHUNK, 32))
       chkPriv =         serializedData.get(BINARY_CHUNK,  4)
-      iv      = SecureBinaryData(verifyChecksum(iv, chkIv))
-      privKey = SecureBinaryData(verifyChecksum(privKey, chkPriv))
+      tmp      = SecureBinaryData()
+      tmp.createFromHex(binary_to_hex(verifyChecksum(iv, chkIv)).decode())
+      iv = tmp
+      tmp = SecureBinaryData()
+      tmp.createFromHex(binary_to_hex(verifyChecksum(privKey, chkPriv)).decode())
+      privKey = tmp
 
       # If this is SUPPOSED to contain a private key...
       if containsPrivKey:
          if privKey.getSize()==0:
             raise UnserializeError('Checksum mismatch in PrivateKey '+\
-                                    '('+hash160_to_addrStr(self.addrStr20)+')')
+                                   '('+hash160_to_addrStr(self.addrStr20).decode()+')')
 
          if self.useEncryption:
             if iv.getSize()==0:
                raise UnserializeError('Checksum mismatch in IV ' +\
-                                    '('+hash160_to_addrStr(self.addrStr20)+')')
+                                      '('+hash160_to_addrStr(self.addrStr20).decode()+')')
             if self.createPrivKeyNextUnlock:
                self.createPrivKeyNextUnlock_IVandKey[0] = iv.copy()
                self.createPrivKeyNextUnlock_IVandKey[1] = privKey.copy()
@@ -1081,7 +1087,9 @@ class PyBtcAddress(object):
 
       pubKey = chkzero(serializedData.get(BINARY_CHUNK, 65))
       chkPub =         serializedData.get(BINARY_CHUNK, 4)
-      pubKey = SecureBinaryData(verifyChecksum(pubKey, chkPub))
+      tmp = SecureBinaryData()
+      tmp.createFromHex(binary_to_hex(verifyChecksum(pubKey, chkPub)).decode())
+      pubKey = tmp
 
       if containsPubKey:
          if not pubKey.getSize()==65:
@@ -1089,7 +1097,7 @@ class PyBtcAddress(object):
                pubKey = CryptoAES().ComputePublicKey(self.binPrivKey32_Plain)
             else:
                raise UnserializeError('Checksum mismatch in PublicKey ' +\
-                                       '('+hash160_to_addrStr(self.addrStr20)+')')
+                                      '('+hash160_to_addrStr(self.addrStr20).decode()+')')
 
       self.binPublicKey65 = pubKey
 
@@ -1229,36 +1237,36 @@ class PyBtcAddress(object):
             return '--'*32
          else:
             return x.toHexStr()[:nchar]
-      print((indent + 'BTC Address      :', self.getAddrStr()))
-      print((indent + 'Hash160[BE]      :', binary_to_hex(self.getAddr160())))
-      print((indent + 'Wallet Location  :', self.walletByteLoc))
-      print((indent + 'Chained Address  :', self.chainIndex >= -1))
-      print((indent + 'Have (priv,pub)  : (%s,%s)' % \
-                     (str(self.hasPrivKey()), str(self.hasPubKey()))))
-      print((indent + 'First/Last Time  : (%s,%s)' % \
-                     (str(self.timeRange[0]), str(self.timeRange[1]))))
-      print((indent + 'First/Last Block : (%s,%s)' % \
-                     (str(self.blkRange[0]), str(self.blkRange[1]))))
+      print(indent + 'BTC Address      :', self.getAddrStr())
+      print(indent + 'Hash160[BE]      :', binary_to_hex(self.getAddr160()))
+      print(indent + 'Wallet Location  :', self.walletByteLoc)
+      print(indent + 'Chained Address  :', self.chainIndex >= -1)
+      print(indent + 'Have (priv,pub)  : (%s,%s)' % \
+                     (str(self.hasPrivKey()), str(self.hasPubKey())))
+      print(indent + 'First/Last Time  : (%s,%s)' % \
+                     (str(self.timeRange[0]), str(self.timeRange[1])))
+      print(indent + 'First/Last Block : (%s,%s)' % \
+                     (str(self.blkRange[0]), str(self.blkRange[1])))
       if self.hasPubKey():
-         print((indent + 'PubKeyX(BE)      :', \
-                        binary_to_hex(self.binPublicKey65.toBinStr()[1:33 ])))
-         print((indent + 'PubKeyY(BE)      :', \
-                        binary_to_hex(self.binPublicKey65.toBinStr()[  33:])))
-      print((indent + 'Encryption parameters:'))
-      print((indent + '   UseEncryption :', self.useEncryption))
-      print((indent + '   IsLocked      :', self.isLocked))
-      print((indent + '   KeyChanged    :', self.keyChanged))
-      print((indent + '   ChainIndex    :', self.chainIndex))
-      print((indent + '   Chaincode     :', pp(self.chaincode)))
-      print((indent + '   InitVector    :', pp(self.binInitVect16)))
+         print(indent + 'PubKeyX(BE)      :', \
+                        self.binPublicKey65.toHexStr()[1:33])
+         print(indent + 'PubKeyY(BE)      :', \
+                        self.binPublicKey65.toHexStr()[33:])
+      print(indent + 'Encryption parameters:')
+      print(indent + '   UseEncryption :', self.useEncryption)
+      print(indent + '   IsLocked      :', self.isLocked)
+      print(indent + '   KeyChanged    :', self.keyChanged)
+      print(indent + '   ChainIndex    :', self.chainIndex)
+      print(indent + '   Chaincode     :', pp(self.chaincode))
+      print(indent + '   InitVector    :', pp(self.binInitVect16))
       if withPrivKey and self.hasPrivKey():
-         print((indent + 'PrivKeyPlain(BE) :', pp(self.binPrivKey32_Plain)))
-         print((indent + 'PrivKeyCiphr(BE) :', pp(self.binPrivKey32_Encr)))
+         print(indent + 'PrivKeyPlain(BE) :', pp(self.binPrivKey32_Plain))
+         print(indent + 'PrivKeyCiphr(BE) :', pp(self.binPrivKey32_Encr))
       else:
-         print((indent + 'PrivKeyPlain(BE) :', pp(SecureBinaryData())))
-         print((indent + 'PrivKeyCiphr(BE) :', pp(SecureBinaryData())))
+         print(indent + 'PrivKeyPlain(BE) :', pp(SecureBinaryData()))
+         print(indent + 'PrivKeyCiphr(BE) :', pp(SecureBinaryData()))
       if self.createPrivKeyNextUnlock:
-         print((indent + '           ***** :', 'PrivKeys available on next unlock'))
+         print(indent + '           ***** :', 'PrivKeys available on next unlock')
 
    def toString(self, withPrivKey=True, indent=''):
       def pp(x, nchar=1000):

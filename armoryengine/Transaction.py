@@ -908,7 +908,7 @@ def generatePreHashTxMsgToSign(pytx, txInIndex, prevTxOutScript, hashcode=1):
    # Create a copy of the tx with all scripts blanked out
    txCopy = pytx.copy()
    for i in range(len(txCopy.inputs)):
-      txCopy.inputs[i].binScript = ''
+      txCopy.inputs[i].binScript = b''
 
    # Set the script of the TxIn being signed, to the previous TxOut script
    txCopy.inputs[txInIndex].binScript = prevTxOutScript

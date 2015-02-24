@@ -52,6 +52,8 @@ def getScriptForUserString(userStr, wltMap, lboxList):
    # Now try to figure it out
    try:
       userStr = userStr.strip()
+      if isinstance(userStr, str):
+         userStr = userStr.encode()
       outScript = None
       wltID = None
       lboxID = None
@@ -74,7 +76,8 @@ def getScriptForUserString(userStr, wltMap, lboxList):
          userStr = userStr.lower()
          # This might be a public key. Confirm it's valid before proceeding.
          if isValidPK(userStr, True):
-            sbdKey = SecureBinaryData(hex_to_binary(userStr))
+            sbdKey = SecureBinaryData()
+            sbdKey.createFromHex(userStr.decode())
             a160 = sbdKey.getHash160()
             outScript = hash160_to_p2pkhash_script(a160)
             hasAddrInIt = False
@@ -105,7 +108,7 @@ def getScriptForUserString(userStr, wltMap, lboxList):
               'LboxID': lboxID, 
               'ShowID': hasAddrInIt}
    except:
-      #LOGEXCEPT('Invalid user string entered')
+      LOGEXCEPT('Invalid user string entered')
       return {'Script': None,
               'WltID':  None,
               'LboxID': None,
@@ -198,11 +201,13 @@ def getDisplayStringForScript(binScript, wltMap, lboxList, maxChars=256,
 
       strLast = wlt.uniqueIDB58 if addrStr is None else addrStr
       strLast = wlt.uniqueIDB58 if prefIDOverAddr else strLast
+      strLast = strLast.decode()
    elif lbox is not None:
       strType  = 'Lockbox %d-of-%d:' % (lbox.M, lbox.N)
       strLabel = lbox.shortName
       addrStr = scrAddr_to_addrStr(lbox.p2shScrAddr)
       strLast = lbox.uniqueIDB58 if prefIDOverAddr else addrStr
+      strLast = strLast.decode()
    else:
       strType = ''
       strLabel = ''
@@ -235,8 +240,8 @@ def getDisplayStringForScript(binScript, wltMap, lboxList, maxChars=256,
          strLast  = ' (%s)' % truncateStr(strLast,lastTrunc) if lenLast>0 else ''
       elif lenType + lenLabelTrunc + lenLastTrunc <= maxChars:
          extraChars = maxChars - (lenType + lenLabelTrunc + lenLastTrunc)
-         lblTrunc += extraChars/2 
-         lastTrunc += extraChars/2 
+         lblTrunc += extraChars//2 
+         lastTrunc += extraChars//2 
          strLabel = ' "%s"' % truncateStr(strLabel, lblTrunc)
          strLast  = ' (%s)' % truncateStr(strLast, lastTrunc) if lenLast>0 else ''
       elif lenType + lenLabel <= maxChars:
@@ -267,22 +272,22 @@ def getDisplayStringForScript(binScript, wltMap, lboxList, maxChars=256,
    # If we're here, it didn't match any loaded wlt or lockbox
    dispStr = ''
    if scriptType in CPP_TXOUT_HAS_ADDRSTR:
-      addrStr = script_to_addrStr(binScript)
+      addrStr = script_to_addrStr(binScript).decode()
       if len(addrStr) <= maxChars:
          dispStr = addrStr
       else:
          dispStr = addrStr[:maxChars-3] + '...'
    elif scriptType == CPP_TXOUT_MULTISIG:
       M,N,a160s,pubs = getMultisigScriptInfo(binScript)
-      lbID = calcLockboxID(binScript)
+      lbID = calcLockboxID(binScript).decode()
       dispStr = 'Unknown %d-of-%d (%s)' % (M,N,lbID)
-      addrStr = script_to_addrStr(script_to_p2sh_script(binScript))
+      addrStr = script_to_addrStr(script_to_p2sh_script(binScript)).decode()
       if len(dispStr) + len(addrStr) + 3 <= maxChars:
          dispStr += ' [%s]' % addrStr
       elif len(dispStr) + lastTrunc + 6 <= maxChars:
          dispStr += ' [%s...]' % addrStr[:lastTrunc]
    else:
-      addrStr = script_to_addrStr(script_to_p2sh_script(binScript))
+      addrStr = script_to_addrStr(script_to_p2sh_script(binScript)).decode()
       dispStr = 'Non-Standard: %s' % addrStr
       if len(dispStr) > maxChars:
          dispStr = dispStr[:maxChars-3] + '...'

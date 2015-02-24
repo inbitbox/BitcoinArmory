@@ -51,7 +51,10 @@ class changelogParser(object):
 
 
    #############################################################################
-   def __init__(self, filename='', filetext=''):
+   def __init__(self, filename=b'', filetext=b''):
+      assert(isinstance(filename, bytes))
+      assert(isinstance(filetext, bytes))
+
       self.changelog = []
       if not filename and not filetext:
          return
@@ -181,7 +184,10 @@ class downloadLinkParser(object):
    """
 
    #############################################################################
-   def __init__(self, filename='', filetext=''):
+   def __init__(self, filename=b'', filetext=b''):
+      assert(isinstance(filename, bytes))
+      assert(isinstance(filetext, bytes))
+
       self.downloadMap = {}
       if not filename and not filetext:
          return
@@ -323,12 +329,15 @@ class notificationParser(object):
    """
 
    #############################################################################
-   def __init__(self, filename='', filetext=''):
+   def __init__(self, filename=b'', filetext=b''):
+      assert(isinstance(filename, bytes))
+      assert(isinstance(filetext, bytes))
+
       self.notifications = {}
       if not filename and not filetext:
          return
 
-      if filename and os.path.exists(filename):
+      if filename != b'' and os.path.exists(filename):
          f = open(filename, 'r')
          filetext = f.read() 
          f.close()
@@ -340,6 +349,8 @@ class notificationParser(object):
 
    #############################################################################
    def parseNotificationText(self, fileText):
+      assert(isinstance(fileText, bytes))
+
       self.notifications = {}
 
       if fileText is None:
@@ -351,8 +362,6 @@ class notificationParser(object):
             fileText = readSigBlock(fileText)[1]
       
          notifyLines = [line.strip() for line in fileText.split(b'\n')][::-1]
-      
-      
          currID = b''
          readLongDescr = False
          longDescrAccum = b''

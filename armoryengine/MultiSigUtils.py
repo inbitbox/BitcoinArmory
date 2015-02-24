@@ -62,8 +62,8 @@ Use-Case 1 -- Protecting coins with 2-of-3 computers (2 offline, 1 online):
 
 LOCKBOXIDSIZE = 8
 PROMIDSIZE = 4
-LBPREFIX, LBSUFFIX = 'Lockbox[Bare:', ']'
-LBP2SHPREFIX = 'Lockbox['
+LBPREFIX, LBSUFFIX = b'Lockbox[Bare:', b']'
+LBP2SHPREFIX = b'Lockbox['
 
 #############################################################################
 def getRecipStr(decoratedTxOut):
@@ -107,17 +107,20 @@ def createLockboxEntryStr(lbID, isBareMultiSig=False):
 
 ################################################################################
 def readLockboxEntryStr(addrtext):
+   assert(isinstance(addrtext, bytes))
    result = None
    if isBareLockbox(addrtext) or isP2SHLockbox(addrtext):
       len(LBPREFIX if isBareLockbox(addrtext) else LBP2SHPREFIX)
-      idStr = addrtext[len(LBPREFIX if isBareLockbox(addrtext) else LBP2SHPREFIX):
-                       addrtext.find(LBSUFFIX)]
+      start = len(LBPREFIX if isBareLockbox(addrtext) else LBP2SHPREFIX)
+      end = addrtext.find(LBSUFFIX)
+      idStr = addrtext[start:end]
       if len(idStr)==LOCKBOXIDSIZE:
          result = idStr
    return result
 
 ################################################################################
 def isBareLockbox(addrtext):
+   assert(isinstance(addrtext, bytes))
    return addrtext.startswith(LBPREFIX)
 
 def scrAddr_to_displayStr(scrAddr, wltMap, lbMap):
@@ -176,11 +179,11 @@ def readLockboxesFile(lbFilePath):
    retLBList = []
 
    # Read in the lockbox file.
-   with open(lbFilePath, 'r') as lbFileData:
+   with open(lbFilePath, 'rb') as lbFileData:
       allData = lbFileData.read()
 
    # Find the lockbox starting point.
-   startMark = '=====LOCKBOX'
+   startMark = b'=====LOCKBOX'
    if startMark in allData:
       try:
          # Find the point where the start mark begins and collect either all the

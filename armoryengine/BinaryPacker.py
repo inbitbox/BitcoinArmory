@@ -85,7 +85,7 @@ class BinaryPacker(object):
             self.binaryConcat += b''.ljust(width, b'\x00')
          else:
             if len(theData)>width:
-               raise PackerError('Too much data to fit into fixed width field')
+               raise PackerError('Too much data to fit into fixed width field %s vs %s' % (len(theData), width))
             self.binaryConcat += theData.ljust(width, b'\x00')
       else:
          raise PackerError("Var type not recognized!  VarType="+str(varType))

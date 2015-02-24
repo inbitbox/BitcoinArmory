@@ -59,7 +59,7 @@ def CheckWalletRegistration(func):
    return inner
 
 def buildWltFileName(uniqueIDB58):
-   return 'armory_%s_.wallet' % uniqueIDB58
+   return 'armory_%s_.wallet' % uniqueIDB58.decode()
    
 class PyBtcWallet(object):
    """
@@ -179,7 +179,7 @@ class PyBtcWallet(object):
 
    #############################################################################
    def __init__(self):
-      self.fileTypeStr    = '\xbaWALLET\x00'
+      self.fileTypeStr    = b'\xbaWALLET\x00'
       self.magicBytes     = MAGIC_BYTES
       self.version        = PYBTCWALLET_VERSION  # (Major, Minor, Minor++, even-more-minor)
       self.eofByte        = 0
@@ -273,7 +273,7 @@ class PyBtcWallet(object):
       #this returns a pointer to the BtcWallet C++ object. This object is
       #instantiated at registration and is unique for the BDV object, so we
       #should only ever set the cppWallet member here 
-      self.cppWallet = TheBDM.registerWallet(prefixedKeys, self.uniqueIDB58, isNew)
+      self.cppWallet = TheBDM.registerWallet(prefixedKeys, self.uniqueIDB58.decode(), isNew)
       
    #############################################################################
    def unregisterWallet(self):
@@ -884,7 +884,7 @@ class PyBtcWallet(object):
       # We make sure we have byte locations of the two addresses, to start
       self.addrMap[first160].walletByteLoc = headerBytes + 21
 
-      fileData.put(BINARY_CHUNK, '\x00' + first160 + firstAddr.serialize())
+      fileData.put(BINARY_CHUNK, b'\x00' + first160 + firstAddr.serialize())
 
 
       # Store the current localtime and blocknumber.  Block number is always 
@@ -1147,7 +1147,7 @@ class PyBtcWallet(object):
 
       for addr160,addrObj in list(self.addrMap.items()):
          if not addr160=='ROOT':
-            newFile.write('\x00' + addr160 + addrObj.serialize())
+            newFile.write(b'\x00' + addr160 + addrObj.serialize())
 
       for hashVal,comment in list(self.commentsMap.items()):
          twoByteLength = int_to_binary(len(comment), widthBytes=2)
@@ -1425,7 +1425,8 @@ class PyBtcWallet(object):
       binPacker = BinaryPacker()
       binPacker.put(UINT64, kdfObj.getMemoryReqtBytes())
       binPacker.put(UINT32, kdfObj.getNumIterations())
-      binPacker.put(BINARY_CHUNK, kdfObj.getSalt().toBinStr(), width=32)
+      salt = hex_to_binary(kdfObj.getSalt().toHexStr().encode())
+      binPacker.put(BINARY_CHUNK, salt, width=32)
 
       kdfStr = binPacker.getBinaryString()
       binPacker.put(BINARY_CHUNK, computeChecksum(kdfStr,4), width=4)
@@ -1451,7 +1452,7 @@ class PyBtcWallet(object):
       kdfBytes   = len(allKdfData) + len(kdfChksum)
       padding    = binUnpacker.get(BINARY_CHUNK, binWidth-kdfBytes)
 
-      if allKdfData=='\x00'*44:
+      if allKdfData==b'\x00'*44:
          return None
 
       fixedKdfData = verifyChecksum(allKdfData, kdfChksum)
@@ -1468,7 +1469,10 @@ class PyBtcWallet(object):
       nIter = kdfUnpacker.get(UINT32)
       salt  = kdfUnpacker.get(BINARY_CHUNK, 32)
 
-      kdf = KdfRomix(mem, nIter, SecureBinaryData(salt))
+      s = SecureBinaryData()
+      s.createFromHex(binary_to_hex(salt).decode())
+
+      kdf = KdfRomix(mem, nIter, s)
       return kdf
 
 
@@ -1541,7 +1545,7 @@ class PyBtcWallet(object):
 
       mem   = kdf.getMemoryReqtBytes()
       nIter = kdf.getNumIterations()
-      salt  = SecureBinaryData(kdf.getSalt().getPtr())
+      salt  = SecureBinaryData(kdf.getSalt())
       return (mem, nIter, salt)
 
    #############################################################################
@@ -1585,7 +1589,12 @@ class PyBtcWallet(object):
             LOGERROR('Incorrect passphrase to unlock wallet')
             raise PassphraseError('Incorrect passphrase to unlock wallet')
 
-      secureSalt = SecureBinaryData(salt)
+      secureSalt = None
+      if isinstance(salt, bytes):
+         secureSalt = SecureBinaryData()
+         secureSalt.createFromHex(binary_to_hex(salt).decode())
+      else:
+         secureSalt = SecureBinaryData(salt)
       newkdf = KdfRomix(mem, numIter, secureSalt)
       bp = BinaryPacker()
       bp.put(BINARY_CHUNK, self.serializeKdfParams(newkdf), width=256)
@@ -1650,7 +1659,6 @@ class PyBtcWallet(object):
 
       # Prep the file-update list with extras passed in as argument
       walletUpdateInfo = list(extraFileUpdates)
-
       # Derive the new KDF key if a passphrase was supplied
       newKdfKey = secureKdfOutput
       if securePassphrase:
@@ -1667,7 +1675,6 @@ class PyBtcWallet(object):
          # If keys were previously unencrypted, they will be not have
          # initialization vectors and need to be generated before encrypting.
          # This is why we have the enableKeyEncryption() call
-
          if not oldUsedEncryption==newUsesEncryption:
             # If there was an encryption change, we must change the flags
             # in the wallet file in the same atomic operation as changing
@@ -1705,11 +1712,14 @@ class PyBtcWallet(object):
          if newKdfKey:
             self.lock() 
             self.unlock(newKdfKey, Progress=Progress)
-    
-      finally:
-         # Make sure we always destroy the temporary passphrase results
-         if newKdfKey: newKdfKey.destroy()
-         if oldKdfKey: oldKdfKey.destroy()
+      except:
+         LOGEXCEPT("failed in there somewhere")
+         raise RuntimeError("")
+      # finally:
+      #    # Make sure we always destroy the temporary passphrase results
+      #    if newKdfKey: newKdfKey.destroy()
+      #    if oldKdfKey: oldKdfKey.destroy()
+
 
    #############################################################################
    def getWalletPath(self, nameSuffix=None):
@@ -1765,7 +1775,7 @@ class PyBtcWallet(object):
          oldCommentLoc = self.commentLocs[hashVal]
          # The first 23 bytes are the datatype, hashVal, and 2-byte comment size
          offset = 1 + len(hashVal) + 2
-         updEntry.append([WLT_UPDATE_MODIFY, oldCommentLoc+offset, '\x00'*oldCommentLen])
+         updEntry.append([WLT_UPDATE_MODIFY, oldCommentLoc+offset, b'\x00'*oldCommentLen])
       else:
          isNewComment = True
 
@@ -1864,7 +1874,7 @@ class PyBtcWallet(object):
       flags = [False]*nFlagBytes*8
       flags[0] = self.useEncryption
       flags[1] = self.watchingOnly
-      flagsBitset = ''.join([('1' if f else '0') for f in flags])
+      flagsBitset = bytes([(1 if f else 0) for f in flags])
       binPacker.put(UINT64, bitset_to_int(flagsBitset))
 
    #############################################################################
@@ -1972,19 +1982,19 @@ class PyBtcWallet(object):
          LOGERROR('Wallet is for:  %s ', BLOCKCHAINS[self.magicBytes])
          LOGERROR('ArmoryEngine:   %s ', BLOCKCHAINS[MAGIC_BYTES])
          return -1
-      if not self.uniqueIDBin[-1] == ADDRBYTE:
+      if not self.uniqueIDBin[-1:] == ADDRBYTE:
          LOGERROR('Requested wallet is for a different network!')
          LOGERROR('ArmoryEngine:   %s ', NETWORKS[ADDRBYTE])
          return -2
 
       # User-supplied description/name for wallet
       self.offsetLabelName = binUnpacker.getPosition()
-      self.labelName  = binUnpacker.get(BINARY_CHUNK, 32).strip('\x00')
+      self.labelName  = binUnpacker.get(BINARY_CHUNK, 32).strip(b'\x00').decode()
 
 
       # Longer user-supplied description/name for wallet
       self.offsetLabelDescr  = binUnpacker.getPosition()
-      self.labelDescr  = binUnpacker.get(BINARY_CHUNK, 256).strip('\x00')
+      self.labelDescr  = binUnpacker.get(BINARY_CHUNK, 256).strip(b'\x00').decode()
 
 
       self.offsetTopUsed = binUnpacker.getPosition()
@@ -2028,8 +2038,8 @@ class PyBtcWallet(object):
    #############################################################################
    def unpackNextEntry(self, binUnpacker):
       dtype   = binUnpacker.get(UINT8)
-      hashVal = ''
-      binData = ''
+      hashVal = b''
+      binData = b''
       if dtype==WLT_DATATYPE_KEYDATA:
          hashVal = binUnpacker.get(BINARY_CHUNK, 20)
          binData = binUnpacker.get(BINARY_CHUNK, self.pybtcaddrSize)
@@ -2046,7 +2056,8 @@ class PyBtcWallet(object):
       elif dtype==WLT_DATATYPE_DELETED:
          deletedLen = binUnpacker.get(UINT16)
          binUnpacker.advance(deletedLen)
-         
+      else:
+         raise RuntimeError("unknown entry: %s" % dtype)
 
       return (dtype, hashVal, binData)
 
@@ -2101,8 +2112,6 @@ class PyBtcWallet(object):
                self.lastComputedChainIndex   = newAddr.chainIndex
                self.lastComputedChainAddr160 = newAddr.getAddr160()
                
-            if newAddr.chainIndex == -2:
-               abc = 1
             if newAddr.chainIndex < -2:
                newAddr.chainIndex = -2
                self.hasNegativeImports = True
@@ -2224,7 +2233,7 @@ class PyBtcWallet(object):
                   toAppend.put(BINARY_CHUNK, updateInfo[2].serialize())
 
                elif dtype in (WLT_DATATYPE_ADDRCOMMENT, WLT_DATATYPE_TXCOMMENT):
-                  if not isinstance(updateInfo[2], str):
+                  if not isinstance(updateInfo[2], bytes):
                      raise Exception('Data type does not match update type')
                   toAppend.put(UINT8, dtype)
                   toAppend.put(BINARY_CHUNK, updateInfo[1])
@@ -2404,10 +2413,10 @@ class PyBtcWallet(object):
       overwriteLoc = self.addrMap[addr160].walletByteLoc - 21
       overwriteLen = 20 + self.pybtcaddrSize - 2
 
-      overwriteBin = ''
+      overwriteBin = b''
       overwriteBin += int_to_binary(WLT_DATATYPE_DELETED, widthBytes=1)
       overwriteBin += int_to_binary(overwriteLen,         widthBytes=2)
-      overwriteBin += '\x00'*overwriteLen
+      overwriteBin += b'\x00'*overwriteLen
 
       self.walletFileSafeUpdate([[WLT_UPDATE_MODIFY, overwriteLoc, overwriteBin]])
 
@@ -2520,7 +2529,8 @@ class PyBtcWallet(object):
       else:
          newAddr = PyBtcAddress().createFromPublicKeyHash160(addr20)
 
-      newAddr.chaincode  = SecureBinaryData('\xff'*32)
+      newAddr.chaincode  = SecureBinaryData()
+      newAddr.chaincode.createFromHex('ff'*32)
       newAddr.chainIndex = -2
       newAddr.timeRange = [firstTime, lastTime]
       newAddr.blkRange  = [firstBlk,  lastBlk ]
@@ -2768,7 +2778,6 @@ class PyBtcWallet(object):
          if not self.kdf:
             raise EncryptionError('How do we have a locked wallet w/o KDF???')
          secureKdfOutput = self.kdf.DeriveKey(securePassphrase)
-
 
       if not self.verifyEncryptionKey(secureKdfOutput):
          raise PassphraseError("Incorrect passphrase for wallet")

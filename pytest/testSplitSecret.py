@@ -60,16 +60,17 @@ class SplitSecretTest(TiabTest):
       self.assertEqual(ff1.mtrxinv(TEST_MTRX), TEST_MULT_VECT_RESULT5)
 
    def testSplitSecret(self):
-      self.callSplitSecret('9f', 2,3)
-      self.callSplitSecret('9f', 3,5)
-      self.callSplitSecret('9f', 4,7)
-      self.callSplitSecret('9f', 5,9)
-      self.callSplitSecret('9f', 6,7)
-      self.callSplitSecret('9f'*16, 3,5, 16)
-      self.callSplitSecret('9f'*16, 7,10, 16)
-      self.assertRaises(FiniteFieldError, SplitSecret, '9f'*16, 3, 5, 8)
-      self.assertRaises(FiniteFieldError, SplitSecret, '9f', 5,4)
-      self.assertRaises(FiniteFieldError, SplitSecret, '9f', 1,1)
+      bit = b'9f'
+      self.callSplitSecret(bit, 2,3)
+      self.callSplitSecret(bit, 3,5)
+      self.callSplitSecret(bit, 4,7)
+      self.callSplitSecret(bit, 5,9)
+      self.callSplitSecret(bit, 6,7)
+      self.callSplitSecret(bit*16, 3,5, 16)
+      self.callSplitSecret(bit*16, 7,10, 16)
+      self.assertRaises(FiniteFieldError, SplitSecret, bit*16, 3, 5, 8)
+      self.assertRaises(FiniteFieldError, SplitSecret, bit, 5,4)
+      self.assertRaises(FiniteFieldError, SplitSecret, bit, 1,1)
 
    
    def callSplitSecret(self, secretHex, M, N, nbytes=1):

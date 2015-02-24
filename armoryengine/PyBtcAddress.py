@@ -370,6 +370,7 @@ class PyBtcAddress(object):
                                     chksum=None, publicKey65=None, \
                                     skipCheck=False, skipPubCompute=False):
 
+
       assert(plainPrivKey.getSize()==32)
 
       if not addr160:
@@ -929,7 +930,7 @@ class PyBtcAddress(object):
          if isinstance(a, str):
             return a
          else:
-            return a.getPtr()
+            return hex_to_binary(a.toHexStr().encode("ascii"))
 
       def chk(a):
          if isinstance(a, bytes):
@@ -937,7 +938,7 @@ class PyBtcAddress(object):
          elif isinstance(a, str):
             return computeChecksum(a.encode(),4)
          else:
-            return computeChecksum(a.getPtr(),4)
+            return computeChecksum(hex_to_binary(a.toHexStr().encode("ascii")),4)
 
       # Use BinaryPacker "width" fields to guaranteee BINARY_CHUNK width.
       # Sure, if we have malformed data we might cut some of it off instead

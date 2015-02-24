@@ -42,7 +42,7 @@ class PyBtcWalletTest(TiabTest):
       self.privKey   = SecureBinaryData('\xaa'*32)
       self.privKey2  = SecureBinaryData('\x33'*32)
       self.chainstr  = SecureBinaryData('\xee'*32)
-      theIV     = SecureBinaryData(hex_to_binary('77'*16))
+      theIV     = SecureBinaryData(hex_to_binary(b'77'*16).decode('ascii'))
       self.passphrase  = SecureBinaryData('A self.passphrase')
       self.passphrase2 = SecureBinaryData('A new self.passphrase')
       

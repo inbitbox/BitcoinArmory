@@ -245,7 +245,6 @@ CLI_OPTIONS = None
 CLI_ARGS = None
 (CLI_OPTIONS, CLI_ARGS) = parser.parse_args()
 
-
 # This is probably an abuse of the CLI_OPTIONS structure, but not
 # automatically expanding "~" symbols is killing me
 for opt,val in list(CLI_OPTIONS.__dict__.items()):
@@ -262,7 +261,7 @@ for opt,val in list(CLI_OPTIONS.__dict__.items()):
 
 # Use CLI args to determine testnet or not
 USE_TESTNET = CLI_OPTIONS.testnet
-#USE_TESTNET = True
+USE_TESTNET = True
 
 # Set default port for inter-process communication
 if CLI_OPTIONS.interport < 0:
@@ -328,9 +327,9 @@ OS_LINUX   = 'nix'    in opsys.lower() or 'nux'     in opsys.lower()
 OS_MACOSX  = 'darwin' in opsys.lower() or 'osx'     in opsys.lower()
 
 BLOCKCHAINS = {}
-BLOCKCHAINS['\xf9\xbe\xb4\xd9'] = "Main Network"
-BLOCKCHAINS['\xfa\xbf\xb5\xda'] = "Old Test Network"
-BLOCKCHAINS['\x0b\x11\x09\x07'] = "Test Network (testnet3)"
+BLOCKCHAINS[b'\xf9\xbe\xb4\xd9'] = "Main Network"
+BLOCKCHAINS[b'\xfa\xbf\xb5\xda'] = "Old Test Network"
+BLOCKCHAINS[b'\x0b\x11\x09\x07'] = "Test Network (testnet3)"
 
 NETWORKS = {}
 NETWORKS[b'\x00'] = "Main Network"
@@ -1999,6 +1998,7 @@ def binary_to_int(b, endIn=LITTLEENDIAN):
    """
    Converts binary to integer (or long).  Interpret as LE by default
    """
+   assert(isinstance(b, bytes))
    h = binary_to_hex(b, endIn, LITTLEENDIAN)
    return hex_to_int(h)
 
@@ -2087,7 +2087,7 @@ def base58_to_binary(addr):
       if ch in BASE58CHARS:
          n += BASE58CHARS.index(bytes([ch]))
       else:
-         raise NonBase58CharacterError("Unrecognized Base 58 Character: %s" % ch)
+         raise NonBase58CharacterError("Unrecognized Base 58 Character: %s" % chr(ch))
 
    binOut = b''
    while n>0:
@@ -2107,7 +2107,7 @@ def privKey_to_base58(binKey):
    try:
       compByte = ''
       if 0:
-         compByte = '\x01'
+         compByte = b'\x01'
       privHashAddr = SecureBinaryData(PRIVKEYBYTE + binKey + compByte)
       privHash256 = \
                     SecureBinaryData(hash256(privHashAddr.toBinStr())[0:4])
@@ -2817,7 +2817,7 @@ def checkAddrType(addrBin):
    """ Gets the network byte of the address.  Returns -1 if chksum fails """
    first21, chk4 = addrBin[:-4], addrBin[-4:]
    chkBytes = hash256(first21)
-   return addrBin[0] if (chkBytes[:4] == chk4) else -1
+   return addrBin[0:1] if (chkBytes[:4] == chk4) else -1
 
 ################################################################################
 def checkAddrBinValid(addrBin, validPrefixes=None):
@@ -3035,20 +3035,23 @@ def createBitcoinURI(addr, amt=None, msg=None):
 
 ################################################################################
 def createDERSigFromRS(rBin, sBin):
+   assert(isinstance(rBin, bytes))
+   assert(isinstance(sBin, bytes))
+
    # Remove all leading zero-bytes (why didn't we use lstrip() here?)
-   while rBin[0]=='\x00':
+   while rBin[0]==0:
       rBin = rBin[1:]
-   while sBin[0]=='\x00':
+   while sBin[0]==0:
       sBin = sBin[1:]
 
-   if binary_to_int(rBin[0])&128>0:  rBin = '\x00'+rBin
-   if binary_to_int(sBin[0])&128>0:  sBin = '\x00'+sBin
-   rSize  = int_to_binary(len(rBin))
-   sSize  = int_to_binary(len(sBin))
-   rsSize = int_to_binary(len(rBin) + len(sBin) + 4)
-   sigScript = '\x30' + rsSize + \
-               '\x02' + rSize + rBin + \
-               '\x02' + sSize + sBin
+   if rBin[0]&128>0:  rBin = b'\x00'+rBin
+   if sBin[0]&128>0:  sBin = b'\x00'+sBin
+   rSize  = bytes([len(rBin)])
+   sSize  = bytes([len(sBin)])
+   rsSize = bytes([len(rBin) + len(sBin) + 4])
+   sigScript = b'\x30' + rsSize + \
+               b'\x02' + rSize + rBin + \
+               b'\x02' + sSize + sBin
    return sigScript
 
 
@@ -3364,7 +3367,7 @@ def EstimateCumulativeBlockchainSize(blkNum):
 # indicating whether or not the key is valid.
 def isValidPK(inPK, inStr=False):
    retVal = False
-   checkVal = '\x00'
+   checkVal = b'\x00'
 
    if inStr:
       checkVal = inPK
@@ -3417,8 +3420,8 @@ def getBlockID(asciiText, key):
 # Decompress an incoming public key. The incoming key may be binary or hex. The
 # final key is in the same form (i.e., binary or hex) as the incoming key.
 def decompressPK(inKey, inStr=False):
-   outKey = '\x00'
-   checkKey = '\x00'
+   outKey = b'\x00'
+   checkKey = b'\x00'
 
    # Let's support strings and binary data.
    if inStr:
@@ -3435,7 +3438,7 @@ def decompressPK(inKey, inStr=False):
    elif lenInKey != COMP_PK_LEN:
        LOGERROR('The public key has an incorrect size (%d bytes).' % lenInKey)
    else:
-      if checkKey[0] == '\x02' or checkKey[0] == '\x03':
+      if checkKey[0] == b'\x02' or checkKey[0] == b'\x03':
          cppKeyVal = SecureBinaryData(checkKey)
          outKey = CryptoECDSA().UncompressPoint(cppKeyVal).toBinStr()
          keyStr = binary_to_hex(outKey)
@@ -3483,8 +3486,10 @@ def send_email(send_from, server, password, send_to, subject, text):
 
 #############################################################################
 def DeriveChaincodeFromRootKey(sbdPrivKey):
-   return SecureBinaryData( HMAC256( sbdPrivKey.getHash256(), \
-                                     'Derive Chaincode from Root Key'))
+   h = HMAC256(sbdPrivKey.getHash256(), b'Derive Chaincode from Root Key')
+   r = SecureBinaryData()
+   r.createFromHex(binary_to_hex(h).decode())
+   return r
 
 
 #############################################################################

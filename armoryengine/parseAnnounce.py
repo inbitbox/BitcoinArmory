@@ -257,10 +257,10 @@ class downloadLinkParser(object):
 
       def recursePrint(theObj, indent=0):
          if not isinstance(theObj, dict):
-            print((' '*indent + str(theObj)))
+            print(' '*indent + str(theObj))
          else:
             for key,val in list(theObj.items()):
-               print((' '*indent + key + ':'))
+               print(' '*indent + key + ':')
                recursePrint(theObj[key], indent+5)
 
       recursePrint(self.downloadMap)

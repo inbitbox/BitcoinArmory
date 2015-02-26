@@ -179,7 +179,7 @@ class MSUtilsTest(unittest.TestCase):
       self.assertTrue(ustxi.verifyAllSignatures(self.tx2))
 
       # Try a bad signature
-      badSig = self.sigStr[:16] + '\x00'*8 + self.sigStr[24:]
+      badSig = self.sigStr[:16] + b'\x00'*8 + self.sigStr[24:]
       self.assertFalse(ustxi.verifyTxSignature(self.tx2, badSig))
       
 
@@ -252,7 +252,7 @@ class MSUtilsTest(unittest.TestCase):
       msIndex = ustx.insertSignatureForInput(0, self.sigStr)
       self.assertEqual(msIndex, 0)
 
-      badSig = self.sigStr[:16] + '\x00'*8 + self.sigStr[24:]
+      badSig = self.sigStr[:16] + b'\x00'*8 + self.sigStr[24:]
       msIndex = ustx.insertSignatureForInput(0, badSig)
       self.assertEqual(msIndex, -1)
 
@@ -326,12 +326,12 @@ class MSUtilsTest(unittest.TestCase):
       #UnsignedTransaction().unserializeAscii(asc_sig).evaluateSigningStatus().pprint()
 
    
-      privKeys = [SecureBinaryData(a*32) for a in ['\xaa','\xbb','\xcc']]
+      privKeys = [SecureBinaryData(), SecureBinaryData(), SecureBinaryData()]
+      for i, a in enumerate(['aa','bb','cc']):
+         privKeys[i].createFromHex(a*32)
       pubKeys  = [CryptoECDSA().ComputePublicKey(prv) for prv in privKeys]
-      pubStrs  = [hex_to_binary(pubk.toHexStr().encode("ascii")) for pubk in pubKeys]
+      pubStrs  = [hex_to_binary(pubk.toHexStr().encode()) for pubk in pubKeys]
 
-      #for i,prv in enumerate(privKeys):
-         #print 'PrivKey %d:', prv.toHexStr()
 
       msScript = pubkeylist_to_multisig_script(pubStrs, 2)
       msScriptReverse = pubkeylist_to_multisig_script(pubStrs[::-1], 2)
@@ -370,7 +370,7 @@ class MSUtilsTest(unittest.TestCase):
                if j>0: ustxiCopy.createAndInsertSignature(txObj, privKeys[1])
                if k>0: ustxiCopy.createAndInsertSignature(txObj, privKeys[2])
                sstat = ustxiCopy.evaluateSigningStatus()
-               #sstat.pprint()
+               # sstat.pprint()
                self.assertEqual(sstat.allSigned, (i+j+k)>1)
                self.assertEqual(sstat.statusM[0], NOSIG if i+j+k==0 else SIG)
                self.assertEqual(sstat.statusM[1], NOSIG if i+j+k<2  else SIG)

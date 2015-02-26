@@ -164,8 +164,6 @@ class PyBtcWalletTest(TiabTest):
       
       #  We should have thrown an error about importing into a  locked wallet...
       self.assertRaises(WalletLockError, wltE.importExternalAddressData, privKey=self.privKey2)
-
-
    
       wltE.unlock(securePassphrase=self.passphrase2)
       wltE.importExternalAddressData(privKey=self.privKey2)
@@ -174,6 +172,8 @@ class PyBtcWalletTest(TiabTest):
       wlt2 = PyBtcWallet().readWalletFile(wltE.walletPath)
       self.assertTrue(wltE.isEqualTo(wlt2))
 
+      print("use enc: %s" % wltE.useEncryption)
+      print("use enc: %s" % wlt2.useEncryption)
       # (2b) Unlocking wlt2 after re-reading locked-import-wallet
       wlt2.unlock(securePassphrase=self.passphrase2)
       self.assertFalse(wlt2.isLocked)

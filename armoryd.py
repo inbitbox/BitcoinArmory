@@ -3063,9 +3063,9 @@ class Armory_Daemon(object):
          for le in args:
             wltID = le.getWalletID()
             if wltID in self.WltMap:
-               print(('   Wallet: %s, amount: %d' % (wltID, le.getValue())))
+               print('   Wallet: %s, amount: %d' % (wltID, le.getValue()))
             elif wltID in self.lboxMap:
-               print(('   Lockbox: %s, amount: %d' % (wltID, le.getValue())))
+               print('   Lockbox: %s, amount: %d' % (wltID, le.getValue()))
 
       elif action == NEW_BLOCK_ACTION:
          #A new block has appeared, pull updated ledgers from the BDM, display
@@ -3240,8 +3240,8 @@ class Armory_Daemon(object):
             if type(result) in (str, str):
                print(result)
             else:
-               print((json.dumps(result, indent=4, sort_keys=True, \
-                                cls=UniversalEncoder)))
+               print(json.dumps(result, indent=4, sort_keys=True, \
+                                cls=UniversalEncoder))
 
             # If there are any special cases where we wish to do some
             # post-processing on the client side, do it here.
@@ -3259,7 +3259,7 @@ class Armory_Daemon(object):
                           'jsoncommandargs': ([] if len(CLI_ARGS)==1 else CLI_ARGS[1:]),
                           'extrainfo': str(e) if len(e.args)<2 else e.args}}
 
-            print((json.dumps( errordict, indent=4, sort_keys=True, cls=UniversalEncoder)))
+            print(json.dumps( errordict, indent=4, sort_keys=True, cls=UniversalEncoder))
 
 
    #############################################################################
@@ -3309,8 +3309,8 @@ class Armory_Daemon(object):
          wltStatus = PyBtcWalletRecovery().ProcessWallet(None, self.curWlt, \
                                                          Mode=5)
          if wltStatus != 0:
-            print(('Wallet consistency check failed in wallet %s!!!' \
-                   % (self.curWlt.uniqueIDB58)))
+            print('Wallet consistency check failed in wallet %s!!!' \
+                   % (self.curWlt.uniqueIDB58))
             print('Aborting...')
 
             quit()

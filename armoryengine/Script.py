@@ -74,10 +74,10 @@ def convertScriptToOpStrings(binScript):
 
 def pprintScript(binScript, nIndent=0):
    indstr = indent*nIndent
-   print((indstr + 'Script:'))
+   print(indstr + 'Script:')
    opList = convertScriptToOpStrings(binScript)
    for op in opList:
-      print((indstr + indent + op))
+      print(indstr + indent + op)
 
 def scriptPushData(binObj):
    assert(isinstance(binObj, bytes))
@@ -160,7 +160,7 @@ class PyScriptProcessor(object):
       TxOut instead of just the script itself.
       """
       self.txNew = PyTx().unserialize(txNew.serialize())
-      self.script1 = str(txNew.inputs[txInIndex].binScript) # copy
+      self.script1 = txNew.inputs[txInIndex].binScript # copy
       self.txInIndex  = txInIndex
       self.txOutIndex = txNew.inputs[txInIndex].outpoint.txOutIndex
       self.txHash  = txNew.inputs[txInIndex].outpoint.txHash
@@ -168,11 +168,11 @@ class PyScriptProcessor(object):
       if isinstance(txOldData, PyTx):
          if not self.txHash == hash256(txOldData.serialize()):
             LOGERROR('*** Supplied incorrect pair of transactions!')
-         self.script2 = str(txOldData.outputs[self.txOutIndex].binScript)
+         self.script2 = txOldData.outputs[self.txOutIndex].binScript
       elif isinstance(txOldData, PyTxOut):
-         self.script2 = str(txOldData.binScript)
+         self.script2 = txOldData.binScript
       elif isinstance(txOldData, str):
-         self.script2 = str(txOldData)
+         self.script2 = txOldData
 
    @TimeThisFunction
    def verifyTransactionValid(self, txOldData=None, txNew=None, txInIndex=-1):
@@ -231,7 +231,7 @@ class PyScriptProcessor(object):
          binData = int_to_binary(binData)
 
       for i,byte in enumerate(binData):
-         if not ord(byte) == 0:
+         if not byte == 0:
             # This looks like it's assuming LE encoding (?)
             if (i == len(binData)-1) and (byte==0x80):
                return False
@@ -255,10 +255,10 @@ class PyScriptProcessor(object):
       # 3. Signature is deleted from subscript
       #    I'm not sure why this line is necessary - maybe for non-standard scripts?
       lengthInBinary = int_to_binary(len(binSig))
-      subscript = subscript.replace( lengthInBinary + binSig, "")
+      subscript = subscript.replace( lengthInBinary + binSig, b"")
 
       # 4. Hashtype is popped and stored
-      hashtype = binary_to_int(binSig[-1])
+      hashtype = binSig[-1]
       justSig = binSig[:-1]
 
       if not hashtype == 1:
@@ -269,7 +269,7 @@ class PyScriptProcessor(object):
       txCopy = PyTx().unserialize( txInTx.serialize() )
 
       # 6. Remove all OP_CODESEPARATORs
-      subscript.replace( int_to_binary(OP_CODESEPARATOR), '')
+      subscript.replace( int_to_binary(OP_CODESEPARATOR), b'')
 
       # 7. All the TxIn scripts in the copy are blanked (set to empty string)
       for txin in txCopy.inputs:
@@ -591,7 +591,7 @@ class PyScriptProcessor(object):
       elif opcode == OP_HASH160:
          bits = stack.pop()
          if isinstance(bits, int):
-            bits = ''
+            bits = b''
          stack.append( hash160(bits) )
       elif opcode == OP_HASH256:
          bits = stack.pop()

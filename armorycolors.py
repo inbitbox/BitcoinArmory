@@ -161,20 +161,20 @@ def htmlColor(name):
 
 if __name__== "__main__":
 
-   print((Colors.TextWarn))
-   print((htmlColor("TextRed")))
-   print((htmlColor("TextWarn")))
+   print(Colors.TextWarn)
+   print(htmlColor("TextRed"))
+   print(htmlColor("TextWarn"))
 
    print("Colors in the palette!")
    for name,qc in list(Colors.__dict__.items()):
       if not isinstance(qc, QColor):
          continue
       print("\t")
-      print((('"'+name+'"').ljust(20))) 
-      print((str(qc.red()).rjust(3)))
-      print((str(qc.green()).rjust(3)))
-      print((str(qc.blue()).rjust(3)))
-      print(('\t(%s)' % htmlColor(name)))
+      print(('"'+name+'"').ljust(20))
+      print(str(qc.red()).rjust(3))
+      print(str(qc.green()).rjust(3))
+      print(str(qc.blue()).rjust(3))
+      print('\t(%s)' % htmlColor(name))
 
 
 

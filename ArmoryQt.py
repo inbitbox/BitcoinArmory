@@ -6218,7 +6218,7 @@ class ArmoryMainWindow(QMainWindow):
 
          newBlocks = args[0]
          if newBlocks>0:       
-            print(('New Block: ', TheBDM.getTopBlockHeight()))
+            print('New Block: ', TheBDM.getTopBlockHeight())
 
             self.ledgerModel.reset()
 

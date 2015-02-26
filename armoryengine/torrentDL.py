@@ -504,13 +504,13 @@ if __name__=="__main__":
                     **kws):
       
       if fractionDone:
-         print(('TorrentThread: %0.1f%% done;' % (fractionDone*100)))
+         print('TorrentThread: %0.1f%% done;' % (fractionDone*100))
 
       if timeEst:
-         print((', about %s remaining' %  secondsToHumanTime(timeEst))) 
+         print(', about %s remaining' %  secondsToHumanTime(timeEst))
 
       if activity:
-         print((' (%s)'%activity))
+         print(' (%s)'%activity)
       else:
          print('')
 
@@ -518,7 +518,7 @@ if __name__=="__main__":
 
    # Finish funct will still move file.partial to file, this is everything else
    def notifyFinished():
-      print(('TorrentThread: Finished downloading at %s' % unixTimeToFormatStr(RightNow())))
+      print('TorrentThread: Finished downloading at %s' % unixTimeToFormatStr(RightNow()))
       sys.stdout.flush()
       
 
@@ -532,7 +532,7 @@ if __name__=="__main__":
    while not thr.isFinished():
       print('MainThread:    Still downloading;')
       if tdm.getLastStats('downRate'):
-         print((' Last dl speed: %0.1f kB/s' % (tdm.getLastStats('downRate')/1024.)))
+         print(' Last dl speed: %0.1f kB/s' % (tdm.getLastStats('downRate')/1024.))
       else: 
          print('')
       sys.stdout.flush()

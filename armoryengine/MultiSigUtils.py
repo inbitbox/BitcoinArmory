@@ -492,29 +492,29 @@ class MultiSigLockbox(AsciiSerializable):
 
    #############################################################################
    def pprint(self):
-      print(('Multi-signature %d-of-%d lockbox:' % (self.M, self.N)))
-      print(('   Unique ID:  ', self.uniqueIDB58))
-      print(('   Created:    ', unixTimeToFormatStr(self.createDate)))
-      print(('   LBox Name:  ', self.shortName))
-      print(('   P2SHAddr:   ', scrAddr_to_addrStr(self.p2shScrAddr)))
+      print('Multi-signature %d-of-%d lockbox:' % (self.M, self.N))
+      print('   Unique ID:  ', self.uniqueIDB58)
+      print('   Created:    ', unixTimeToFormatStr(self.createDate))
+      print('   LBox Name:  ', self.shortName)
+      print('   P2SHAddr:   ', scrAddr_to_addrStr(self.p2shScrAddr))
       print('   Box Desc:   ')
-      print(('     ', self.longDescr[:70]))
+      print('     ', self.longDescr[:70])
       print('   Key List:   ')
       print('   Script Ops: ')
       for opStr in self.opStrList:
-         print(('       ', opStr))
+         print('       ', opStr)
       print('')
       print('   Key Info:   ')
       for i in range(len(self.dPubKeys)):
-         print(('            Key %d' % i))
-         print(('           ', binary_to_hex(self.dPubKeys[i].binPubKey)[:40] + '...'))
-         print(('           ', hash160_to_addrStr(self.a160List[i])))
+         print('            Key %d' % i)
+         print('           ', binary_to_hex(self.dPubKeys[i].binPubKey)[:40] + '...')
+         print('           ', hash160_to_addrStr(self.a160List[i]))
          print('')
 
    #############################################################################
    def pprintOneLine(self):
-      print(('LockBox %s:  %s-of-%s, created: %s;  "%s"' % (self.uniqueIDB58, 
-         self.M, self.N, unixTimeToFormatStr(self.createDate), self.shortName)))
+      print('LockBox %s:  %s-of-%s, created: %s;  "%s"' % (self.uniqueIDB58, 
+         self.M, self.N, unixTimeToFormatStr(self.createDate), self.shortName))
 
 
    ################################################################################
@@ -1084,16 +1084,16 @@ class MultiSigPromissoryNote(AsciiSerializable):
    def pprint(self):
 
       print('Promissory Note:')
-      print(('   Version     :', self.version))
-      print(('   Unique ID   :', self.promID))
-      print(('   Num Inputs  :', len(self.ustxInputs)))
-      print(('   Target Addr :', self.dtxoTarget.getRecipStr()))
-      print(('   Pay Amount  :', self.dtxoTarget.value))
-      print(('   Fee Amount  :', self.feeAmt))
+      print('   Version     :', self.version)
+      print('   Unique ID   :', self.promID)
+      print('   Num Inputs  :', len(self.ustxInputs))
+      print('   Target Addr :', self.dtxoTarget.getRecipStr())
+      print('   Pay Amount  :', self.dtxoTarget.value)
+      print('   Fee Amount  :', self.feeAmt)
       if self.dtxoChange is not None:
-         print(('   ChangeAddr  :', self.dtxoChange.getRecipStr()))
-      print(('   LB Key      :', self.lockboxKey))
-      print(('   LB Key Info :', self.promLabel))
+         print('   ChangeAddr  :', self.dtxoChange.getRecipStr())
+      print('   LB Key      :', self.lockboxKey)
+      print('   LB Key Info :', self.promLabel)
 
 
 # Resolve circular dependencies here.

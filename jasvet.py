@@ -542,11 +542,11 @@ def FormatText(t, sigctx=False, verbose=False):   #sigctx: False=what is display
 
    global FTVerbose
    if FTVerbose:
-      print(('  -- Sent:      '+t.encode('hex')))
+      print('  -- Sent:      '+t.encode('hex'))
       if sigctx:
-         print(('  -- Signed:    '+r.encode('hex')))
+         print('  -- Signed:    '+r.encode('hex'))
       else:
-         print(('  -- Displayed: '+r.encode('hex')))
+         print('  -- Displayed: '+r.encode('hex'))
 
    return r
 
@@ -665,15 +665,15 @@ if __name__=='__main__':
 
    sv0=ASv0(pvk1, text1)
    print(sv0)
-   print((verifySignature(sv0['b64-signature'], sv0['message'], signVer='v0')))
-   print((ASv1B64(pvk1, text1)))
+   print(verifySignature(sv0['b64-signature'], sv0['message'], signVer='v0'))
+   print(ASv1B64(pvk1, text1))
    print()
-   print((ASv1CS(pvk1, text1)))
+   print(ASv1CS(pvk1, text1))
    print()
-   print((ASv1CS(pvk1, text2)))
+   print(ASv1CS(pvk1, text2))
    print()
-   print((ASv1CS(pvk1, text3)))
+   print(ASv1CS(pvk1, text3))
    print()
-   print((ASv1CS(pvk1, text4)))
+   print(ASv1CS(pvk1, text4))
    print()
-   print((ASv1CS(pvk1, text5)))
+   print(ASv1CS(pvk1, text5))

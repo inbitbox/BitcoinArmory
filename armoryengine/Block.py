@@ -96,31 +96,28 @@ class PyBlockHeader(BlockComponent):
       
    def pprint(self, nIndent=0, endian=BIGENDIAN):
       indstr = indent*nIndent
-      print((indstr + 'BlockHeader:'))
-      print((indstr + indent + 'Version:   ', self.version))
-      print((indstr + indent + 'ThisHash:  ', binary_to_hex( self.theHash, endOut=endian), \
-                                                      '(BE)' if endian==BIGENDIAN else '(LE)'))
-      print((indstr + indent + 'PrevBlock: ', binary_to_hex(self.prevBlkHash, endOut=endian), \
-                                                      '(BE)' if endian==BIGENDIAN else '(LE)'))
-      print((indstr + indent + 'MerkRoot:  ', binary_to_hex(self.merkleRoot, endOut=endian), \
-                                                      '(BE)' if endian==BIGENDIAN else '(LE)'))
-      print((indstr + indent + 'Timestamp: ', self.timestamp))
+      print(indstr + 'BlockHeader:')
+      print(indstr + indent + 'Version:   ', self.version)
+      print(indstr + indent + 'ThisHash:  ', binary_to_hex( self.theHash, endOut=endian), '(BE)' if endian==BIGENDIAN else '(LE)')
+      print(indstr + indent + 'PrevBlock: ', binary_to_hex(self.prevBlkHash, endOut=endian), '(BE)' if endian==BIGENDIAN else '(LE)')
+      print(indstr + indent + 'MerkRoot:  ', binary_to_hex(self.merkleRoot, endOut=endian), '(BE)' if endian==BIGENDIAN else '(LE)')
+      print(indstr + indent + 'Timestamp: ', self.timestamp)
       fltDiff = binaryBits_to_difficulty(self.diffBits)
-      print((indstr + indent + 'Difficulty:', fltDiff, '('+binary_to_hex(self.diffBits)+')'))
-      print((indstr + indent + 'Nonce:     ', self.nonce))
+      print(indstr + indent + 'Difficulty:', fltDiff, '('+binary_to_hex(self.diffBits)+')')
+      print(indstr + indent + 'Nonce:     ', self.nonce)
       if not self.blkHeight==UNINITIALIZED:
-         print((indstr + indent + 'BlkHeight: ', self.blkHeight))
+         print(indstr + indent + 'BlkHeight: ', self.blkHeight)
       if not self.blkHeight==UNINITIALIZED:
-         print((indstr + indent + 'BlkFileLoc:', self.fileByteLoc))
+         print(indstr + indent + 'BlkFileLoc:', self.fileByteLoc)
       if not self.nextBlkHash==UNINITIALIZED:
          #print indstr + indent + 'NextBlock: ', binary_to_hex(self.nextBlkHash)
-         print((indstr + indent + 'NextBlock: ', self.nextBlkHash))
+         print(indstr + indent + 'NextBlock: ', self.nextBlkHash)
       if not self.numTx==UNINITIALIZED:
-         print((indstr + indent + 'NumTx:     ', self.numTx))
+         print(indstr + indent + 'NumTx:     ', self.numTx)
       if not self.intDifficult==UNINITIALIZED:
-         print((indstr + indent + 'Difficulty:', self.intDifficult))
+         print(indstr + indent + 'Difficulty:', self.intDifficult)
       if not self.sumDifficult==UNINITIALIZED:
-         print((indstr + indent + 'DiffSum:   ', self.sumDifficult))
+         print(indstr + indent + 'DiffSum:   ', self.sumDifficult)
 
 
 ################################################################################
@@ -172,31 +169,30 @@ class PyBlockData(object):
          while sz > 1:
             hashes = self.merkleTree[-sz:]
             mod2 = sz%2
-            for i in range(sz/2):
+            for i in range(sz//2):
                self.merkleTree.append( hash256(hashes[2*i] + hashes[2*i+1]) )
             if mod2==1:
                self.merkleTree.append( hash256(hashes[-1] + hashes[-1]) )
-            sz = (sz+1) / 2
+            sz = (sz+1) // 2
       self.merkleRoot = self.merkleTree[-1]
       return self.merkleRoot
 
    def printMerkleTree(self, reverseHash=False, indent=''):
-      print((indent + 'Printing Merkle Tree:'))
+      print(indent + 'Printing Merkle Tree:')
       if reverseHash:
-         print((indent + '(hashes will be reversed, like shown on BlockExplorer.com)'))
+         print(indent + '(hashes will be reversed, like shown on BlockExplorer.com)')
       root = self.getMerkleRoot()
-      print((indent + 'Merkle Root:', binary_to_hex(root)))
+      print(indent + 'Merkle Root:', binary_to_hex(root))
       for h in self.merkleTree:
          phash = binary_to_hex(h) if not reverseHash else binary_to_hex(h, endOut=BIGENDIAN)
-         print((indent + '\t' + phash))
+         print(indent + '\t' + phash)
 
 
    def pprint(self, nIndent=0, endian=BIGENDIAN):
       indstr = indent*nIndent
-      print((indstr + 'BlockData:'))
-      print((indstr + indent + 'MerkleRoot:  ', binary_to_hex(self.getMerkleRoot(), endian), \
-                                               '(BE)' if endian==BIGENDIAN else '(LE)'))
-      print((indstr + indent + 'NumTx:       ', self.numTx))
+      print(indstr + 'BlockData:')
+      print(indstr + indent + 'MerkleRoot:  ', binary_to_hex(self.getMerkleRoot(), endian), '(BE)' if endian==BIGENDIAN else '(LE)')
+      print(indstr + indent + 'NumTx:       ', self.numTx)
       for tx in self.txList:
          tx.pprint(nIndent+1, endian=endian)
 
@@ -256,7 +252,7 @@ class PyBlock(object):
 
    def pprint(self, nIndent=0, endian=BIGENDIAN):
       indstr = indent*nIndent
-      print((indstr + 'Block:'))
+      print(indstr + 'Block:')
       self.blockHeader.pprint(nIndent+1, endian=endian)
       self.blockData.pprint(nIndent+1, endian=endian)
 

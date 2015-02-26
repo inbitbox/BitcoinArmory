@@ -951,9 +951,9 @@ class SatoshiDaemonManager(object):
    #############################################################################
    def printSDMInfo(self):
       print('\nCurrent SDM State:')
-      print(('\t', 'SDM State Str'.ljust(20), ':', self.getSDMState()))
+      print('\t', 'SDM State Str'.ljust(20), ':', self.getSDMState())
       for key,value in list(self.returnSDMInfo().items()):
-         print(('\t', str(key).ljust(20), ':', str(value)))
+         print('\t', str(key).ljust(20), ':', str(value))
 
    
 

@@ -352,7 +352,7 @@ def getMultisigScriptInfo(rawScript):
 
    for i in range(N):
       pkstr = bu.get(BINARY_CHUNK, 33)
-      if pkstr[0] == '\x04':
+      if pkstr[0] == 4:
          pkstr += bu.get(BINARY_CHUNK, 32)
       pubKeyList.append(pkstr)
       addr160List.append(hash160(pkstr))
@@ -499,11 +499,11 @@ class PyOutPoint(BlockComponent):
 
    def pprint(self, nIndent=0, endian=BIGENDIAN):
       indstr = indent*nIndent
-      print((indstr + 'OutPoint:'))
-      print((indstr + indent + 'PrevTxHash:', \
+      print(indstr + 'OutPoint:')
+      print(indstr + indent + 'PrevTxHash:', \
                   binary_to_hex(self.txHash, endian), \
-                  '(BE)' if endian==BIGENDIAN else '(LE)'))
-      print((indstr + indent + 'TxOutIndex:', self.txOutIndex))
+                  '(BE)' if endian==BIGENDIAN else '(LE)')
+      print(indstr + indent + 'TxOutIndex:', self.txOutIndex)
 
 
 #####
@@ -540,33 +540,33 @@ class PyTxIn(BlockComponent):
 
    def pprint(self, nIndent=0, endian=BIGENDIAN):
       indstr = indent*nIndent
-      print((indstr + 'PyTxIn:'))
-      print((indstr + indent + 'PrevTxHash:', \
+      print(indstr + 'PyTxIn:')
+      print(indstr + indent + 'PrevTxHash:', \
                   binary_to_hex(self.outpoint.txHash, endian), \
-                      '(BE)' if endian==BIGENDIAN else '(LE)'))
-      print((indstr + indent + 'TxOutIndex:', self.outpoint.txOutIndex))
-      print((indstr + indent + 'Script:    ', \
-                  '('+binary_to_hex(self.binScript)[:64]+')'))
+                      '(BE)' if endian==BIGENDIAN else '(LE)')
+      print(indstr + indent + 'TxOutIndex:', self.outpoint.txOutIndex)
+      print(indstr + indent + 'Script:    ', \
+                  '('+binary_to_hex(self.binScript)[:64].decode()+')')
       addrStr = TxInExtractAddrStrIfAvail(self)
       if len(addrStr)==0:
          addrStr = '<UNKNOWN>'
-      print((indstr + indent + 'Sender:    ', addrStr))
-      print((indstr + indent + 'Seq:       ', self.intSeq))
+      print(indstr + indent + 'Sender:    ', addrStr)
+      print(indstr + indent + 'Seq:       ', self.intSeq)
 
    def toString(self, nIndent=0, endian=BIGENDIAN):
       indstr = indent*nIndent
       indstr2 = indstr + indent
       result = indstr + 'PyTxIn:'
       result = ''.join([result, '\n',  indstr2 + 'PrevTxHash:', \
-                  binary_to_hex(self.outpoint.txHash, endian), \
+                  binary_to_hex(self.outpoint.txHash, endian).decode(), \
                       '(BE)' if endian==BIGENDIAN else '(LE)'])
       result = ''.join([result, '\n',  indstr2 + 'TxOutIndex:', \
                                     str(self.outpoint.txOutIndex)])
       result = ''.join([result, '\n',  indstr2 + 'Script:    ', \
-                  '('+binary_to_hex(self.binScript)[:64]+'...)'])
+                  '('+binary_to_hex(self.binScript)[:64].decode()+'...)'])
       addrStr = TxInExtractAddrStrIfAvail(self)
       if len(addrStr)>0:
-         result = ''.join([result, '\n',  indstr2 + 'Sender:    ', addrStr])
+         result = ''.join([result, '\n',  indstr2 + 'Sender:    ', addrStr.decode()])
       result = ''.join([result, '\n',  indstr2 + 'Seq:       ', str(self.intSeq)])
       return result
 
@@ -575,13 +575,13 @@ class PyTxIn(BlockComponent):
    # Either on the offline Armory installation which may not have been upgraded
    # or on a previous installation of Armory on this computer.
    def minimizeDERSignaturePadding(self):
-      rsLen = binary_to_int(self.binScript[2:3])
-      rLen = binary_to_int(self.binScript[4:5])
+      rsLen = self.binScript[2]
+      rLen = self.binScript[4]
       rBin = self.binScript[5:5+rLen]
-      sLen = binary_to_int(self.binScript[6+rLen:7+rLen])
+      sLen = self.binScript[6+rLen]
       sBin = self.binScript[7+rLen:7+rLen+sLen]
       sigScript = createDERSigFromRS(rBin, sBin)
-      newBinScript = int_to_binary(len(sigScript)+1) + sigScript + self.binScript[3+rsLen:]
+      newBinScript = bytes([len(sigScript)+1]) + sigScript + self.binScript[3+rsLen:]
       paddingRemoved = newBinScript != self.binScript
       newTxIn = self.copy()
       newTxIn.binScript = newBinScript
@@ -639,7 +639,7 @@ class PyTxOut(BlockComponent):
          opStrList = convertScriptToOpStrings(self.binScript)
          print indstr + indent + 'Script:  ', ' '.join(opStrList)
       """
-      print((self.toString(nIndent, endian)))
+      print(self.toString(nIndent, endian))
 
    def toString(self, nIndent=0, endian=BIGENDIAN):
       indstr  = indent*nIndent
@@ -762,24 +762,24 @@ class PyTx(BlockComponent):
 
    def pprint(self, nIndent=0, endian=BIGENDIAN):
       indstr = indent*nIndent
-      print((indstr + 'Transaction:'))
-      print((indstr + indent + 'TxHash:   ', self.getHashHex(endian), \
-                                    '(BE)' if endian==BIGENDIAN else '(LE)'))
-      print((indstr + indent + 'Version:  ', self.version))
-      print((indstr + indent + 'nInputs:  ', len(self.inputs)))
-      print((indstr + indent + 'nOutputs: ', len(self.outputs)))
-      print((indstr + indent + 'LockTime: ', self.lockTime))
-      print((indstr + indent + 'Inputs: '))
+      print(indstr + 'Transaction:')
+      print(indstr + indent + 'TxHash:   ', self.getHashHex(endian), \
+                                    '(BE)' if endian==BIGENDIAN else '(LE)')
+      print(indstr + indent + 'Version:  ', self.version)
+      print(indstr + indent + 'nInputs:  ', len(self.inputs))
+      print(indstr + indent + 'nOutputs: ', len(self.outputs))
+      print(indstr + indent + 'LockTime: ', self.lockTime)
+      print(indstr + indent + 'Inputs: ')
       for inp in self.inputs:
          inp.pprint(nIndent+2, endian=endian)
-      print((indstr + indent + 'Outputs: '))
+      print(indstr + indent + 'Outputs: ')
       for out in self.outputs:
          out.pprint(nIndent+2, endian=endian)
 
    def toString(self, nIndent=0, endian=BIGENDIAN):
       indstr = indent*nIndent
       result = indstr + 'Transaction:'
-      result = ''.join([result, '\n',  indstr + indent + 'TxHash:   ', self.getHashHex(endian), \
+      result = ''.join([result, '\n',  indstr + indent + 'TxHash:   ', self.getHashHex(endian).decode(), \
                                     '(BE)' if endian==BIGENDIAN else '(LE)'])
       result = ''.join([result, '\n',   indstr + indent + 'Version:  ', str(self.version)])
       result = ''.join([result, '\n',   indstr + indent + 'nInputs:  ', str(len(self.inputs))])
@@ -800,23 +800,23 @@ class PyTx(BlockComponent):
    def pprintHex(self, nIndent=0):
       bu = BinaryUnpacker(self.serialize())
       theSer = self.serialize()
-      print((binary_to_hex(bu.get(BINARY_CHUNK, 4))))
+      print(binary_to_hex(bu.get(BINARY_CHUNK, 4)))
       nTxin = bu.get(VAR_INT)
-      print(('VAR_INT(%d)' % nTxin))
+      print('VAR_INT(%d)' % nTxin)
       for i in range(nTxin):
-         print((binary_to_hex(bu.get(BINARY_CHUNK,32))))
-         print((binary_to_hex(bu.get(BINARY_CHUNK,4))))
+         print(binary_to_hex(bu.get(BINARY_CHUNK,32)))
+         print(binary_to_hex(bu.get(BINARY_CHUNK,4)))
          scriptSz = bu.get(VAR_INT)
-         print(('VAR_IN(%d)' % scriptSz))
-         print((binary_to_hex(bu.get(BINARY_CHUNK,scriptSz))))
-         print((binary_to_hex(bu.get(BINARY_CHUNK,4))))
+         print('VAR_IN(%d)' % scriptSz)
+         print(binary_to_hex(bu.get(BINARY_CHUNK,scriptSz)))
+         print(binary_to_hex(bu.get(BINARY_CHUNK,4)))
       nTxout = bu.get(VAR_INT)
-      print(('VAR_INT(%d)' % nTxout))
+      print('VAR_INT(%d)' % nTxout)
       for i in range(nTxout):
-         print((binary_to_hex(bu.get(BINARY_CHUNK,8))))
+         print(binary_to_hex(bu.get(BINARY_CHUNK,8)))
          scriptSz = bu.get(VAR_INT)
-         print((binary_to_hex(bu.get(BINARY_CHUNK,scriptSz))))
-      print((binary_to_hex(bu.get(BINARY_CHUNK, 4))))
+         print(binary_to_hex(bu.get(BINARY_CHUNK,scriptSz)))
+      print(binary_to_hex(bu.get(BINARY_CHUNK, 4)))
 
 
 
@@ -863,10 +863,10 @@ class InputSigningStatus(object):
 
       ind = ' '*indent
       print(ind)
-      print(('(%d-of-%d)' % (self.M, self.N)))
-      print(('AllSigned: %s' % str(self.allSigned).ljust(6)))
-      print(('AllSlots:',  ' '.join([lutFunc(s) for s in self.statusN]), ' '))
-      print(('ReqSorted:', ' '.join([lutFunc(s) for s in self.statusM]), ' '))
+      print('(%d-of-%d)' % (self.M, self.N))
+      print('AllSigned: %s' % str(self.allSigned).ljust(6))
+      print('AllSlots:',  ' '.join([lutFunc(s) for s in self.statusN]), ' ')
+      print('ReqSorted:', ' '.join([lutFunc(s) for s in self.statusM]), ' ')
 
 
 ################################################################################
@@ -884,7 +884,7 @@ class TxSigningStatus(object):
 
 
    def pprint(self, indent=3, lutFunc=None):
-      print((' '*indent + 'Tx has %d inputs:' % self.numInputs))
+      print(' '*indent + 'Tx has %d inputs:' % self.numInputs)
       for stat in self.statusList:
          stat.pprint(indent+3, lutFunc)
 
@@ -1230,8 +1230,7 @@ class UnsignedTxInput(AsciiSerializable):
       appended to the end
       """
       # Make sure the supplied privateKey is relevant to this USTXI
-      computedPub = hex_to_binary(CryptoECDSA().ComputePublicKey(sbdPrivKey).toHexStr().encode("ascii"))
-      LOGERROR("pubs %s vs pub %s" % (self.pubKeys, computedPub))
+      computedPub = hex_to_binary(CryptoECDSA().ComputePublicKey(sbdPrivKey).toHexStr().encode())
       if not computedPub in self.pubKeys:
          raise SignatureError('No PubKey that matches this privKey')
 
@@ -1245,8 +1244,10 @@ class UnsignedTxInput(AsciiSerializable):
 
       msg,hc = generatePreHashTxMsgToSign(pytx, txiIdx, 
                                     self.getTxoScriptToSign(), hashcode)
-      sbdSig = CryptoECDSA().SignData(SecureBinaryData(msg), sbdPrivKey, DetSign)
-      binSig = sbdSig.toBinStr()
+      m = SecureBinaryData()
+      m.createFromHex(binary_to_hex(msg).decode())
+      sbdSig = CryptoECDSA().SignData(m, sbdPrivKey, DetSign)
+      binSig = hex_to_binary(sbdSig.toHexStr().encode())
       return createDERSigFromRS(binSig[:32], binSig[32:]) + hc
 
 
@@ -1274,7 +1275,7 @@ class UnsignedTxInput(AsciiSerializable):
    #############################################################################
    def createAndInsertSignature(self, pytx, sbdPrivKey, hashcode=1, DetSign=True):
       derSig = self.createTxSignature(pytx, sbdPrivKey, hashcode, DetSign)
-      computedPub = CryptoECDSA().ComputePublicKey(sbdPrivKey).toBinStr()
+      computedPub = hex_to_binary(CryptoECDSA().ComputePublicKey(sbdPrivKey).toHexStr().encode())
 
       msIdx = self.insertSignature(derSig, computedPub)
       return derSig, msIdx
@@ -1329,9 +1330,12 @@ class UnsignedTxInput(AsciiSerializable):
       # Don't forget "sigStr" has the 1-byte hashcode at the end
       msg = generatePreHashTxMsgToSign(pytx, txiIdx,
             self.getTxoScriptToSign(), hashcode)[0]
-      sbdMsg = SecureBinaryData(msg)
-      sbdSig = SecureBinaryData(rBin + sBin)
-      sbdPub = SecureBinaryData(pubKey)
+      sbdMsg = SecureBinaryData()
+      sbdMsg.createFromHex(binary_to_hex(msg).decode())
+      sbdSig = SecureBinaryData()
+      sbdSig.createFromHex(binary_to_hex(rBin + sBin).decode())
+      sbdPub = SecureBinaryData()
+      sbdPub.createFromHex(binary_to_hex(pubKey).decode())
       return msIndex if CryptoECDSA().VerifyData(sbdMsg, sbdSig, sbdPub) else -1
 
    #############################################################################
@@ -1560,7 +1564,6 @@ class UnsignedTxInput(AsciiSerializable):
                signStatus.wltCanSign    = True
                signStatus.statusN[i] = TXIN_SIGSTAT.WLT_CAN_SIGN
 
-
       # Now we sort the results and compare to M-value to get high-level metrics
       # SIGSTAT enumeration values sort the way we ultimately want to display
       signStatus.statusM = sorted(signStatus.statusN)[:signStatus.M]
@@ -1580,7 +1583,7 @@ class UnsignedTxInput(AsciiSerializable):
       txoIdx    = self.outpoint.txOutIndex
       scrType   = CPP_TXOUT_SCRIPT_NAMES[self.scriptType]
 
-      print(('UnsignedTxInput --  %s:%d (%s)' % (txHashStr, txoIdx, scrType)))
+      print('UnsignedTxInput --  %s:%d (%s)' % (txHashStr, txoIdx, scrType))
 
 
 
@@ -1878,17 +1881,17 @@ class DecoratedTxOut(AsciiSerializable):
       ind = ' '*indent
       scrType   = CPP_TXOUT_SCRIPT_NAMES[self.scriptType]
 
-      print((ind + 'Version:     ', self.version))
+      print(ind + 'Version:     ', self.version)
       if self.scriptType in CPP_TXOUT_HAS_ADDRSTR:
-         print((ind + 'Address:     ', scrAddr_to_addrStr(self.scrAddr)))
+         print(ind + 'Address:     ', scrAddr_to_addrStr(self.scrAddr))
          if self.p2shScript:
-            print((ind + 'P2SH Script: ', binary_to_hex(self.p2shScript)[:50]))
+            print(ind + 'P2SH Script: ', binary_to_hex(self.p2shScript)[:50])
 
       elif self.scriptType==CPP_TXOUT_MULTISIG:
-         print((ind + 'Multisig:      %(M)s-of-%(N)s' % self.multiInfo))
-      print((ind + 'Value:       ', coin2strNZS(self.value)))
-      print((ind + 'ContribID:   ', self.contribID))
-      print((ind + 'ContribLabel:', self.contribLabel))
+         print(ind + 'Multisig:      %(M)s-of-%(N)s' % self.multiInfo)
+      print(ind + 'Value:       ', coin2strNZS(self.value))
+      print(ind + 'ContribID:   ', self.contribID)
+      print(ind + 'ContribLabel:', self.contribLabel)
 
 
    #############################################################################
@@ -2527,12 +2530,12 @@ class UnsignedTransaction(AsciiSerializable):
       ind = ' '*indent
       tx = self.pytxObj
       txHash = hash256(tx.serialize())
-      print((ind+'UnsignedTx ID: ', self.uniqueIDB58))
-      print((ind+'Curr TxID    : ', binary_to_hex(txHash, BIGENDIAN)))
-      print((ind+'Version      : ', tx.version))
-      print((ind+'Lock Time    : ', tx.lockTime))
-      print((ind+'Fee (BTC)    : ', coin2strNZS(self.calculateFee())))
-      print((ind+'#Inputs      : ', len(tx.inputs)))
+      print(ind+'UnsignedTx ID: ', self.uniqueIDB58)
+      print(ind+'Curr TxID    : ', binary_to_hex(txHash, BIGENDIAN))
+      print(ind+'Version      : ', tx.version)
+      print(ind+'Lock Time    : ', tx.lockTime)
+      print(ind+'Fee (BTC)    : ', coin2strNZS(self.calculateFee()))
+      print(ind+'#Inputs      : ', len(tx.inputs))
 
       for i,ustxi in enumerate(self.ustxInputs):
          prevHash  = binary_to_hex(ustxi.outpoint.txHash, BIGENDIAN)[:8]
@@ -2552,14 +2555,14 @@ class UnsignedTransaction(AsciiSerializable):
          printStr += 'PubSz: ' + pubKeySz
          print(printStr)
 
-      print((ind+'#Outputs     : ', len(tx.outputs)))
+      print(ind+'#Outputs     : ', len(tx.outputs))
       for i,txout in enumerate(tx.outputs):
          dtxo = self.decorTxOuts[i]
          addrDisp = getTxOutScriptDisplayStr(txout.binScript)
          valDisp = coin2str(txout.value, maxZeros=2)
-         print((' '*2*indent + 'Recip:', addrDisp.ljust(35)))
-         print((valDisp, 'BTC'))
-         print((('(%s)' % dtxo.contribID) if dtxo.contribID else ''))
+         print(' '*2*indent + 'Recip:', addrDisp.ljust(35))
+         print(valDisp, 'BTC')
+         print(('(%s)' % dtxo.contribID) if dtxo.contribID else '')
 
 
    #############################################################################
@@ -2716,8 +2719,8 @@ def PyCreateAndSignTx_old(srcTxOuts, dstAddrsVals):
       txin = PyTxIn()
       txin.outpoint = PyOutPoint()
       if(coinbaseTx):
-         txin.outpoint.txHash = '\x00'*32
-         txin.outpoint.txOutIndex     = binary_to_int('\xff'*4)
+         txin.outpoint.txHash = b'\x00'*32
+         txin.outpoint.txOutIndex     = binary_to_int(b'\xff'*4)
       else:
          txin.outpoint.txHash = hash256(srcTxOuts[i][1].serialize())
          txin.outpoint.txOutIndex     = srcTxOuts[i][2]
@@ -2760,7 +2763,7 @@ def PyCreateAndSignTx_old(srcTxOuts, dstAddrsVals):
                sigLenInBinary = int_to_binary(len(signature) + 1)
                newTx.inputs[i].binScript = sigLenInBinary + signature + hashCode1
             else:
-               pubkey = src.binPublicKey65.toBinStr()
+               pubkey = hex_to_binary(src.binPublicKey65.toHexStr().encode())
                sigLenInBinary    = int_to_binary(len(signature) + 1)
                pubkeyLenInBinary = int_to_binary(len(pubkey)   )
                newTx.inputs[i].binScript = sigLenInBinary + signature + hashCode1 + \
@@ -2903,8 +2906,8 @@ def pprintLedgerEntry(le, indent=''):
       txType = 'Recv' if le.getValue()>0 else 'Sent'
 
    blkStr = str(le.getBlockNum())
-   print((indent + 'LE %s %s %s %s' % \
-            (addrStr.ljust(15), leVal, txType.ljust(8), blkStr.ljust(8))))
+   print(indent + 'LE %s %s %s %s' % \
+            (addrStr.ljust(15), leVal, txType.ljust(8), blkStr.ljust(8)))
 
 # Putting this at the end because of the circular dependency
 from armoryengine.BDM import TheBDM, BDM_BLOCKCHAIN_READY

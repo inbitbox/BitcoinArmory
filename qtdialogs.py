@@ -2890,7 +2890,7 @@ class DlgNewAddressDisp(ArmoryDialog):
    def setClipboard(self):
       clipb = QApplication.clipboard()
       clipb.clear()
-      clipb.setText(self.addr.getAddrStr())
+      clipb.setText(self.addr.getAddrStr().decode())
       self.lblIsCopied.setText('<i>Copied!</i>')
 
 
@@ -8296,6 +8296,7 @@ class DlgAddressBook(ArmoryDialog):
 
    #############################################################################
    def setAddrBookTxModel(self, wltID):
+      assert(isinstance(wltID, bytes))
       self.addrBookTxModel = SentToAddrBookModel(wltID, self.main)
 
       #
@@ -8357,6 +8358,8 @@ class DlgAddressBook(ArmoryDialog):
       
    #############################################################################
    def setAddrBookRxModel(self, wltID):
+      assert(isinstance(wltID, bytes))
+
       wlt = self.main.walletMap[wltID]
       self.addrBookRxModel = WalletAddrDispModel(wlt, self)
 
@@ -8381,11 +8384,11 @@ class DlgAddressBook(ArmoryDialog):
 
       self.btnSelectWlt.setEnabled(True)
       row = currIndex.row()
-      self.selectedWltID = str(currIndex.model().index(row, WLTVIEWCOLS.ID).data().toString())
+      self.selectedWltID = currIndex.model().index(row, WLTVIEWCOLS.ID).data().encode()
 
       self.setAddrBookTxModel(self.selectedWltID)
       self.setAddrBookRxModel(self.selectedWltID)
-
+      self.addrBookTxModel.beginResetModel()
 
       if not self.isBrowsingOnly:
          wlt = self.main.walletMap[self.selectedWltID]
@@ -8400,7 +8403,7 @@ class DlgAddressBook(ArmoryDialog):
             self.disableSelectButtons()
             self.selectedAddr = ''
             self.selectedCmmt = ''
-      self.addrBookTxModel.reset()
+      self.addrBookTxModel.endResetModel()
 
 
    #############################################################################
@@ -8424,8 +8427,8 @@ class DlgAddressBook(ArmoryDialog):
 
       self.btnSelectAddr.setEnabled(True)
       row = currIndex.row()
-      self.selectedAddr = str(currIndex.model().index(row, ADDRESSCOLS.Address).data().toString())
-      self.selectedCmmt = str(currIndex.model().index(row, ADDRESSCOLS.Comment).data().toString())
+      self.selectedAddr = currIndex.model().index(row, ADDRESSCOLS.Address).data()
+      self.selectedCmmt = currIndex.model().index(row, ADDRESSCOLS.Comment).data()
 
       if not self.isBrowsingOnly:
          self.btnSelectAddr.setText('%s Address: %s...' % (self.actStr, self.selectedAddr[:10]))
@@ -8517,8 +8520,8 @@ class DlgAddressBook(ArmoryDialog):
 
    #############################################################################
    def acceptAddrSelection(self):
-      if isBareLockbox(str(self.btnSelectAddr.text())) or \
-         isP2SHLockbox(str(self.btnSelectAddr.text())):
+      if isBareLockbox(self.btnSelectAddr.text().encode()) or \
+         isP2SHLockbox(self.btnSelectAddr.text().encode()):
          self.acceptLockBoxSelection()
       else: 
          atype,a160 = addrStr_to_hash160(self.selectedAddr)
@@ -8616,9 +8619,9 @@ class DlgAddressBook(ArmoryDialog):
       action = menu.exec_(QCursor.pos())
 
       if action == actionCopyAddr:
-         s = self.addrBookRxView.model().index(idx.row(), ADDRESSCOLS.Address).data().toString()
+         s = self.addrBookRxView.model().index(idx.row(), ADDRESSCOLS.Address).data()
       elif dev and action == actionCopyHash160:
-         s = str(self.addrBookRxView.model().index(idx.row(), ADDRESSCOLS.Address).data().toString())
+         s = self.addrBookRxView.model().index(idx.row(), ADDRESSCOLS.Address).data()
          atype, addr160 = addrStr_to_hash160(s)
          if atype==P2SHBYTE:
             LOGWARN('Copying Hash160 of P2SH address: %s' % s)
@@ -8630,7 +8633,7 @@ class DlgAddressBook(ArmoryDialog):
 
       clipb = QApplication.clipboard()
       clipb.clear()
-      clipb.setText(str(s).strip())
+      clipb.setText(s.decode())
 
 
 ################################################################################
@@ -9462,7 +9465,7 @@ class DlgExportTxHistory(ArmoryDialog):
       self.cmbFileFormat.addItem('Comma-Separated Values (*.csv)')
 
 
-      fmt = self.main.getPreferredDateFormat()
+      fmt = self.main.getPreferredDateFormat().decode()
       ttipStr = 'Use any of the following symbols:<br>'
       fmtSymbols = [x[0] + ' = ' + x[1] for x in FORMAT_SYMBOLS]
       ttipStr += '<br>'.join(fmtSymbols)

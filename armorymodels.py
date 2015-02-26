@@ -43,7 +43,7 @@ class AllWalletsDispModel(QAbstractTableModel):
    # The columns enumeration
 
    def __init__(self, mainWindow):
-      super(AllWalletsDispModel, self).__init__()
+      super().__init__()
       self.main = mainWindow
 
    def rowCount(self, index=QModelIndex()):
@@ -168,7 +168,7 @@ class AllWalletsCheckboxDelegate(QStyledItemDelegate):
    Taken from http://stackoverflow.com/a/3366899/1610471
    """
    def __init__(self, parent=None):
-      super(AllWalletsCheckboxDelegate, self).__init__(parent)   
+      super().__init__(parent)   
 
 
    def createEditor(self, parent, option, index):
@@ -248,11 +248,11 @@ class AllWalletsCheckboxDelegate(QStyledItemDelegate):
       check_box_rect = QApplication.style().subElementRect( \
             QStyle.SE_CheckBoxIndicator, check_box_style_option, None)
       check_box_point = QPoint( option.rect.x() +
-                                option.rect.width() / 2 -
-                                check_box_rect.width() / 2,
+                                option.rect.width() // 2 -
+                                check_box_rect.width() // 2,
                                 option.rect.y() +
-                                option.rect.height() / 2 -
-                                check_box_rect.height() / 2)
+                                option.rect.height() // 2 -
+                                check_box_rect.height() // 2)
       return QRect(check_box_point, check_box_rect.size())
 
    def sizeHint(self, option, index):
@@ -269,7 +269,7 @@ class AllWalletsCheckboxDelegate(QStyledItemDelegate):
    EYESIZE = 20
 
    def __init__(self, parent=None):
-      super(AllWalletsCheckboxDelegate, self).__init__(parent)   
+      super().__init__(parent)   
 
    #############################################################################
    def paint(self, painter, option, index):
@@ -304,7 +304,7 @@ class TableEntry():
 class LedgerDispModelSimple(QAbstractTableModel):
    """ Displays an Nx10 table of pre-formatted/processed ledger entries """
    def __init__(self, ledgerTable, parent=None, main=None, isLboxModel=False):
-      super(LedgerDispModelSimple, self).__init__()
+      super().__init__()
       self.parent = parent
       self.main   = main
       self.ledger = ledgerTable
@@ -551,8 +551,9 @@ class LedgerDispModelSimple(QAbstractTableModel):
       self.ledger.extend(self.currentPage.table)
       self.ledger.extend(self.bottomPage.table)
       
-      #call the parent reset() which will update the view
-      super(QAbstractTableModel, self).reset()
+      #call the parent begin/end reset() which will update the view
+      super().beginResetModel()
+      super().endResetModel()
     
    def centerAtHeight(self, blk):
       #return the index for that block height in the new ledger
@@ -562,7 +563,8 @@ class LedgerDispModelSimple(QAbstractTableModel):
       self.currentPage = TableEntry(centerId, [])
       self.topPage = TableEntry(centerId -1, [])
       
-      self.reset()
+      self.beginResetModel()
+      self.endResetModel()
       
       blockDiff = 2**32
       blockReturn = 0
@@ -579,7 +581,7 @@ class LedgerDispModelSimple(QAbstractTableModel):
 ################################################################################
 class CalendarDialog(ArmoryDialog):   
    def __init__(self, parent, main):
-      super(CalendarDialog, self).__init__(parent, main)
+      super().__init__(parent, main)
            
       self.parent = parent
       self.main = main
@@ -819,7 +821,7 @@ class ArmoryTableView(QTableView):
    goToTopSignal = pyqtSignal(name="goToTop")
 
    def __init__(self, parent, main, controlFrame):
-      super(ArmoryTableView, self).__init__()
+      super().__init__()
       
       self.parent = parent
       self.main = main
@@ -871,7 +873,7 @@ class ArmoryTableView(QTableView):
          if ratio != 0:
             self.vBarRatio = ratio    
 
-      super(ArmoryTableView, self).selectionChanged(itemSelected, itemDeselected)
+      super().selectionChanged(itemSelected, itemDeselected)
       self.updateBlockAndDateLabel()  
        
    def moveCursor(self, action, modifier):
@@ -888,7 +890,7 @@ class ArmoryTableView(QTableView):
    
    def reset(self):
       #save the previous selection
-      super(ArmoryTableView, self).reset()
+      super().reset()
       
       if self.prevIndex != -1:
          self.setCurrentIndex(\
@@ -960,7 +962,7 @@ class LedgerDispSortProxy(QSortFilterProxyModel):
          btcRight = getDouble(idxRight, COL.Amount)
          return (abs(btcLeft) < abs(btcRight))
       else:
-         return super(LedgerDispSortProxy, self).lessThan(idxLeft, idxRight)
+         return super().lessThan(idxLeft, idxRight)
 
 
 ################################################################################
@@ -969,7 +971,7 @@ class LedgerDispDelegate(QStyledItemDelegate):
    COL = LEDGERCOLS
 
    def __init__(self, parent=None):
-      super(LedgerDispDelegate, self).__init__(parent)   
+      super().__init__(parent)   
 
 
    def paint(self, painter, option, index):
@@ -1038,7 +1040,7 @@ class LedgerDispDelegate(QStyledItemDelegate):
 class WalletAddrDispModel(QAbstractTableModel):
    
    def __init__(self, wlt, mainWindow):
-      super(WalletAddrDispModel, self).__init__()
+      super().__init__()
       self.main = mainWindow
       self.wlt = wlt
 
@@ -1077,7 +1079,8 @@ class WalletAddrDispModel(QAbstractTableModel):
    @TimeThisFunction
    def reset(self):
       self.filterAddrList()
-      super(WalletAddrDispModel, self).reset()
+      super().beginResetModel()
+      super().endResetModel()
       
          
 
@@ -1098,7 +1101,7 @@ class WalletAddrDispModel(QAbstractTableModel):
       chainIdx = addr.chainIndex+1  # user must get 1-indexed
       if role==Qt.DisplayRole:
          if col==COL.Address: 
-            return QVariant( addrB58 )
+            return QVariant( addrB58.decode() )
          if col==COL.Comment: 
             if addr160 in self.wlt.commentsMap:
                return QVariant( self.wlt.commentsMap[addr160] )
@@ -1143,7 +1146,7 @@ class WalletAddrDispModel(QAbstractTableModel):
          except:
             hasTx = False
             
-         cmt = str(self.index(index.row(),COL.Comment).data().toString())
+         cmt = self.index(index.row(),COL.Comment).data()
          isChange = (cmt==CHANGE_ADDR_DESCR_STRING)
 
          if col==COL.Balance:
@@ -1212,8 +1215,8 @@ class WalletAddrSortProxy(QSortFilterProxyModel):
    def lessThan(self, idxLeft, idxRight):
       COL = ADDRESSCOLS
       thisCol  = self.sortColumn()
-      strLeft  = str(self.sourceModel().data(idxLeft).toString())
-      strRight = str(self.sourceModel().data(idxRight).toString())
+      strLeft  = self.sourceModel().data(idxLeft).value()
+      strRight = self.sourceModel().data(idxRight).value()
       if thisCol==COL.Address:
          return (strLeft.lower() < strRight.lower())
       elif thisCol==COL.Comment:
@@ -1225,13 +1228,13 @@ class WalletAddrSortProxy(QSortFilterProxyModel):
          rght = -2 if strRight=='Imported' else int(strRight)
          return (left<rght)
       else:
-         return super(WalletAddrSortProxy, self).lessThan(idxLeft, idxRight)
+         return super().lessThan(idxLeft, idxRight)
          
 
 ################################################################################
 class TxInDispModel(QAbstractTableModel):
    def __init__(self,  pytx, txinListFromBDM=None, main=None):
-      super(TxInDispModel, self).__init__()
+      super().__init__()
       self.main = main
       self.txInList = txinListFromBDM[:]
       self.dispTable = []
@@ -1363,7 +1366,7 @@ class TxInDispModel(QAbstractTableModel):
 ################################################################################
 class TxOutDispModel(QAbstractTableModel):
    def __init__(self,  pytx, main=None, idxGray=[]):
-      super(TxOutDispModel, self).__init__()
+      super().__init__()
       self.tx = pytx.copy()
    
       self.main = main
@@ -1450,8 +1453,9 @@ class TxOutDispModel(QAbstractTableModel):
 ################################################################################
 class SentToAddrBookModel(QAbstractTableModel):
    def __init__(self, wltID, main):
-      super(SentToAddrBookModel, self).__init__()
+      super().__init__()
 
+      assert(isinstance(wltID, bytes))
       self.wltID = wltID
       self.main  = main
       self.wlt   = self.main.walletMap[wltID]
@@ -1493,21 +1497,23 @@ class SentToAddrBookModel(QAbstractTableModel):
       COL = ADDRBOOKCOLS
       row,col  = index.row(), index.column()
       scrAddr  = self.addrBook[row][0]
-      if scrAddr[0] in [SCRADDR_P2PKH_BYTE, SCRADDR_P2SH_BYTE]:
+
+      if scrAddr[0:1] in [SCRADDR_P2PKH_BYTE, SCRADDR_P2SH_BYTE]:
          addrB58 = scrAddr_to_addrStr(scrAddr)
          addr160 = scrAddr[1:]
       else:
-         addrB58 = ''
-         addr160 = ''
+         addrB58 = b''
+         addr160 = b''
       wltID    = self.main.getWalletForAddr160(addr160)
       txList   = self.addrBook[row][1]
       numSent  = len(txList)
       comment  = self.wlt.getCommentForTxList(addr160, txList)
       
+
       #ADDRBOOKCOLS = enum('Address', 'WltID', 'NumSent', 'Comment')
       if role==Qt.DisplayRole:
          if col==COL.Address: 
-            return QVariant( addrB58 )
+            return QVariant( addrB58.decode() )
          if col==COL.NumSent: 
             return QVariant( numSent ) 
          if col==COL.Comment: 
@@ -1547,8 +1553,8 @@ class SentAddrSortProxy(QSortFilterProxyModel):
    def lessThan(self, idxLeft, idxRight):
       COL = ADDRBOOKCOLS
       thisCol  = self.sortColumn()
-      strLeft  = str(self.sourceModel().data(idxLeft).toString())
-      strRight = str(self.sourceModel().data(idxRight).toString())
+      strLeft  = str(self.sourceModel().data(idxLeft))
+      strRight = str(self.sourceModel().data(idxRight))
 
 
       #ADDRBOOKCOLS = enum('Address', 'WltID', 'NumSent', 'Comment')
@@ -1556,7 +1562,7 @@ class SentAddrSortProxy(QSortFilterProxyModel):
       if thisCol==COL.Address:
          return (strLeft.lower() < strRight.lower())
       else:
-         return super(SentAddrSortProxy, self).lessThan(idxLeft, idxRight)
+         return super().lessThan(idxLeft, idxRight)
 
 
 ################################################################################
@@ -1565,7 +1571,7 @@ class PromissoryCollectModel(QAbstractTableModel):
    # The columns enumeration
 
    def __init__(self, main, promNoteList):
-      super(PromissoryCollectModel, self).__init__()
+      super().__init__()
       self.main = main
       self.promNoteList = promNoteList
 

@@ -59,7 +59,11 @@ def CheckWalletRegistration(func):
    return inner
 
 def buildWltFileName(uniqueIDB58):
-   return 'armory_%s_.wallet' % uniqueIDB58.decode()
+   if isinstance(uniqueIDB58, bytes):
+      w = uniqueIDB58.decode()
+   else:
+      w = uniqueIDB58
+   return 'armory_%s_.wallet' % w
    
 class PyBtcWallet(object):
    """
@@ -221,8 +225,8 @@ class PyBtcWallet(object):
       # Deterministic wallet, need a root key.  Though we can still import keys.
       # The unique ID contains the network byte (id[-1]) but is not intended to
       # resemble the address of the root key
-      self.uniqueIDBin = ''
-      self.uniqueIDB58 = ''   # Base58 version of reversed-uniqueIDBin
+      self.uniqueIDBin = b''
+      self.uniqueIDB58 = b''   # Base58 version of reversed-uniqueIDBin
       self.lastComputedChainAddr160  = ''
       self.lastComputedChainIndex = 0
       self.highestUsedChainIndex  = 0 
@@ -625,7 +629,7 @@ class PyBtcWallet(object):
 
       # We don't have to worry about atomic file operations when
       # creating the wallet: so we just do it naively here.
-      newWalletFilePath = os.path.join(ARMORY_HOME_DIR, 'bitsafe_demo_%s.wallet' % self.uniqueIDB58)
+      newWalletFilePath = os.path.join(ARMORY_HOME_DIR, 'bitsafe_demo_%s.wallet' % self.uniqueIDB58.decode())
       self.walletPath = newWalletFilePath
       if not newWalletFilePath:
          shortName = self.labelName .replace(' ','_')
@@ -702,8 +706,8 @@ class PyBtcWallet(object):
       self.addrMap[firstAddr.getAddr160()] = firstAddr
       self.uniqueIDBin = (ADDRBYTE + firstAddr.getAddr160()[:5])[::-1]
       self.uniqueIDB58 = binary_to_base58(self.uniqueIDBin)
-      self.labelName  = (self.uniqueIDB58 + ' (Watch)')[:32]
-      self.labelDescr  = (self.uniqueIDB58 + ' (Watching-only copy)')[:256]
+      self.labelName  = (self.uniqueIDB58.decode() + ' (Watch)')[:32]
+      self.labelDescr  = (self.uniqueIDB58.decode() + ' (Watching-only copy)')[:256]
       self.lastComputedChainAddr160 = first160
       self.lastComputedChainIndex  = firstAddr.chainIndex
       self.highestUsedChainIndex   = firstAddr.chainIndex-1
@@ -718,7 +722,7 @@ class PyBtcWallet(object):
          # This was really only needed when we were putting name in filename
          #for c in ',?;:\'"?/\\=+-|[]{}<>':
             #shortName = shortName.replace(c,'_')
-         newName = 'armory_%s_.WatchOnly.wallet' % self.uniqueIDB58
+         newName = 'armory_%s_.WatchOnly.wallet' % self.uniqueIDB58.decode()
          self.walletPath = os.path.join(ARMORY_HOME_DIR, newName)
 
       # Start writing the wallet.
@@ -1739,7 +1743,7 @@ class PyBtcWallet(object):
 
    #############################################################################
    def getDisplayStr(self, pref="Wallet: "):
-      return '%s"%s" (%s)' % (pref, self.labelName, self.uniqueIDB58)
+      return '%s"%s" (%s)' % (pref, self.labelName, self.uniqueIDB58.decode())
 
    #############################################################################
    def getCommentForAddress(self, addr160):

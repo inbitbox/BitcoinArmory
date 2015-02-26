@@ -475,7 +475,7 @@ class SendBitcoinsFrame(ArmoryFrame):
          try:
             recipStr = str(self.widgetTable[row]['QLE_ADDR'].text()).strip()
             valueStr = str(self.widgetTable[row]['QLE_AMT'].text()).strip()
-            value = str2coin(valueStr, negAllowed=False)
+            value = str2coin(valueStr.decode(), negAllowed=False)
             if value == 0:
                QMessageBox.critical(self, 'Zero Amount', \
                   'You cannot send 0 BTC to any recipients.  <br>Please enter '
@@ -812,7 +812,7 @@ class SendBitcoinsFrame(ArmoryFrame):
          else:
             return self.altBalance
       else:
-         lbID = self.lbox.uniqueIDB58
+         lbID = self.lbox.uniqueIDB58.decode()
          cppWlt = self.main.cppLockboxWltMap.get(lbID)
          if cppWlt is None:
             LOGERROR('Somehow failed to get cppWlt for lockbox: %s', lbID)
@@ -837,7 +837,7 @@ class SendBitcoinsFrame(ArmoryFrame):
                   utxoList.append(PyUnspentTxOut().createFromCppUtxo(utxos[i]))
             return utxoList
       else:
-         lbID = self.lbox.uniqueIDB58
+         lbID = self.lbox.uniqueIDB58.decode()
          cppWlt = self.main.cppLockboxWltMap.get(lbID)
          if cppWlt is None:
             LOGERROR('Somehow failed to get cppWlt for lockbox: %s', lbID)
@@ -1228,7 +1228,7 @@ class ReviewOfflineTxFrame(ArmoryDialog):
    
    def setUSTX(self, ustx):
       self.ustx = ustx
-      self.lblUTX.setText('<b>Transaction Data</b> \t (Unsigned ID: %s)' % ustx.uniqueIDB58)
+      self.lblUTX.setText('<b>Transaction Data</b> \t (Unsigned ID: %s)' % ustx.uniqueIDB58.decode())
       self.txtUSTX.setText(ustx.serializeAscii())
    
    def setWallet(self, wlt):
@@ -1270,7 +1270,7 @@ class ReviewOfflineTxFrame(ArmoryDialog):
 
    def doSaveFile(self):
       """ Save the Unsigned-Tx block of data """
-      dpid = self.ustx.uniqueIDB58
+      dpid = self.ustx.uniqueIDB58.decode()
       suffix = ('' if OS_WINDOWS else '.unsigned.tx')
       toSave = self.main.getFileSave(\
                       'Save Unsigned Transaction', \
@@ -1589,14 +1589,14 @@ class SignBroadcastOfflineTxFrame(ArmoryFrame):
 
          ##### 1
          if self.wlt:
-            self.infoLbls[0][2].setText(self.wlt.uniqueIDB58)
+            self.infoLbls[0][2].setText(self.wlt.uniqueIDB58.decode())
             self.infoLbls[1][2].setText(self.wlt.labelName)
          else:
             self.infoLbls[0][2].setText('[[ Unrelated ]]')
             self.infoLbls[1][2].setText('')
 
          ##### 2
-         self.infoLbls[2][2].setText(self.ustxObj.uniqueIDB58)
+         self.infoLbls[2][2].setText(self.ustxObj.uniqueIDB58.decode())
 
          ##### 3
          if self.leValue:
@@ -1811,11 +1811,11 @@ class SignBroadcastOfflineTxFrame(ArmoryFrame):
       if not self.ustxObj == None:
          if self.enoughSigs and self.sigsValid:
             suffix = '' if OS_WINDOWS else '.signed.tx'
-            defaultFilename = 'armory_%s_%s' % (self.ustxObj.uniqueIDB58, suffix)
+            defaultFilename = 'armory_%s_%s' % (self.ustxObj.uniqueIDB58.decode(), suffix)
             ffilt = 'Transactions (*.signed.tx *.unsigned.tx)'
          else:
             suffix = '' if OS_WINDOWS else '.unsigned.tx'
-            defaultFilename = 'armory_%s_%s' % (self.ustxObj.uniqueIDB58, suffix)
+            defaultFilename = 'armory_%s_%s' % (self.ustxObj.uniqueIDB58.decode(), suffix)
             ffilt = 'Transactions (*.unsigned.tx *.signed.tx)'
       filename = self.main.getFileSave('Save Transaction', \
                              [ffilt], \

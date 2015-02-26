@@ -1183,19 +1183,19 @@ class ArmoryMainWindow(QMainWindow):
       
       def newKPE(wself, event=None):
          mainWindow.logEntropy()
-         super().keyPressEvent(event)
+         super(wself.__class__, wself).keyPressEvent(event)
 
       def newKRE(wself, event=None):
          mainWindow.logEntropy()
-         super().keyReleaseEvent(event)
+         super(wself.__class__, wself).keyReleaseEvent(event)
 
       def newMPE(wself, event=None):
          mainWindow.logEntropy()
-         super().mousePressEvent(event)
+         super(wself.__class__, wself).mousePressEvent(event)
 
       def newMRE(wself, event=None):
          mainWindow.logEntropy()
-         super().mouseReleaseEvent(event)
+         super(wself.__class__, wself).mouseReleaseEvent(event)
 
       from types import MethodType
       widget.keyPressEvent     = MethodType(newKPE, widget)
@@ -1266,6 +1266,7 @@ class ArmoryMainWindow(QMainWindow):
 
       source3 = b''
       try:
+         # TODO: fix QPixmap
          pixDesk = QPixmap.grabWindow(QApplication.desktop().winId())
          pixRaw = QByteArray()
          pixBuf = QBuffer(pixRaw)
@@ -1834,7 +1835,7 @@ class ArmoryMainWindow(QMainWindow):
       # interfere with the SettingsFile symbols
       globalDefault = binary_to_hex(DEFAULT_DATE_FORMAT.encode())
       fmt = self.getSettingOrSetDefault('DateFormat', globalDefault)
-      return hex_to_binary(str(fmt))  # short hex strings could look like int()
+      return hex_to_binary(str(fmt).encode())  # short hex strings could look like int()
 
    #############################################################################
    def setPreferredDateFormat(self, fmtStr):
@@ -3159,7 +3160,8 @@ class ArmoryMainWindow(QMainWindow):
       # This will force the table to refresh with new data
       self.updateAnnounceTab()  # make sure satoshi version info is up to date
       self.removeBootstrapDat()  # if we got here, we're *really* done with it
-      self.walletModel.reset()
+      self.walletModel.beginResetModel()
+      self.walletModel.endResetModel()
    
       qLen = self.delayedURIData['qLen']
       if qLen > 0:
@@ -3350,7 +3352,8 @@ class ArmoryMainWindow(QMainWindow):
    #############################################################################
 
    def walletListChanged(self):
-      self.walletModel.reset()
+      self.walletModel.beginResetModel()
+      self.walletModel.endResetModel()
       self.populateLedgerComboBox()
       self.changeWltFilter()
 
@@ -3380,7 +3383,7 @@ class ArmoryMainWindow(QMainWindow):
             self.startWalletWizard()
          return
 
-      if index==None:
+      if index is None or index == False:
          index = self.walletsView.selectedIndexes()
          if len(self.walletMap)==1:
             self.walletsView.selectRow(0)
@@ -6189,7 +6192,8 @@ class ArmoryMainWindow(QMainWindow):
             self.notifyQueue.append([le.getWalletID(), le, False])
                
       self.createCombinedLedger()
-      self.walletModel.reset()
+      self.walletModel.beginResetModel()
+      self.walletModel.endResetModel()
       self.lockboxLedgModel.reset()
 
    #############################################################################
@@ -6236,7 +6240,8 @@ class ArmoryMainWindow(QMainWindow):
                   { 'color' : htmlColor('TextGreen'), 'hgt' : TheBDM.getTopBlockHeight()})
 
             # Update the wallet view to immediately reflect new balances
-            self.walletModel.reset()    
+            self.walletModel.beginResetModel()
+            self.walletModel.endResetModel()    
       elif action == REFRESH_ACTION:
          #The wallet ledgers have been updated from an event outside of new ZC
          #or new blocks (usually a wallet or address was imported, or the 
@@ -6251,7 +6256,8 @@ class ArmoryMainWindow(QMainWindow):
                if wltID in self.walletMap:
                   wlt = self.walletMap[wltID]                  
                   wlt.isEnabled = True
-                  self.walletModel.reset()                  
+                  self.walletModel.beginResetModel()
+                  self.walletModel.endResetModel()                  
                   wlt.doAfterScan()                  
                   self.changeWltFilter()              
 
@@ -6260,7 +6266,8 @@ class ArmoryMainWindow(QMainWindow):
                   self.allLockboxes[lbID].isEnabled = True
                   
                   if self.lbDialogModel != None:
-                     self.lbDialogModel.reset()
+                     self.lbDialogModel.beginResetModel()
+                     self.lbDialogModel.endResetModel()
                  
                   if self.lbDialog != None:
                      self.lbDialog.changeLBFilter()               
@@ -6290,12 +6297,14 @@ class ArmoryMainWindow(QMainWindow):
 
                 
          if hasWallet:
-            self.walletModel.reset()   
+            self.walletModel.beginResetModel()
+            self.walletModel.endResetModel()   
          
          if hasLockbox:
             self.lockboxLedgModel.reset()
             if self.lbDialogModel != None:
-               self.lbDialogModel.reset()                     
+               self.lbDialogModel.beginResetModel()
+               self.lbDialogModel.endResetModel()
                
       elif action == WARNING_ACTION:
          #something went wrong on the C++ side, create a message box to report
@@ -6341,7 +6350,8 @@ class ArmoryMainWindow(QMainWindow):
             
          if hasLockbox:
             if self.lbDialogModel != None:
-               self.lbDialogModel.reset()       
+               self.lbDialogModel.beginResetModel()
+               self.lbDialogModel.endResetModel()
                     
             if self.lbDialog != None:
                self.lbDialog.resetLBSelection()   
@@ -6782,7 +6792,7 @@ class ArmoryMainWindow(QMainWindow):
 
    #############################################################################
    def execTrigger(self, toSpawn):
-      super().exec_()
+      super(ArmoryDialog, toSpawn).exec_()
 
 
    #############################################################################

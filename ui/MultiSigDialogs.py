@@ -711,8 +711,8 @@ class DlgLockboxManager(ArmoryDialog):
       self.ledgerView.setSelectionMode(QTableView.SingleSelection)
       self.ledgerView.verticalHeader().setDefaultSectionSize(20)
       self.ledgerView.verticalHeader().hide()
-      self.ledgerView.horizontalHeader().setResizeMode(0, QHeaderView.Fixed)
-      self.ledgerView.horizontalHeader().setResizeMode(3, QHeaderView.Fixed)
+      self.ledgerView.horizontalHeader().setSectionResizeMode(0, QHeaderView.Fixed)
+      self.ledgerView.horizontalHeader().setSectionResizeMode(3, QHeaderView.Fixed)
 
       self.ledgerView.hideColumn(LEDGERCOLS.isOther)
       self.ledgerView.hideColumn(LEDGERCOLS.UnixTime)

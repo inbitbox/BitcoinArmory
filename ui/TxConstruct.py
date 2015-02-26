@@ -31,7 +31,7 @@ class DlgConstructTx(ArmoryDialog):
 
    #############################################################################
    def __init__(self, parent, main, prefill=None):
-      super(DlgConstructTx, self).__init__(parent, main)
+      super().__init__(parent, main)
 
       if prefill is None:
          prefill = UnsignedTransaction()

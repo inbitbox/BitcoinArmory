@@ -70,7 +70,7 @@ class ArmoryClient(Protocol):
 
       self.peer = [addrTo, portTo]
 
-      services = '0'*16
+      services = bytes([0] * 16)
       msgVersion = PayloadVersion()
       msgVersion.version  = 40000   # TODO: this is what my Satoshi client says
       msgVersion.services = services

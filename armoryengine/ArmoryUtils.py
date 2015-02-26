@@ -1136,7 +1136,7 @@ def GetSystemDetails():
          def __init__(self):
             # have to initialize this to the size of MEMORYSTATUSEX
             self.dwLength = ctypes.sizeof(self)
-            super(MEMORYSTATUSEX, self).__init__()
+            super().__init__()
 
       stat = MEMORYSTATUSEX()
       ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(stat))
@@ -2463,6 +2463,7 @@ def CreateQRMatrix(dataToEncode, errLevel=QRErrorCorrectLevel.L):
             7 # errLevel = QRErrorCorrectLevel.H 
    sz = baseSz if dataLen < 70 else  5 +  (dataLen - 70) / 30
    qrmtrx = [[]]
+   success = False
    while sz<20:
       try:
          errCorrectEnum = getattr(QRErrorCorrectLevel, errLevel.upper())
@@ -2472,6 +2473,7 @@ def CreateQRMatrix(dataToEncode, errLevel=QRErrorCorrectLevel.L):
          success=True
          break
       except TypeError:
+         LOGEXCEPT("")
          sz += 1
 
    if not success:
@@ -3166,7 +3168,7 @@ class PyBackgroundThread(threading.Thread):
       if self.isStarted():
          LOGERROR('Must set daemon property before starting thread')
       else:
-         super(PyBackgroundThread, self).setDaemon(yesno)
+         super().setDaemon(yesno)
 
    def isFinished(self):
       return not (self.finishedAt==UNINITIALIZED)
@@ -3217,7 +3219,7 @@ class PyBackgroundThread(threading.Thread):
       # The prefunc is blocking.  Probably preparing something
       # that needs to be in place before we start the thread
       self.startedAt = RightNow()
-      super(PyBackgroundThread, self).start()
+      super().start()
 
    def run(self):
       # This should not be called manually.  Only call start()

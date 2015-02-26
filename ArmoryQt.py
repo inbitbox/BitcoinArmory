@@ -100,7 +100,7 @@ class ArmoryMainWindow(QMainWindow):
    #############################################################################
 
    def __init__(self, parent=None, splashScreen=None):
-      super(ArmoryMainWindow, self).__init__(parent)
+      super().__init__(parent)
 
       self.isShuttingDown = False
       
@@ -1183,19 +1183,19 @@ class ArmoryMainWindow(QMainWindow):
       
       def newKPE(wself, event=None):
          mainWindow.logEntropy()
-         super(wself.__class__, wself).keyPressEvent(event)
+         super().keyPressEvent(event)
 
       def newKRE(wself, event=None):
          mainWindow.logEntropy()
-         super(wself.__class__, wself).keyReleaseEvent(event)
+         super().keyReleaseEvent(event)
 
       def newMPE(wself, event=None):
          mainWindow.logEntropy()
-         super(wself.__class__, wself).mousePressEvent(event)
+         super().mousePressEvent(event)
 
       def newMRE(wself, event=None):
          mainWindow.logEntropy()
-         super(wself.__class__, wself).mouseReleaseEvent(event)
+         super().mouseReleaseEvent(event)
 
       from types import MethodType
       widget.keyPressEvent     = MethodType(newKPE, widget)
@@ -1735,12 +1735,12 @@ class ArmoryMainWindow(QMainWindow):
 
       # Set the file name.
       if copyType.lower()=='pkcc':
-         fn = 'armory_%s.%s' % (wlt.uniqueIDB58, suffix)
+         fn = 'armory_%s.%s' % (wlt.uniqueIDB58.decode(), suffix)
       else:
-         fn = 'armory_%s_%s.wallet' % (wlt.uniqueIDB58, suffix)
+         fn = 'armory_%s_%s.wallet' % (wlt.uniqueIDB58.decode(), suffix)
 
       if wlt.watchingOnly and copyType.lower() != 'pkcc':
-         fn = 'armory_%s_%s.watchonly.wallet' % (wlt.uniqueIDB58, suffix)
+         fn = 'armory_%s_%s.watchonly.wallet' % (wlt.uniqueIDB58.decode(), suffix)
       savePath = str(self.getFileSave(defaultFilename=fn))
       if not len(savePath)>0:
          return False
@@ -2802,7 +2802,7 @@ class ArmoryMainWindow(QMainWindow):
                continue
 
             if wltID in self.walletIDSet:
-               LOGWARN('***WARNING: Duplicate wallet detected, %s', wltID)
+               LOGWARN('***WARNING: Duplicate wallet detected, %s', wltID.decode())
                wo1 = self.walletMap[wltID].watchingOnly
                wo2 = wltLoad.watchingOnly
                if wo1 and not wo2:
@@ -2932,7 +2932,7 @@ class ArmoryMainWindow(QMainWindow):
    def getWltSetting(self, wltID, propName, defaultValue=''):
       # Sometimes we need to settings specific to individual wallets -- we will
       # prefix the settings name with the wltID.
-      wltPropName = 'Wallet_%s_%s' % (wltID, propName)
+      wltPropName = 'Wallet_%s_%s' % (wltID.decode(), propName)
       if self.settings.hasSetting(wltPropName):
          return self.settings.get(wltPropName)
       else:
@@ -2942,7 +2942,7 @@ class ArmoryMainWindow(QMainWindow):
 
    #############################################################################
    def setWltSetting(self, wltID, propName, value):
-      wltPropName = 'Wallet_%s_%s' % (wltID, propName)
+      wltPropName = 'Wallet_%s_%s' % (wltID.decode(), propName)
       self.writeSetting(wltPropName, value)
 
 
@@ -6782,7 +6782,7 @@ class ArmoryMainWindow(QMainWindow):
 
    #############################################################################
    def execTrigger(self, toSpawn):
-      super(ArmoryDialog, toSpawn).exec_()
+      super().exec_()
 
 
    #############################################################################
@@ -6874,11 +6874,11 @@ class ArmoryMainWindow(QMainWindow):
       while prgAt[2] != 2:
          time.sleep(0.1)
       if nerrors == 0:
-         self.uwcsSignal.emit(1, [tr('All wallets are consistent'), 10000, dlgrdy])
+         self.uwcsSignal.emit([1, tr('All wallets are consistent'), 10000, dlgrdy])
          self.negImportSignal.emit()
       else:
          while not dlgrdy:
-            self.uwcsSignal.emit(1, [tr('Consistency Check Failed!'), 0, dlgrdy])
+            self.uwcsSignal.emit([1, tr('Consistency Check Failed!'), 0, dlgrdy])
             time.sleep(1)
 
          self.checkRdyForFix()

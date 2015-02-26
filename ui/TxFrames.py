@@ -29,7 +29,7 @@ class SendBitcoinsFrame(ArmoryFrame):
                  selectWltCallback = None, onlyOfflineWallets=False,
                  sendCallback = None, createUnsignedTxCallback = None,
                  spendFromLockboxID=None):
-      super(SendBitcoinsFrame, self).__init__(parent, main)
+      super().__init__(parent, main)
       self.maxHeight = tightSizeNChar(GETFONT('var'), 1)[1] + 8
       self.sourceAddrList = None
       self.altBalance = None
@@ -1144,7 +1144,7 @@ class SendBitcoinsFrame(ArmoryFrame):
 
 class ReviewOfflineTxFrame(ArmoryDialog):
    def __init__(self, parent=None, main=None, initLabel=''):
-      super(ReviewOfflineTxFrame, self).__init__(parent, main)
+      super().__init__(parent, main)
 
       self.ustx = None
       self.wlt = None
@@ -1294,7 +1294,7 @@ class SignBroadcastOfflineTxFrame(ArmoryFrame):
    may not be specified
    """
    def __init__(self, parent=None, main=None, initLabel=''):
-      super(SignBroadcastOfflineTxFrame, self).__init__(parent, main)
+      super().__init__(parent, main)
 
       self.wlt = None
       self.sentToSelfWarn = False

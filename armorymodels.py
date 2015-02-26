@@ -63,9 +63,9 @@ class AllWalletsDispModel(QAbstractTableModel):
          if col==COL.Visible:
             return self.main.walletVisibleList[row]
          elif col==COL.ID: 
-            return programsComboBox.itemData(wltID)
+            return QVariant(wltID.decode())
          elif col==COL.Name: 
-            return programsComboBox.itemData(wlt.labelName.ljust(32))
+            return QVariant(wlt.labelName.ljust(32))
          elif col==COL.Secure: 
             wtype,typestr = determineWalletType(wlt, self.main)
             return QVariant(typestr)

@@ -24,7 +24,7 @@ from qtdialogs import DlgProgress
 # Wizards in Armory. 
 class ArmoryWizard(QWizard):
    def __init__(self, parent, main):
-      super(QWizard, self).__init__(parent)
+      super().__init__(parent)
       self.setWizardStyle(QWizard.ClassicStyle)
       self.parent = parent
       self.main   = main
@@ -44,7 +44,7 @@ class ArmoryWizard(QWizard):
    
    @AddToRunningDialogsList
    def exec_(self):
-      return super(ArmoryWizard, self).exec_()
+      return super().exec_()
 
 # This class is intended to be an abstract Wizard Page class that
 # will hold all of the functionality that is common to all 
@@ -52,7 +52,7 @@ class ArmoryWizard(QWizard):
 # The layout is QVBoxLayout and holds a single QFrame (self.pageFrame)
 class ArmoryWizardPage(QWizardPage):
    def __init__(self, wizard, pageFrame):
-      super(ArmoryWizardPage, self).__init__(wizard)
+      super().__init__(wizard)
       self.pageFrame = pageFrame
       self.pageLayout = QVBoxLayout()
       self.pageLayout.addWidget(self.pageFrame)
@@ -71,7 +71,7 @@ class ArmoryWizardPage(QWizardPage):
 #     5. Create Watcing Only Wallet
 class WalletWizard(ArmoryWizard):
    def __init__(self, parent, main):
-      super(WalletWizard,self).__init__(parent, main)
+      super().__init__(parent, main)
       self.newWallet = None
       self.isBackupCreated = False
       self.setWindowTitle(tr("Wallet Creation Wizard"))
@@ -152,7 +152,7 @@ class WalletWizard(ArmoryWizard):
          if reply == QMessageBox.No:
             # Stay in the wizard
             return None
-      return super(WalletWizard, self).done(event)
+      return super().done(event)
              
    def createNewWalletFromWizard(self):
       self.newWallet = PyBtcWallet().createNewWallet( \
@@ -198,7 +198,7 @@ class WalletWizard(ArmoryWizard):
           
 class WalletCreationPage(ArmoryWizardPage):
    def __init__(self, wizard):
-      super(WalletCreationPage, self).__init__(wizard,
+      super().__init__(wizard,
             NewWalletFrame(wizard, wizard.main, "Primary Wallet"))
       self.setTitle(tr("Step 1: Create Wallet"))
       self.setSubTitle(tr("""
@@ -220,7 +220,7 @@ class WalletCreationPage(ArmoryWizardPage):
 
 class SetPassphrasePage(ArmoryWizardPage):
    def __init__(self, wizard):
-      super(SetPassphrasePage, self).__init__(wizard, 
+      super().__init__(wizard, 
                SetPassphraseFrame(wizard, wizard.main, "Set Passphrase", self.updateNextButton))
       self.setTitle(tr("Step 2: Set Passphrase"))
       self.updateNextButton()
@@ -233,7 +233,7 @@ class SetPassphrasePage(ArmoryWizardPage):
    
 class VerifyPassphrasePage(ArmoryWizardPage):
    def __init__(self, wizard):
-      super(VerifyPassphrasePage, self).__init__(wizard, 
+      super().__init__(wizard, 
             VerifyPassphraseFrame(wizard, wizard.main, "Verify Passphrase"))
       self.passphrase = None
       self.setTitle(tr("Step 3: Verify Passphrase"))
@@ -250,7 +250,7 @@ class VerifyPassphrasePage(ArmoryWizardPage):
       
 class WalletBackupPage(ArmoryWizardPage):
    def __init__(self, wizard):
-      super(WalletBackupPage, self).__init__(wizard,
+      super().__init__(wizard,
                                 WalletBackupFrame(wizard, wizard.main, "Backup Wallet"))
       self.myWizard = wizard
       self.setTitle(tr("Step 4: Backup Wallet"))
@@ -258,7 +258,7 @@ class WalletBackupPage(ArmoryWizardPage):
 
 class CreateWatchingOnlyWalletPage(ArmoryWizardPage):
    def __init__(self, wizard):
-      super(CreateWatchingOnlyWalletPage, self).__init__(wizard,
+      super().__init__(wizard,
                   WizardCreateWatchingOnlyWalletFrame(wizard, wizard.main, "Create Watching Only Wallet"))
       self.setTitle(tr("Step 5: Create Watching Only Wallet"))
       
@@ -269,7 +269,7 @@ class CreateWatchingOnlyWalletPage(ArmoryWizardPage):
 #     3. Broadcast Transaction
 class TxWizard(ArmoryWizard):
    def __init__(self, parent, main, wlt, prefill=None, onlyOfflineWallets=False):
-      super(TxWizard,self).__init__(parent, main)
+      super().__init__(parent, main)
       self.setWindowTitle(tr("Offline Transaction Wizard"))
       self.setOption(QWizard.IgnoreSubTitles, on=True)
       self.setOption(QWizard.HaveCustomButton1, on=True)
@@ -335,7 +335,7 @@ class TxWizard(ArmoryWizard):
          
 class CreateTxPage(ArmoryWizardPage):
    def __init__(self, wizard, wlt, prefill=None, onlyOfflineWallets=False):
-      super(CreateTxPage, self).__init__(wizard,
+      super().__init__(wizard,
                SendBitcoinsFrame(wizard, wizard.main,
                                  "Create Transaction", wlt, prefill,
                                  selectWltCallback=self.updateOnSelectWallet,
@@ -356,13 +356,13 @@ class CreateTxPage(ArmoryWizardPage):
       
 class ReviewOfflineTxPage(ArmoryWizardPage):
    def __init__(self, wizard):
-      super(ReviewOfflineTxPage, self).__init__(wizard,
+      super().__init__(wizard,
                   ReviewOfflineTxFrame(wizard, wizard.main, "Review Offline Transaction"))
       self.setTitle(tr("Step 2: Review Offline Transaction"))
       self.setFinalPage(True)
       
 class SignBroadcastOfflineTxPage(ArmoryWizardPage):
    def __init__(self, wizard):
-      super(SignBroadcastOfflineTxPage, self).__init__(wizard,
+      super().__init__(wizard,
                   SignBroadcastOfflineTxFrame(wizard, wizard.main, "Sign/Broadcast Offline Transaction"))
       self.setTitle(tr("Step 3: Sign/Broadcast Offline Transaction"))      

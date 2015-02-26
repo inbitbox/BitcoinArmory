@@ -305,7 +305,7 @@ class AnnounceDataFetcher(object):
          if not signAddress == self.validAddrStr:
             LOGERROR('Announce info carried invalid signature!')
             LOGERROR('Signature addr: %s' % signAddress)
-            LOGERROR('Expected  address: %s', self.validAddrStr)
+            LOGERROR('Expected  address: %s', self.validAddrStr.decode())
             return 
       except:
          LOGEXCEPT('Could not verify data in signed message block')

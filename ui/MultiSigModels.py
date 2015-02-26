@@ -22,7 +22,7 @@ LOCKBOXCOLS = enum('ID', 'MSType', 'CreateDate', 'LBName', \
 class LockboxDisplayModel(QAbstractTableModel):
 
    def __init__(self, main, allLockboxes, dateFormat=DEFAULT_DATE_FORMAT):
-      super(LockboxDisplayModel, self).__init__()
+      super().__init__()
       self.boxList = allLockboxes
       self.dateFmt = dateFormat
       self.main = main
@@ -183,7 +183,7 @@ class LockboxDisplayProxy(QSortFilterProxyModel):
             btcRight = getDouble(idxRight, COL.Balance)
             return (abs(btcLeft) < abs(btcRight))
 
-      return super(LockboxDisplayProxy, self).lessThan(idxLeft, idxRight)
+      return super().lessThan(idxLeft, idxRight)
 
 
 

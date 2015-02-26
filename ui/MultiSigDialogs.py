@@ -30,7 +30,7 @@ class DlgLockboxEditor(ArmoryDialog):
 
    #############################################################################
    def __init__(self, parent, main, maxM=LB_MAXM, maxN=LB_MAXN, loadBox=None):
-      super(DlgLockboxEditor, self).__init__(parent, main)
+      super().__init__(parent, main)
 
       lblDescr = QRichLabel(tr("""
          <b><u><font size=5 color="%s">Create Multi-signature Lockbox</font></u>  
@@ -326,7 +326,7 @@ class DlgLockboxEditor(ArmoryDialog):
 
       class DlgSetLongDescr(ArmoryDialog):
          def __init__(self, parent, currDescr=''):
-            super(DlgSetLongDescr, self).__init__(parent, None)
+            super().__init__(parent, None)
             lbl = QRichLabel(tr("""
                <b><u>Set Extended Lockbox Details</u></b>
                <br><br>
@@ -629,7 +629,7 @@ def doExportLockbox(parent, main, lockbox):
 ################################################################################
 class DlgLockboxManager(ArmoryDialog):
    def __init__(self, parent, main):
-      super(DlgLockboxManager, self).__init__(parent, main)
+      super().__init__(parent, main)
 
       #if not USE_TESTNET:
          #QMessageBox.warning(self, tr('Dangerous Feature!'), tr("""
@@ -1807,19 +1807,19 @@ class DlgLockboxManager(ArmoryDialog):
    #############################################################################
    def closeEvent(self, event):
       self.saveGeometrySettings()
-      super(DlgLockboxManager, self).closeEvent(event)
+      super().closeEvent(event)
 
    #############################################################################
    def accept(self, *args):
       self.saveGeometrySettings()
       self.main.lbDialogModel = None
-      super(DlgLockboxManager, self).accept(*args)
+      super().accept(*args)
 
    #############################################################################
    def reject(self, *args):
       self.saveGeometrySettings()
       self.main.lbDialogModel = None      
-      super(DlgLockboxManager, self).reject(*args)
+      super().reject(*args)
       
    #############################################################################
    def changeLBFilter(self):
@@ -1834,7 +1834,7 @@ class DlgLockboxManager(ArmoryDialog):
 ################################################################################
 class DlgFundLockbox(ArmoryDialog):
    def __init__(self, parent, main):
-      super(DlgFundLockbox, self).__init__(parent, main)
+      super().__init__(parent, main)
    
       self.selection = None
 
@@ -1898,7 +1898,7 @@ class DlgFundLockbox(ArmoryDialog):
 ################################################################################
 class DlgSpendFromLockbox(ArmoryDialog):
    def __init__(self, parent, main):
-      super(DlgSpendFromLockbox, self).__init__(parent, main)
+      super().__init__(parent, main)
    
       self.selection = None
 
@@ -1968,7 +1968,7 @@ class DlgSpendFromLockbox(ArmoryDialog):
 ################################################################################
 class DlgSimulfundSelect(ArmoryDialog):
    def __init__(self, parent, main, lbID):
-      super(DlgSimulfundSelect, self).__init__(parent, main)
+      super().__init__(parent, main)
    
       self.selection = None
 
@@ -2073,7 +2073,7 @@ class DlgSimulfundSelect(ArmoryDialog):
 ################################################################################
 class DlgImportAsciiBlock(ArmoryDialog):
    def __init__(self, parent, main, titleStr, descrStr, fileTypes, importType):
-      super(DlgImportAsciiBlock, self).__init__(parent, main)
+      super().__init__(parent, main)
       self.main = main
       self.fileTypes = fileTypes
       self.importType = importType
@@ -2137,7 +2137,7 @@ class DlgImportAsciiBlock(ArmoryDialog):
 ################################################################################
 class DlgSelectPublicKey(ArmoryDialog):
    def __init__(self, parent, main):
-      super(DlgSelectPublicKey, self).__init__(parent, main)
+      super().__init__(parent, main)
 
       lblDescr = QRichLabel(tr("""
          <center><font size=4><b><u>Select Public Key for Lockbox 
@@ -2294,7 +2294,7 @@ class DlgSelectPublicKey(ArmoryDialog):
 ################################################################################
 class DlgExportAsciiBlock(ArmoryDialog):
    def __init__(self, parent, main, exportObj, title, descr, ftypes, defaultFN):
-      super(DlgExportAsciiBlock, self).__init__(parent, main)
+      super().__init__(parent, main)
 
       lblDescr = QRichLabel(descr)
       self.exportObj  = exportObj
@@ -2385,7 +2385,7 @@ class DlgExportAsciiBlock(ArmoryDialog):
 ################################################################################
 class DlgImportLockbox(ArmoryDialog):
    def __init__(self, parent, main):
-      super(DlgImportLockbox, self).__init__(parent, main)
+      super().__init__(parent, main)
       self.main = main
       self.importedLockbox = None
       lbl = QRichLabel(tr("""
@@ -2469,7 +2469,7 @@ class DlgMultiSpendReview(ArmoryDialog):
 
    #############################################################################
    def __init__(self, parent, main, ustx):
-      super(DlgMultiSpendReview, self).__init__(parent, main)
+      super().__init__(parent, main)
 
       LOGDEBUG('Debugging information for multi-spend USTX')
       #ustx.pprint()
@@ -3104,7 +3104,7 @@ class DlgCreatePromNote(ArmoryDialog):
 
    #############################################################################
    def __init__(self, parent, main, defaultIDorAddr=None, skipExport=False):
-      super(DlgCreatePromNote, self).__init__(parent, main)
+      super().__init__(parent, main)
 
       self.finalPromNote = None
       self.skipExport = skipExport
@@ -3468,7 +3468,7 @@ class DlgMergePromNotes(ArmoryDialog):
 
    #############################################################################
    def __init__(self, parent, main, lboxID=None):
-      super(DlgMergePromNotes, self).__init__(parent, main)
+      super().__init__(parent, main)
 
 
       self.cumulPay = 0
@@ -3827,7 +3827,7 @@ class DlgSelectMultiSigOption(ArmoryDialog):
 
    #############################################################################
    def __init__(self, parent, main):
-      super(DlgSelectMultiSigOption, self).__init__(parent, main)
+      super().__init__(parent, main)
 
       self.btnCreate = QPushButton(tr('Create/Manage lockboxes'))
       #self.btnImport = QPushButton(tr('Import multi-sig lockbox'))

@@ -17,7 +17,7 @@ WALLET_DATA_ENTRY_FIELD_WIDTH = 60
 
 class LockboxSelectFrame(ArmoryFrame):
    def __init__(self, parent, main, layoutDir=VERTICAL, spendFromLBID=None):
-      super(LockboxSelectFrame, self).__init__(parent, main)
+      super().__init__(parent, main)
 
       self.lbox = self.main.getLockboxByID(spendFromLBID)
       self.cppWlt = self.main.cppLockboxWltMap[spendFromLBID]
@@ -99,7 +99,7 @@ class SelectWalletFrame(ArmoryFrame):
                                     coinControlCallback=None,
                                     onlyOfflineWallets=False):
 
-      super(SelectWalletFrame, self).__init__(parent, main)
+      super().__init__(parent, main)
       self.coinControlCallback = coinControlCallback
 
       self.walletComboBox = QComboBox()
@@ -332,7 +332,7 @@ class SelectWalletFrame(ArmoryFrame):
 class NewWalletFrame(ArmoryFrame):
 
    def __init__(self, parent, main, initLabel=''):
-      super(NewWalletFrame, self).__init__(parent, main)
+      super().__init__(parent, main)
       self.editName = QLineEdit()
       self.editName.setMinimumWidth(tightSizeNChar(self.editName,\
                                  WALLET_DATA_ENTRY_FIELD_WIDTH)[0])
@@ -385,7 +385,7 @@ class NewWalletFrame(ArmoryFrame):
 
 class AdvancedOptionsFrame(ArmoryFrame):
    def __init__(self, parent, main, initLabel=''):
-      super(AdvancedOptionsFrame, self).__init__(parent, main)
+      super().__init__(parent, main)
       lblComputeDescription = QRichLabel( \
                   'Armory will test your system\'s speed to determine the most '
                   'challenging encryption settings that can be performed '
@@ -467,7 +467,7 @@ class AdvancedOptionsFrame(ArmoryFrame):
       
 class SetPassphraseFrame(ArmoryFrame):
    def __init__(self, parent, main, initLabel='', passphraseCallback=None):
-      super(SetPassphraseFrame, self).__init__(parent, main)
+      super().__init__(parent, main)
       self.passphraseCallback = passphraseCallback
       layout = QGridLayout()
       lblDlgDescr = QLabel('Please enter a passphrase for wallet encryption.\n\n'
@@ -535,7 +535,7 @@ class SetPassphraseFrame(ArmoryFrame):
    
 class VerifyPassphraseFrame(ArmoryFrame):
    def __init__(self, parent, main, initLabel=''):
-      super(VerifyPassphraseFrame, self).__init__(parent, main)
+      super().__init__(parent, main)
       lblWarnImgL = QLabel()
       lblWarnImgL.setPixmap(QPixmap(':/MsgBox_warning48.png'))
       lblWarnImgL.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
@@ -580,7 +580,7 @@ class WalletBackupFrame(ArmoryFrame):
                    'Visual', 'Physical', 'Count')
    OPTIONS = enum('Paper1', 'PaperN', 'DigPlain', 'DigCrypt', 'Export', 'Count')
    def __init__(self, parent, main, initLabel=''):
-      super(WalletBackupFrame, self).__init__(parent, main)
+      super().__init__(parent, main)
       # Don't have a wallet yet so assume false.
       self.hasImportedAddr = False
       self.isBackupCreated = False
@@ -994,7 +994,7 @@ class WalletBackupFrame(ArmoryFrame):
 class WizardCreateWatchingOnlyWalletFrame(ArmoryFrame):
 
    def __init__(self, parent, main, initLabel='', backupCreatedCallback=None):
-      super(WizardCreateWatchingOnlyWalletFrame, self).__init__(parent, main)
+      super().__init__(parent, main)
 
 
       summaryText = QRichLabel(tr("""

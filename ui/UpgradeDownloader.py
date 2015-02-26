@@ -238,7 +238,7 @@ class UpgradeDownloaderDialog(ArmoryDialog):
    # downloadText: the text *WITH SIGNATURE* of the downloaded text data
    # changeLog: the text of the downloaded changelogs
    def __init__(self, parent, main, showPackage, downloadText, changeLog):
-      super(UpgradeDownloaderDialog, self).__init__(parent, main)
+      super().__init__(parent, main)
 
       self.downloader = UpgradeDownloader(parent, main)
       self.bitsColor = htmlColor('Foreground')

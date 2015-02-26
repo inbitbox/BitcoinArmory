@@ -297,7 +297,7 @@ class QRichLabel(QLabel):
                            hAlign=Qt.AlignLeft, \
                            vAlign=Qt.AlignVCenter, \
                            **kwargs):
-      super(QRichLabel, self).__init__(txt)
+      super().__init__(txt)
       self.setTextFormat(Qt.RichText)
       self.setWordWrap(doWrap)
       self.setAlignment(hAlign | vAlign)
@@ -321,7 +321,7 @@ class QRichLabel(QLabel):
       if italic:
          text = '<i>%s</i>' % text
 
-      super(QRichLabel, self).setText(text)
+      super().setText(text)
 
    def setBold(self):
       self.setText('<b>' + self.text() + '</b>')
@@ -456,7 +456,7 @@ def MsgBoxCustom(wtype, title, msg, wCancel=False, yesStr=None, noStr=None,
 
    class dlgWarn(ArmoryDialog):
       def __init__(self, dtype, dtitle, wmsg, withCancel=False, yesStr=None, noStr=None):
-         super(dlgWarn, self).__init__(None)
+         super().__init__(None)
          
          msgIcon = QLabel()
          fpix = ''
@@ -541,7 +541,7 @@ def MsgBoxWithDNAA(parent, main, wtype, title, msg, dnaaMsg, wCancel=False, \
 
    class dlgWarn(ArmoryDialog):
       def __init__(self, parent, main, dtype, dtitle, wmsg, dmsg=None, withCancel=False): 
-         super(dlgWarn, self).__init__(parent, main)
+         super().__init__(parent, main)
          
          msgIcon = QLabel()
          fpix = ''
@@ -714,8 +714,8 @@ def saveTableView(qtbl):
    # we want to guarantee that the settings file will interpret this
    # as hex data -- I once had an unlucky hex string written out with 
    # all digits and then intepretted as an integer on the next load :( 
-   first = int_to_hex(nCol)
-   rest  = [int_to_hex(s, widthBytes=2) for s in sz]
+   first = int_to_hex(nCol).decode()
+   rest  = [int_to_hex(s, widthBytes=2).decode() for s in sz]
    return 'ff' + first + ''.join(rest)
 
 
@@ -732,7 +732,7 @@ def saveTableView(qtbl):
 # in a dialog or as a component in a larger frame.
 class ArmoryFrame(QFrame):
    def __init__(self, parent, main):
-      super(ArmoryFrame, self).__init__(parent)
+      super().__init__(parent)
       self.main = main
 
       # Subclasses should implement a method that returns a boolean to control
@@ -748,7 +748,7 @@ class ArmoryDialog(QDialog):
    close = pyqtSignal(name=str(random.random()))
       
    def __init__(self, parent=None, main=None):
-      super(ArmoryDialog, self).__init__(parent)
+      super().__init__(parent)
 
       self.parent = parent
       self.main   = main
@@ -769,18 +769,18 @@ class ArmoryDialog(QDialog):
    
    @AddToRunningDialogsList
    def exec_(self):
-      return super(ArmoryDialog, self).exec_()
+      return super().exec_()
    
    def reject(self):
       self.close.emit()
-      super(ArmoryDialog, self).reject()
+      super().reject()
       
 
 ################################################################################
 class QRCodeWidget(QWidget):
 
    def __init__(self, asciiToEncode='', prefSize=160, errLevel='L', parent=None):
-      super(QRCodeWidget, self).__init__()
+      super().__init__()
 
       self.parent = parent
       self.qrmtrx = None
@@ -865,7 +865,7 @@ class QRCodeWidget(QWidget):
 # Create a very simple dialog and execute it
 class DlgInflatedQR(ArmoryDialog):
    def __init__(self, parent, dataToQR):
-      super(DlgInflatedQR, self).__init__(parent, parent.main)
+      super().__init__(parent, parent.main)
 
       sz = QApplication.desktop().size()
       w,h = sz.width(), sz.height()
